@@ -1,0 +1,82 @@
+# Source configuration. Tiers are from problem-statement.md Section 11.4 and were
+# verified against live vendor documentation on 2026-09-21 (DECISIONS.md ADR-22).
+#
+# `enabled: false` everywhere at Phase 0: no collector exists yet. Phase 2 enables
+# manual import; Phase 7 enables youtube and, if credentials are present, reddit.
+
+recency_months: 12
+languages:
+  - en
+
+sources:
+  manual:
+    enabled: false          # Phase 2 enables this
+    tier: guaranteed_baseline
+    collection_method: manual_csv_jsonl
+    notes: >
+      The path that always works. Section 11.1's 300-document target must be
+      reachable through manual import alone; every collector is an accelerator.
+
+  youtube:
+    enabled: false          # Phase 7
+    tier: supported_automated
+    collection_method: youtube_data_api_v3
+    queries:
+      - "google photos search"
+      - "ask photos"
+      - "google photos can't find"
+    rate_limit_per_minute: 60
+    notes: >
+      Comment reads cost 1 quota unit against 10,000/day, but search.list is a
+      separate 100-calls/day bucket, so video discovery is the binding
+      constraint: seed video IDs from a curated list rather than paginating
+      search. Traverse replies by parentId, never the id filter (Google+ only).
+      Reply trees are one level deep.
+
+  reddit:
+    enabled: false          # Phase 7, and only when credentials are present
+    tier: optional_credential_dependent
+    collection_method: reddit_data_api
+    queries:
+      - "google photos can't find photo"
+      - "google photos search not working"
+    rate_limit_per_minute: 100
+    notes: >
+      Registered OAuth credentials are required even for read-only access.
+      Free tier is non-commercial only. Skips cleanly when credentials are absent.
+
+  google_support:
+    enabled: false          # never automated; manual import only
+    tier: manual_by_default
+    collection_method: manual_csv_jsonl
+    notes: >
+      No documented API. Thread URLs are addressable and not robots-disallowed,
+      but Google's terms bar scraping content belonging to other users, so
+      automated collection needs a permission basis rather than a working URL.
+
+  play_store:
+    enabled: false          # closed — never automated
+    tier: experimental_closed
+    collection_method: manual_csv_jsonl
+    notes: >
+      The Play Developer API's reviews resource is gated by publisher ownership,
+      so reviews of an app this project does not publish are unreachable. No
+      quota increase or paid tier changes that. Manual import permanently.
+
+  app_store:
+    enabled: false          # closed — never automated
+    tier: experimental_closed
+    collection_method: manual_csv_jsonl
+    notes: >
+      App Store Connect's customerReviews hangs off the caller's own apps
+      collection, so the same ownership limit applies. The legacy RSS review
+      feed must not be used: undocumented, robots-disallowed, and it returns
+      zero review entries.
+
+  editorial:
+    enabled: false          # Phase 2, contextual only
+    tier: manual_by_default
+    collection_method: manual_csv_jsonl
+    notes: >
+      Editorial articles are collected as contextual evidence and never counted
+      in direct-user prevalence (spec Sections 8.8, 10).

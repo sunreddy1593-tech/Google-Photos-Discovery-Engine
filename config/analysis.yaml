@@ -1,0 +1,39 @@
+# Analysis, deduplication, export, and retrieval settings.
+# Reported in every run manifest (spec Sections 26, 26.5).
+
+dedupe:
+  # Defaults from ADR-21, pending Phase 3 calibration against the pilot corpus.
+  simhash_duplicate_max: 3        # Hamming <= 3: confident near-duplicate
+  simhash_review_band_max: 6      # Hamming 4-6: routed to human review
+  min_tokens: 25                  # below this, no automatic near-duplicate call
+
+  # Must stay false. Two people independently writing "can't find my photos" are
+  # two users with the same complaint, which is the strongest prevalence signal
+  # in the corpus; automatic collapsing deletes exactly that signal while
+  # reporting a healthy-looking duplicate rate. The loader refuses to start if
+  # this is true (spec Section 19.6, ADR-21).
+  allow_cross_author_auto: false
+
+export:
+  # Public records carry the shortest redacted excerpt containing every validated
+  # evidence span, plus this much context on each side (spec Section 12.1, ADR-23).
+  excerpt_context_chars: 160
+
+  # Sources whose redistribution terms explicitly permit full text. Empty until
+  # per-source terms are recorded in DECISIONS.md (Phase 10 obligation).
+  allow_full_text_sources: []
+
+retrieval:
+  top_k: 10
+  # A floor, so an unrelated question returns nothing rather than k weak records
+  # (spec Section 22.1). The prototype's `sorted(...)[:k]` is what this corrects.
+  min_score: 0.15
+
+recency_months: 12                # ADR-12: rolling 12-month window
+source_concentration_threshold: 0.40   # disclose above this share (Section 11.2)
+
+# Composite opportunity scoring is opt-in and off by default (ADR-8, Section 21.5):
+# components are always shown separately. Enabling it requires publishing the
+# formula and a sensitivity analysis.
+composite_score_enabled: false
+composite_weights: {}

@@ -1,0 +1,26 @@
+# Model provider and model names. Never hard-coded in source (spec Section 29.11).
+#
+# Anthropic is the default provider (ADR-14). The OpenAI adapter is stretch scope
+# (ADR-27): nothing in the MVP reads OPENAI_API_KEY, and no dual-provider
+# consensus check exists in Part 1.
+#
+# Verify current model identifiers before the first Phase 4 run — these names are
+# configuration, and a stale one produces a provider error rather than silently
+# using something else.
+
+provider: anthropic
+
+# Cheaper model for the high-volume, low-judgement pass.
+prefilter_model: claude-haiku-4-5
+
+relevance_model: claude-sonnet-4-5
+extraction_model: claude-sonnet-4-5
+
+# Temperature 0 everywhere. Extraction must be reproducible from the cache, and a
+# non-zero temperature would make two runs of the same prompt on the same
+# document legitimately disagree — which is indistinguishable from a bug.
+temperature: 0.0
+
+max_tokens: 4096
+timeout_seconds: 60
+max_retries: 3

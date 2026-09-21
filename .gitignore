@@ -1,0 +1,64 @@
+# Secrets — never committed (spec Section 26, ADR-23)
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Local-only research data (spec Section 12.1: local research profile).
+# Directory structure is kept so a clone has somewhere to import into; the
+# contents never are.
+#
+# Section 14 marks only raw/ and interim/ "local only", but manual/ and
+# processed/ are ignored here too, deliberately. Analyst-collected CSVs in
+# manual/ are unredacted source text, and processed records carry the full
+# raw_text_audit, which ADR-23 explicitly declines to publish — the public
+# artifact is the minimum excerpt around validated spans, and it lives in
+# data/exports/public/. Committing either would defeat that decision by a
+# convenience, which spec Section 12.1 names as the way the commitment breaks.
+data/raw/*
+!data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/manual/*
+!data/manual/.gitkeep
+# The blank import template may be committed (gitignore has no trailing comments,
+# so this note sits on its own line).
+!data/manual/*.template.csv
+
+# data/gold/ and data/exports/ ARE committed: gold labels key on doc_id and
+# carry no raw text, and exports/public/ is the redacted public profile that
+# Section 12.1 requires the repository to ship.
+
+# Rebuildable SQLite projection (ADR-1: the database is not precious)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Tooling caches
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.ruff_cache/
+.mypy_cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+# Unvalidated reference prototype — local only
+/prototype/

@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "google-photos-retrieval-engine"
+version = "0.1.0"
+description = "Discovery engine for remembered-item retrieval failures in Google Photos public feedback"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+
+# Bounds, not pins. Upper bounds stop a major release from landing silently;
+# lower bounds are floors verified at install time (IMPLEMENTATION-PLAN Phase 0).
+# Phase 0 installs the core set only. Later phases add their own:
+#   Phase 2  httpx  ·  Phase 4  anthropic  ·  Phase 7  google-api-python-client, praw
+#   Phase 8  pandas  ·  Phase 10  streamlit
+dependencies = [
+    "pydantic>=2.7,<3",
+    "pydantic-settings>=2.2,<3",
+    "pyyaml>=6,<7",
+    "python-dotenv>=1,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8,<9",
+    "pytest-cov>=5,<6",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "--strict-markers"
+markers = [
+    "synthetic: uses synthetic fixtures; never contributes research evidence (spec Section 17.13)",
+]

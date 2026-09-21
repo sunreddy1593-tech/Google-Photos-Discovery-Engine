@@ -1,0 +1,20 @@
+# Problem taxonomy. Intentionally EMPTY.
+#
+# Specification Section 20 forbids a hard-coded taxonomy before the pilot
+# evidence is examined, and invariant I10 states that cluster labels must not
+# exist in code, in RetrievalCase, or in config before pilot review produces them.
+# The reference prototype's six hard-coded `problem_type` values are precisely the
+# failure this prevents: naming the categories first makes the findings
+# self-fulfilling.
+#
+# Phase 8 derives candidate clusters from the first 50-100 qualifying cases,
+# the project owner reviews and names them, and this file is then populated with
+# a real version string. The loader raises ConfigError if clusters appear while
+# the version is still `0-unassigned`.
+#
+# RetrievalCase has no cluster field at all: assignments live only in
+# ClusterAssignment records (ADR-19), so there is no field for a well-meaning
+# prompt revision to start filling in "provisionally".
+
+version: "0-unassigned"
+clusters: []
