@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 """CLI entry point for the discovery-engine pipeline.
 
-Phase 0 wires the argument surface only. Every subcommand is declared so the
-pipeline's shape is visible and ``--help`` is useful, and every one refuses to run
-with the phase that will implement it. A subcommand that silently did nothing
-would be worse than one that says it is not built.
+``collect`` imports a pilot workbook. The import lives in ``src/collect``;
+this file only parses arguments and passes the author salt through from
+configuration. Every other subcommand is declared so ``--help`` shows the
+pipeline, and refuses to run with the phase that will implement it.
 
-Run ``python main.py --help`` for the command list.
+``AUTHOR_SALT`` is read from the environment or ``.env``. It is not a
+command argument and it is not printed.
+
+Run ``python main.py collect --help`` for the workbook import.
 """
 
 from __future__ import annotations
@@ -54,7 +57,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="main.py",
         description=(
             "Google Photos remembered-item retrieval discovery engine. "
-            "Phase 0 scaffold: no stage is wired yet."
+            "collect imports a workbook; later stages are declared and not built."
         ),
         epilog=(
             "Configuration lives in config/*.yaml; secrets in .env "
@@ -80,7 +83,30 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers = parser.add_subparsers(dest="command", metavar="COMMAND")
 
+    collect = subparsers.add_parser(
+        "collect",
+        help=f"{COMMANDS['collect'][0]} [Phase 2]",
+        description=(
+            "Import a pilot workbook into CollectedDocument records. "
+            "AUTHOR_SALT is taken from the environment or .env and is never "
+            "printed or accepted as an argument."
+        ),
+    )
+    collect.add_argument(
+        "--path",
+        required=True,
+        help="Path to the pilot workbook (.xlsx)",
+    )
+    collect.add_argument(
+        "--output",
+        required=True,
+        help="Directory for the documents file and the import report",
+    )
+    collect.set_defaults(handler=_collect)
+
     for name, (help_text, phase) in COMMANDS.items():
+        if name == "collect":
+            continue
         sub = subparsers.add_parser(
             name, help=f"{help_text} [Phase {phase}]", description=help_text
         )
@@ -106,6 +132,21 @@ def build_parser() -> argparse.ArgumentParser:
     check.set_defaults(handler=_check_config)
 
     return parser
+
+
+def _collect(args: argparse.Namespace) -> int:
+    """Dispatch workbook import. The salt stays inside configuration."""
+    from src.collect.cli import run_workbook_import
+
+    try:
+        settings = load_settings()
+        author_salt = settings.secrets.require(
+            "author_salt", needed_for="author hashing at workbook import"
+        )
+    except ConfigError as exc:
+        print(f"Configuration error: {exc}", file=sys.stderr)
+        return 1
+    return run_workbook_import(args.path, args.output, author_salt=author_salt)
 
 
 def _check_config(_args: argparse.Namespace) -> int:

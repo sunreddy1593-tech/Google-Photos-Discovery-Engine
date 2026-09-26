@@ -12,13 +12,16 @@ requires-python = ">=3.12,<3.13"
 # Bounds, not pins. Upper bounds stop a major release from landing silently;
 # lower bounds are floors verified at install time (IMPLEMENTATION-PLAN Phase 0).
 # Phase 0 installs the core set only. Later phases add their own:
-#   Phase 2  httpx  ·  Phase 4  anthropic  ·  Phase 7  google-api-python-client, praw
+#   Phase 2  openpyxl (workbook import). httpx stays out until a collector
+#            actually makes an HTTP call.
+#   Phase 4  anthropic  ·  Phase 7  google-api-python-client, praw
 #   Phase 8  pandas  ·  Phase 10  streamlit
 dependencies = [
     "pydantic>=2.7,<3",
     "pydantic-settings>=2.2,<3",
     "pyyaml>=6,<7",
     "python-dotenv>=1,<2",
+    "openpyxl>=3.1,<4",
 ]
 
 [project.optional-dependencies]

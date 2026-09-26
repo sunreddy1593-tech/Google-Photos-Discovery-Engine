@@ -4,13 +4,74 @@
 
 | | |
 |---|---|
-| **Completed phase** | Phase 1 — schemas and evidence validation (hardened 2026-09-26) |
-| **Current phase** | Phase 2 — manual import and pilot corpus (not started) |
-| **Tests** | 509 passing, 0 failing (171 from Phase 0, 338 new) |
-| **Coverage** | 100% of `src/models/` and `src/extract/validator.py` |
-| **Last verified** | 2026-09-21 |
+| **Completed phase** | Phase 2 workbook import — manual pilot workbook into `CollectedDocument`, with a `collect` command (2026-09-26) |
+| **Current phase** | Rest of Phase 2 from `IMPLEMENTATION-PLAN.md` (SQLite store, CSV/JSONL, stage events, 30–50 document corpus) — not started. Phase 3 not started. |
+| **Tests** | 548 passing, 0 failing (509 at the end of Phase 1, 39 in this phase) |
+| **Coverage** | 100% of `src/models/`. Workbook importer and CLI covered by `tests/test_workbook_import.py` and `tests/test_collect_cli.py` |
+| **Last verified** | 2026-09-26 |
 | **Blockers** | None |
 | **Next command** | See "Next command" below |
+
+---
+
+## Phase 2 — workbook import complete
+
+The analyst workbook is the collection surface this slice imports. `main.py collect`
+is a thin dispatcher: it loads `AUTHOR_SALT` through configuration and calls
+`import_workbook`. CSV/JSONL, the SQLite store, and stage events remain the rest
+of `IMPLEMENTATION-PLAN.md` Phase 2. Nothing from Phase 3 was built.
+
+| Criterion | Evidence |
+|---|---|
+| Seven pilot document rows read and accepted | `test_pilot_workbook_accepts_seven_documents_and_warns_on_the_shared_url` |
+| Shared waterfall thread URL warns and does not reject | same test: `repeated_urls` is rows 7 and 8, `rows_rejected == 0` |
+| `raw_text` matches the worksheet XML for all seven rows | same test, compared through the xlsx XML rather than the importer's reader |
+| No raw author name in the documents file (outside `raw_text`), the report, or the log | same test, plus `test_raw_author_names_are_absent_from_outputs_and_logs` |
+| Same author and salt hash the same; a different salt hashes differently; a blank author stays null | `test_author_hash_is_deterministic_and_uses_the_stored_platform`, `test_optional_blanks_stay_null`, and the pilot test |
+| `AUTHOR_SALT` has no production default, is not a CLI argument, and is absent from the terminal, the report, and the log | `test_cli_missing_salt_fails_without_a_default`, `test_cli_does_not_accept_a_salt_argument`, `test_cli_success_prints_counts_and_hides_secrets` |
+| Search log: exact headers, dates, non-negative counts, `documents_kept` not above `results_scanned`; those rows are not documents | `test_search_log_rejects_bad_counts_and_stays_out_of_documents` |
+| CLI exits 0 only when nothing was rejected and the workbook is valid | `test_cli_success_prints_counts_and_hides_secrets`, `test_cli_rejected_rows_exit_nonzero`, `test_cli_invalid_workbook_and_search_log_exit_nonzero` |
+| Import does not load Phase 3 | `test_import_does_not_load_phase3_modules` and `test_collect_imports_only_core_models_and_itself` |
+
+`google_photos_help`, the label on the workbook's instructions sheet, is stored
+as `google_support`. That is the contract value and the source name in
+`config/sources.yaml`. Each use is a `workbook_platform_alias` warning.
+Excel datetimes have no timezone; naive values are attached to UTC. A
+timestamp that already carries an offset keeps it. The search-log note that
+mentions IST is commentary, not a timezone field.
+
+`search_log` is validated and reported. Its rows are not `CollectedDocument`
+records. Headers must match exactly. Dates parse the same way as document
+dates. `results_scanned` and `documents_kept` must be non-negative, and
+`documents_kept` must not exceed `results_scanned`. A bad search-log value
+does not reject the documents; the CLI still exits non-zero because the
+workbook audit failed. A missing sheet or a renamed header accepts nothing.
+
+`AUTHOR_SALT` comes from the environment or `.env`. It is not a command
+argument, it has no hardcoded default, and it is scrubbed from the report and
+the log. Tests pass it as an argument to `import_workbook`.
+
+Pilot import, with `AUTHOR_SALT` already in the environment or in `.env`:
+
+```powershell
+python main.py collect --path "data\manual\Private\Google_Photos_Pilot_Collection_Workbook.xlsx" --output "data\processed\pilot-import"
+```
+
+Exit 0 means no rejected document rows, no search-log issues, and no structural
+errors. Warnings, including the shared thread URL, still exit 0. Exit 1 is an
+invalid workbook, a configuration failure, or rejected rows. The terminal
+prints counts only. Generated files under `data/processed/` stay gitignored.
+
+### What this slice added
+
+```text
+src/collect/   __init__.py  workbook.py  cli.py
+tests/         test_workbook_import.py  test_collect_cli.py
+main.py        collect subcommand only; later commands still refuse
+```
+
+`openpyxl` is the Phase 2 dependency. `httpx` stays out until a collector
+makes an HTTP call.
 
 ---
 
@@ -151,8 +212,8 @@ while `reason_summary` does not.
 
 ## Research track — still the critical path
 
-Unchanged by this phase, and now the only thing standing between the repository
-and Phase 2 having anything to import.
+The workbook importer can read the reviewed pilot file (7 documents, local
+under `data/manual/private/`, not committed). The corpus target is still open.
 
 - [ ] Collect 30–50 genuine public documents with direct permalinks and verbatim
       text. Manual import is the guaranteed baseline; the 300-document target
@@ -165,12 +226,20 @@ and Phase 2 having anything to import.
 
 ## Next command
 
-```bash
-pytest -q                                          # 480 tests, green
-pytest -q --cov=src/models --cov=src/extract/validator --cov-report=term-missing
+```powershell
+python main.py collect --path "data\manual\Private\Google_Photos_Pilot_Collection_Workbook.xlsx" --output "data\processed\pilot-import"
 ```
 
-Then start Phase 2 using the paste-ready prompt in `IMPLEMENTATION-PLAN.md`.
+```bash
+pytest -q
+```
+
+The suite was green on 2026-09-26: 548 passed. The pilot command, with
+`AUTHOR_SALT` set outside the command line, read 7 rows, accepted 7, rejected
+0, and validated 1 search-log row (25 scanned, 7 kept).
+
+The next build work is the rest of Phase 2 in `IMPLEMENTATION-PLAN.md`: the
+SQLite store, CSV/JSONL import, and stage events. Phase 3 stays unstarted.
 
 ## Known issues
 

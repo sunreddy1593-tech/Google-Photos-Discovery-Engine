@@ -225,20 +225,41 @@ def test_phase_1_packages_exist() -> None:
 
 
 def test_no_later_phase_packages_exist_yet() -> None:
-    """Phase 1 adds contracts and the validator and nothing else.
+    """Phase 2 adds ``src/collect`` and nothing after it.
 
     Spec Section 29.4: one phase at a time. ``src/relevance`` is the Phase 4
     classifier package and is unrelated to ``src/models/relevance.py``, which is
-    the contract.
+    the contract. ``src/collect`` is the manual-import package this phase is
+    allowed to create; the names below are still later work.
     """
     premature = [
         name
-        for name in ("collect", "normalize", "dedupe", "relevance",
+        for name in ("normalize", "dedupe", "relevance",
                      "llm", "taxonomy", "analyze", "retrieve",
                      "review", "pipeline", "store")
         if (SRC / name).exists()
     ]
     assert not premature, f"these belong to later phases: {premature}"
+
+
+def test_collect_imports_only_core_models_and_itself() -> None:
+    """The importer must be finishable with no Phase 3 module on its path.
+
+    Normalization, dedupe, and the store are exactly the dependencies manual
+    import is not allowed to grow. A single import of one of them would make
+    ``CollectedDocument`` depend on a stage that does not exist yet.
+    """
+    assert (SRC / "collect" / "workbook.py").exists()
+    allowed = ("src.core", "src.models", "src.collect")
+    offenders = [
+        f"{_module_label(path)} imports {module}"
+        for path in _python_files(SRC / "collect")
+        for module in _imported_modules(path)
+        if _is_internal(module) and not module.startswith(allowed)
+    ]
+    assert not offenders, "collect may import only core and models:\n" + "\n".join(
+        offenders
+    )
 
 
 def test_extract_holds_only_the_validator_so_far() -> None:

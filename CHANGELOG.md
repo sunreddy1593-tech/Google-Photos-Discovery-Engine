@@ -5,6 +5,122 @@ decisions live in `DECISIONS.md`; this file records what was built.
 
 ---
 
+## 2026-09-26 — Phase 2: workbook import command
+
+Closes the pilot importer. `main.py collect` loads `AUTHOR_SALT` from the
+environment or `.env` and calls `import_workbook`. The import stays in
+`src/collect`. No extraction, relevance, evidence spans, clustering, or
+retrieval work was added.
+
+### Added
+
+- **`src/collect/cli.py`** — exit code and a count-only terminal summary.
+  Exit 0 when the workbook has no structural errors, no rejected document
+  rows, and no search-log issues. Exit 1 for an invalid workbook, a missing
+  salt, a missing file, or rejected rows. The salt is not a command argument.
+- **Search-log count rule.** `documents_kept` must not exceed
+  `results_scanned`. Both must already be non-negative. A failing audit row
+  is reported and is not turned into a `CollectedDocument`.
+- **Salt scrubbing.** The salt is removed from the report and the log along
+  with author display names. It is not written into the documents file.
+  There is no hardcoded production default. Tests pass the salt directly.
+- **Tests** for hashing, a second salt, blank authors, a missing salt, search-log
+  counts, CLI success, CLI failure, and the absence of names and the salt from
+  stdout, stderr, logs, and reports. Full suite: 548 passing.
+
+### Pilot command
+
+`AUTHOR_SALT` is already in the environment or in `.env` (the value is not
+part of the command):
+
+```powershell
+python main.py collect --path "data\manual\Private\Google_Photos_Pilot_Collection_Workbook.xlsx" --output "data\processed\pilot-import"
+```
+
+Run on 2026-09-26: exit 0, 7 read, 7 accepted, 0 rejected, 3 warnings
+(platform alias on the document sheet, platform alias on the search log, and
+the shared URL on rows 7 and 8). Search log: 1 row, 25 scanned, 7 kept, no
+issues. Four author names hashed with the supplied salt; three blank authors
+stayed null. A second salt produced different hashes for those four. Output
+under `data/processed/pilot-import` is gitignored.
+
+### Not built, deliberately
+
+No CSV/JSONL importer, SQLite store, stage events, normalization, dedupe,
+relevance, extraction, clustering, or review queue. The 30–50 document corpus
+is still the research task. Phase 3 was not started.
+
+---
+
+## 2026-09-26 — Phase 2: manual pilot-workbook import
+
+Imports `data/manual/private/Google_Photos_Pilot_Collection_Workbook.xlsx`
+into the Phase 1 `CollectedDocument` contract. The models, the evidence
+ladder, and the Phase 1 tests were left as they were. `tests/test_architecture.py`
+now allows `src/collect` and still rejects every later package; that guard
+was the Phase 1 "nothing else exists yet" check, and Phase 2 is the phase
+that creates this package.
+
+### Added
+
+- **`src/collect/workbook.py`** — reads the `documents` sheet by header name,
+  writes `collected_documents.jsonl` plus `import_report.json` and
+  `import_report.txt`. Counts, warnings, duplicate ids, repeated URLs, and
+  per-row rejection reasons are in both reports. `author_name_raw` is hashed
+  with the existing HMAC helper and then dropped. The name is scrubbed from
+  the report and from log lines.
+- **`search_log` stays an audit.** Headers and values are checked. Those rows
+  are not documents.
+- **`openpyxl`** (`>=3.1,<4`) to read xlsx without taking on pandas.
+- **22 tests** in `tests/test_workbook_import.py`, including the private pilot
+  file when it is present. Full suite: 536 passing.
+
+### Pilot result
+
+7 document rows read, 7 accepted, 0 rejected. The waterfall thread and the
+original-poster reply share one URL (sheet rows 7 and 8); that is a warning.
+Their `source_item_id` values differ, and the reply's `parent_thread_id` is
+the thread id. All seven `raw_text` values match the worksheet XML, including
+curly apostrophes, non-breaking spaces, and blank lines. Author display names
+from the sheet are absent from the documents file outside `raw_text`, from
+both reports, and from the log.
+
+### Interpretations
+
+1. **`google_photos_help` is stored as `google_support`.** The instructions
+   sheet uses the first token. Spec Section 15.1 and `config/sources.yaml`
+   use the second for Google Photos Help. The mapping is one explicit alias
+   and a warning on every row that uses it. Any other unknown platform is
+   rejected.
+2. **`language` is `language_reported`, and `researcher_notes` go in
+   `metadata`.** Neither name is a `CollectedDocument` field. Notes are not
+   turned into clusters.
+3. **Naive Excel datetimes are attached to UTC.** The contract requires an
+   aware datetime, and the workbook has no timezone column. An ISO value that
+   already has an offset keeps that offset. A bad date rejects the row and
+   quotes the original cell plus the spreadsheet row; it is not stored as null.
+4. **Styled blank template rows are not documents.** The sheet is formatted
+   out to row 51. Only rows with a value are read, which is why the pilot
+   count is 7.
+5. **A repeated URL warns. A repeated `source_item_id` rejects every copy.**
+   The thread and the reply are the first case. Two rows that claim the same
+   item id are the second, and neither is kept, because choosing one would be
+   a guess.
+6. **Workbook instructions mark `source_item_id`, `language`, and
+   `collection_query` required.** The contract allows those three to be null.
+   The importer follows the workbook's own required list. Authors, titles,
+   publication dates, parent ids, ratings, and notes stay null when the cell
+   is blank.
+
+### Not built, deliberately
+
+No CSV/JSONL importer, SQLite store, stage events, normalization, dedupe,
+relevance, extraction, clustering, or review queue. The workbook command is
+recorded in the entry above. The 30–50 document corpus is still the research
+task. Phase 3 was not started.
+
+---
+
 ## 2026-09-26 — Phase 1 hardening audit
 
 Audit of the models, evidence map, and validator against the revised
