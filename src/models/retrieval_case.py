@@ -55,6 +55,7 @@ from src.models.enums import (
     SubjectType,
     SystemResponse,
     TargetAssetType,
+    ValidationState,
     Workaround,
 )
 from src.models.evidence import EvidenceSpan, ObservedValue
@@ -213,6 +214,15 @@ class RetrievalCase(VersionedModel):
     )
     extracted_at: AwareDatetime
     needs_human_review: bool = False
+    validation_state: ValidationState = Field(
+        default=ValidationState.pending,
+        description=(
+            "Whether this case passed the evidence gate. Defaults to pending: a "
+            "record is unchecked until src.extract.validator checks it, and "
+            "only a valid record reaches processed or analysis output "
+            "(spec Section 17.12)."
+        ),
+    )
 
     # -------------------------------------------------------------- derived #
 
@@ -357,6 +367,33 @@ class RetrievalCase(VersionedModel):
         return self
 
     @model_validator(mode="after")
+    def _check_valid_records_carry_only_valid_spans(self) -> "RetrievalCase":
+        """A case marked ``valid`` cannot hold a span that is not.
+
+        This is the half of the record-level gate that is decidable without the
+        document, and it is what stops the invalid-evidence path from being
+        resolved by dropping the affected field and keeping the rest: the case
+        cannot be marked valid while the fabricated span is attached, and
+        detaching the span leaves the field unevidenced, which the status gate in
+        :mod:`src.extract.validator` then rejects. Both exits are closed, so the
+        only way forward is review (spec Section 17.12).
+        """
+        if self.validation_state is not ValidationState.valid:
+            return self
+
+        unusable = [
+            span for span in self.inline_evidence_spans() if not span.is_valid
+        ]
+        if unusable:
+            raise ValueError(
+                f"validation_state=valid but {len(unusable)} inline span(s) are "
+                f"not valid: "
+                f"{', '.join(f'{s.field_name}={s.validation_state.value}' for s in unusable)}. "
+                f"A record is only as valid as the evidence it carries."
+            )
+        return self
+
+    @model_validator(mode="after")
     def _check_observed_value_spans(self) -> "RetrievalCase":
         """Each ``ObservedValue``'s span must name the dimension it sits in.
 
@@ -419,15 +456,39 @@ _OBSERVED_VALUE_FIELDS: tuple[str, ...] = (
 )
 
 
+#: Which state survives when two spans share an ``evidence_id``. Ascending
+#: trust: the *least* trusted state wins, so de-duplication can never improve a
+#: span's standing.
+_STATE_PRECEDENCE: dict[ValidationState, int] = {
+    ValidationState.rejected: 0,
+    ValidationState.pending: 1,
+    ValidationState.valid: 2,
+}
+
+
 def dedupe_spans(spans: Sequence[EvidenceSpan]) -> tuple[EvidenceSpan, ...]:
     """De-duplicate spans by ``evidence_id``, preserving first-seen order.
 
     Order is preserved so the union is stable across runs and therefore usable in
     a content-equivalence hash (spec Section 26.4).
+
+    **The least-trusted duplicate is the one kept.** ``evidence_id`` is derived
+    from the owner, field, quote, and offsets, so a rejected span and a valid one
+    can collide — the same claimed quote, validated twice with different
+    outcomes. Keeping whichever arrived first meant a fabricated span was
+    silently deleted whenever a valid twin happened to be stored ahead of it, and
+    the union then reported the record as fully evidenced. That is the
+    field-dropping the evidence architecture forbids, arriving through the back
+    door of a helper nobody suspects (spec Section 17.12).
     """
     seen: dict[str, EvidenceSpan] = {}
     for span in spans:
-        seen.setdefault(span.evidence_id, span)
+        existing = seen.get(span.evidence_id)
+        if existing is None or (
+            _STATE_PRECEDENCE[span.validation_state]
+            < _STATE_PRECEDENCE[existing.validation_state]
+        ):
+            seen[span.evidence_id] = span
     return tuple(seen.values())
 
 

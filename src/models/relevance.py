@@ -38,6 +38,7 @@ from src.models.enums import (
     EvidenceOwnerType,
     ReasonCode,
     ScopeClass,
+    ValidationState,
     EXCLUSION_REASON_CODES,
     INCLUSION_REASON_CODES,
     REVIEW_REASON_CODES,
@@ -100,6 +101,15 @@ class RelevanceDecision(VersionedModel):
     decision_fingerprint: str = Field(min_length=1)
     decided_at: AwareDatetime
     needs_human_review: bool = False
+    validation_state: ValidationState = Field(
+        default=ValidationState.pending,
+        description=(
+            "Whether this decision passed the evidence gate. Defaults to "
+            "pending: a record is unchecked until src.extract.validator checks "
+            "it, and only a valid record reaches processed or analysis output "
+            "(spec Section 17.12)."
+        ),
+    )
 
     # -------------------------------------------------------------- derived #
 
@@ -262,6 +272,29 @@ class RelevanceDecision(VersionedModel):
                     f"span doc_id {span.doc_id!r} does not match decision doc_id "
                     f"{self.doc_id!r}"
                 )
+        return self
+
+    @model_validator(mode="after")
+    def _check_valid_records_carry_only_valid_spans(self) -> "RelevanceDecision":
+        """A decision marked ``valid`` cannot hold a span that is not.
+
+        ``scope_class`` is this contract's only evidence-required field, so a
+        rejected span here is never something the record can survive by
+        discarding the field: dropping it would leave ``scope_class`` null, which
+        the technical-state table already forbids on an ``ok`` decision. The
+        record has to go to review (spec Section 17.12).
+        """
+        if self.validation_state is not ValidationState.valid:
+            return self
+
+        unusable = [span for span in self.evidence if not span.is_valid]
+        if unusable:
+            raise ValueError(
+                f"validation_state=valid but {len(unusable)} evidence span(s) "
+                f"are not valid: "
+                f"{', '.join(s.validation_state.value for s in unusable)}. An "
+                f"unsupported scope decision is not a decision."
+            )
         return self
 
     @model_validator(mode="after")

@@ -29,12 +29,14 @@ from src.models.enums import (
 from src.models.evidence import ObservedValue
 from src.models.evidence_map import (
     ALL_EVIDENCE_FIELD_NAMES,
+    EVIDENCE_CONTAINER_FIELDS,
     EVIDENCE_EXEMPT,
     EVIDENCE_REQUIRED,
     EXEMPT_ADDITIONS_RATIONALE,
     OBSERVATION_FIELD,
     RELEVANCE_DECISION,
     RETRIEVAL_CASE,
+    SCOPE_INHERITANCE_CONDITIONS,
     STATUS_GATE,
     classify,
     exempt_fields,
@@ -569,6 +571,51 @@ def test_an_unknown_contract_is_a_type_error_not_a_silent_pass() -> None:
     validator does not recognise, which is the worst possible default."""
     with pytest.raises(TypeError, match="no evidence map entry"):
         validate_record(make_observed_cue())  # type: ignore[arg-type]
+
+
+def test_the_two_evidence_containers_are_exempt_without_a_condition() -> None:
+    """R6, as data rather than as a comment.
+
+    ``evidence`` and ``severity_evidence`` hold spans; they make no claim of
+    their own. Requiring evidence for them would be recursive — the span
+    supporting ``severity_evidence`` would itself need a span — so their
+    exemption is unconditional, unlike ``scope_class``, whose exemption depends
+    on a real inheritance.
+    """
+    assert EVIDENCE_CONTAINER_FIELDS == frozenset({"evidence", "severity_evidence"})
+
+    for container in EVIDENCE_CONTAINER_FIELDS:
+        assert classify(RETRIEVAL_CASE, container) == "evidence_containers"
+        assert classify(RELEVANCE_DECISION, container) == "evidence_containers"
+        assert not is_evidence_required(RETRIEVAL_CASE, container)
+        assert container in EXEMPT_ADDITIONS_RATIONALE
+        assert container in EVIDENCE_EXEMPT["evidence_containers"]
+
+
+def test_the_scope_class_exemption_records_what_it_depends_on() -> None:
+    """The exemption and its conditions live beside each other so a reader who
+    finds one cannot miss the other."""
+    assert len(SCOPE_INHERITANCE_CONDITIONS) == 3
+    assert classify(RETRIEVAL_CASE, "scope_class") == "inherited_validated"
+    assert is_evidence_required(RELEVANCE_DECISION, "scope_class")
+    assert "SCOPE_INHERITANCE_CONDITIONS" in EXEMPT_ADDITIONS_RATIONALE["scope_class"]
+
+
+def test_the_reason_summary_rationale_states_it_is_not_a_substitute() -> None:
+    assert classify(RELEVANCE_DECISION, "reason_summary") == "decision_narrative"
+    rationale = EXEMPT_ADDITIONS_RATIONALE["reason_summary"]
+    assert "never displayed in quotation marks" in rationale
+    assert "never stand in for evidence" in rationale
+
+
+def test_the_record_level_validation_state_is_classified_as_exempt() -> None:
+    """The field added for the invalidation chain is state, not a claim, so the
+    completeness test needed it on the exempt side rather than the required
+    one."""
+    for contract in (RELEVANCE_DECISION, RETRIEVAL_CASE):
+        assert classify(contract, "validation_state") == "uncertainty_metadata"
+        assert classify(contract, "needs_human_review") == "uncertainty_metadata"
+        assert not is_evidence_required(contract, "validation_state")
 
 
 def test_the_gate_still_holds_for_a_record_rebuilt_without_validation() -> None:

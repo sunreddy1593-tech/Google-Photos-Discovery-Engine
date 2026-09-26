@@ -5,6 +5,97 @@ decisions live in `DECISIONS.md`; this file records what was built.
 
 ---
 
+## 2026-09-26 — Phase 1 hardening audit
+
+Audit of the models, evidence map, and validator against the revised
+`problem-statement.md`, `ARCHITECTURE.md`, and `IMPLEMENTATION-PLAN.md`. No
+Phase 2 work. Three of the six requirements were already met; three were not,
+and two of those failures were silent.
+
+### Defects found and fixed
+
+1. **`dedupe_spans` silently deleted a rejected span.** `evidence_id` is derived
+   from the owner, field, quote, and offsets, so the same claim validated twice
+   with different outcomes collides with itself. The helper kept whichever
+   arrived first, so a fabricated span vanished whenever a valid twin happened
+   to be stored ahead of it — and `all_evidence_spans` then reported the record
+   as fully evidenced. This was the forbidden field-dropping arriving through a
+   three-line helper nobody would think to audit. De-duplication now keeps the
+   *least* trusted duplicate, so collapsing two spans can never improve either
+   one's standing.
+2. **Neither contract could record that it had failed.** `RecordValidation`
+   returned the verdict, but nothing was written to the record, so "mark the
+   parent invalid/pending" had no field to write to and the only other way to
+   handle bad evidence was to drop the field. `RelevanceDecision` and
+   `RetrievalCase` now carry `validation_state`, defaulting to `pending` —
+   unchecked until the validator checks it, exactly like `EvidenceSpan`.
+3. **A paraphrase could be exported as a quotation.**
+   `ExportedEvidenceSpan.field_name` was only `min_length=1`, so a span naming
+   `reason_summary` was admissible. That contract is what the evidence browser
+   highlights, so the export could have put a model's own prose in quotation
+   marks beside a real quote — the fabrication the whole evidence architecture
+   exists to prevent, arriving at the last step. `field_name` must now be an
+   evidence-required field.
+4. **`STATUS.md` documented the behaviour the specification forbids** — "the
+   field it supports is dropped rather than kept with weaker provenance".
+   The code never did this, but the sentence was an invitation to implement it.
+
+### Added
+
+- **`RecordValidation.invalid_fields` and `.retained_spans`** — the affected
+  fields and the surviving invalid candidates, as structured data rather than
+  prose. A reviewer needs to know which claim is unsupported and what the model
+  actually offered in support of it; an error string is for a log.
+- **`RecordValidation.apply(record)`** — returns the record marked `valid`, or
+  `pending` with `needs_human_review` set. Failure is `pending` rather than
+  `rejected` because the record is unconfirmed rather than wrong, and review is
+  a route back in (spec Section 19.4 step 5).
+- **`SpanValidation.candidate` / `.original`** — the span exactly as it arrived.
+  The ladder legitimately moves offsets and replaces a whitespace-normalised
+  quote with the document's characters, so the outcome span is not always what
+  the model claimed; a repair that leaves no trace of what it repaired is the
+  silent rewriting spec Section 29.12 forbids.
+- **`select_valid_for_analysis`** — Phase 1's stand-in for Phase 3's `v_*`
+  views. It filters on `validation_state`, not on `needs_human_review`: the two
+  differ on the reviewed-but-not-revalidated record and on the `pending` record
+  nobody has looked at, both of which a review flag alone waves through.
+- **Model-level gates on both contracts** — a record cannot be marked `valid`
+  while holding a non-valid span, so a store that bypasses the validator still
+  cannot write one. This is what closes the field-dropping exit for good: the
+  record cannot be valid with the fabricated span attached, and detaching it
+  leaves the field unevidenced, which the status gate then rejects. Both exits
+  are shut, so the only way forward is review.
+- **`_check_scope_inheritance`** — `RetrievalCase.scope_class` is
+  evidence-exempt because it is inherited from a decision that already evidenced
+  it, and that exemption is only honest while the inheritance is real. Without
+  the check a case could assert any scope class, cite no span, and pass the
+  gate: the exemption was a hole the size of the project's central claim.
+  Enforced when the decision is supplied, since the case contract carries no
+  `decision_id` and the validator cannot fetch it. Passing silently when the
+  decision is absent is the honest behaviour; claiming to have checked would be
+  worse than not checking.
+- **`SCOPE_INHERITANCE_CONDITIONS` and `EVIDENCE_CONTAINER_FIELDS`** — the three
+  inheritance conditions and the two unconditional container exemptions, kept as
+  data beside the exemptions they qualify so the two cannot drift.
+- **33 tests.** 509 passing, coverage of `src/models/` and
+  `src/extract/validator.py` still 100%.
+
+### Deliberately unchanged
+
+`evidence` and `severity_evidence` remain exempt with no qualifying condition.
+Requiring evidence for an evidence container is recursive — the span supporting
+`severity_evidence` would itself need a span — and no record could satisfy it.
+`reason_summary` remains an evidence-exempt paraphrase; the hardening is that it
+can never substitute for evidence or be rendered as a quotation, both of which
+are now tested rather than asserted.
+
+One asymmetry is worth naming because it looks like an inconsistency:
+`problem_summary` is a paraphrase *and* evidence-required, so its span quotes the
+source text supporting the summary, and it stays exportable. `reason_summary` is
+exempt, so a span naming it could only be quoting the model, and it does not.
+
+---
+
 ## 2026-09-21 — Phase 1: schemas and evidence validation
 
 ### Added
@@ -28,10 +119,23 @@ decisions live in `DECISIONS.md`; this file records what was built.
   `cluster_assignment`, `gold`, `export`.
 - **`src/extract/validator.py`** — `validate_span` (the four-rung ladder),
   `validate_record` (the evidence map and status gate applied to a whole
-  record), and the `all_evidence_spans` union.
+  record), the `all_evidence_spans` union, and `gate_for_analysis`, which
+  returns a record's evidence or refuses to return anything.
+- **The whole of ARCHITECTURE Section 9.3 rung 4, not just the rejection.** A
+  rejected span invalidates its parent record, the failure is logged as a
+  structured warning, `RecordValidation.requires_review` and
+  `.review_reason_code` carry the routing decision, and `gate_for_analysis`
+  withholds analysis output until the record is corrected. The first version
+  stopped at rejecting the span: `validate_record` asked only whether each
+  required field had *at least one* valid span, so a field carrying one good
+  quote and one fabricated one passed the gate. That record would have been
+  stored as valid, the fabrication would have been indistinguishable from
+  verified evidence, and it would never have appeared in the fabrication rate —
+  which is the single finding the project exists to measure (spec Section 18,
+  risk R8).
 - **`tests/synthetic.py`** — fixture builders, every one of which stamps
   `evidence_tier = synthetic_test`.
-- **296 tests** across `test_models.py`, `test_evidence.py`,
+- **309 tests** across `test_models.py`, `test_evidence.py`,
   `test_evidence_map.py`, and four additions to `test_architecture.py`.
   Coverage of `src/models/` and `src/extract/validator.py` is 100%.
 
@@ -55,7 +159,20 @@ decisions live in `DECISIONS.md`; this file records what was built.
 - **An ambiguous duplicate quote is never guessed.** Two equidistant matches
   produce `ambiguous_tied` / `pending` and route to human review, because
   picking one would silently attribute the claim to a sentence the user may not
-  have written.
+  have written. It is filed under `evidence_offsets_unresolved`, not
+  `evidence_validation_failed` — the quote is real and only its position is
+  unknowable, so the review it needs is a different job from adjudicating a
+  fabrication, and collapsing the two would make the fabrication rate wrong in
+  both directions.
+- **`gate_for_analysis` returns the evidence union rather than a boolean.** An
+  `is_eligible()` predicate is a call an aggregation can forget while still
+  getting its data. Making the gate the only route to a record's spans means
+  analysis code cannot obtain its quotes without passing through it.
+- **A fabrication outranks every other finding when a record is filed for
+  review.** A record often fails several ways at once and a queue item needs
+  one code; `_REVIEW_PRIORITY` orders them by how much they undermine the
+  record, so an invented quote is never filed as a status conflict merely
+  because that check ran first.
 
 ### Interpretations
 
@@ -97,7 +214,9 @@ could reasonably have decided differently:
 ### Not built, deliberately
 
 No collectors, normalizer, deduplication, LLM gateway, store layer, analysis,
-retrieval, or Streamlit app. `src/extract/` holds the validator only — the
+retrieval, or Streamlit app. **No review queue**: Phase 1 produces the routing
+decision on `RecordValidation`, and ADR-24 builds the queue in Phase 3, when the
+first review items actually exist. `src/extract/` holds the validator only — the
 extraction prompt and its runner are Phase 5 — and
 `tests/test_architecture.py` asserts both the absence of the later packages and
 that `src/models/` imports nothing outside `src/core/` and itself.

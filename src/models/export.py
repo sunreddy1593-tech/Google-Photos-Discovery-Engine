@@ -26,12 +26,19 @@ from pydantic import AwareDatetime, Field, model_validator
 
 from src.models.base import ResearchModel, VersionedModel
 from src.models.enums import EvidenceTier, SourcePlatform, SourceType
+from src.models.evidence_map import ALL_EVIDENCE_FIELD_NAMES
 
 
 class ExportedEvidenceSpan(ResearchModel):
     """A validated span with offsets rebased to the excerpt (spec 15.12)."""
 
-    field_name: str = Field(min_length=1)
+    field_name: str = Field(
+        min_length=1,
+        description=(
+            "The evidence-required field this span supports. Paraphrase fields "
+            "are not admissible here (spec Section 17.19)."
+        ),
+    )
     quote: str = Field(min_length=1)
     excerpt_start_char: int = Field(
         ge=0, description="Offset within the exported excerpt."
@@ -41,6 +48,28 @@ class ExportedEvidenceSpan(ResearchModel):
         ge=0, description="Original offset within raw_text_audit, retained."
     )
     document_end_char: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def _check_field_name_is_quotable(self) -> "ExportedEvidenceSpan":
+        """Only an evidence-required field may appear as a quotation.
+
+        This is the enforcement point for "a paraphrase is never displayed in
+        quotation marks" (spec Section 17.19). ``reason_summary`` and
+        ``problem_summary`` are evidence-exempt precisely because they are the
+        analyst's or model's words, and this contract is what the evidence
+        browser highlights: a span admitted here is rendered as though the user
+        wrote it. Without this check the export could put a model's paraphrase in
+        quotation marks beside a real quote, which is the fabrication the whole
+        evidence architecture exists to prevent — arriving at the last step.
+        """
+        if self.field_name not in ALL_EVIDENCE_FIELD_NAMES:
+            raise ValueError(
+                f"field_name {self.field_name!r} is not an evidence-required "
+                f"field and must never be exported as a quotation; a paraphrase "
+                f"belongs in extracted_fields, unquoted (spec Section 17.19). "
+                f"Quotable fields: {sorted(ALL_EVIDENCE_FIELD_NAMES)}"
+            )
+        return self
 
     @model_validator(mode="after")
     def _check_offsets(self) -> "ExportedEvidenceSpan":

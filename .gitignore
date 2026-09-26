@@ -62,3 +62,4 @@ Thumbs.db
 *.swp
 # Unvalidated reference prototype — local only
 /prototype/
+data/manual/private/

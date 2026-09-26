@@ -194,14 +194,38 @@ EXEMPT_ADDITIONS_RATIONALE: Final[dict[str, str]] = {
         "RelevanceDecision, where scope_class is evidence-required. Requiring a "
         "second span for the same claim would duplicate evidence rather than add "
         "any. On RelevanceDecision the field is evidence-required, which is why "
-        "the contract-scoped required map takes precedence over this entry."
+        "the contract-scoped required map takes precedence over this entry. The "
+        "exemption holds only while the inheritance is real, which is why "
+        "src.extract.validator checks all three conditions in "
+        "SCOPE_INHERITANCE_CONDITIONS whenever the decision is available."
     ),
     "reason_summary": (
         "A paraphrase of why the scope decision was made (spec Section 17.19). The "
         "substantive claim it narrates is scope_class, whose span is the proof; the "
-        "summary is never displayed in quotation marks and never counted."
+        "summary is never displayed in quotation marks and never counted. It can "
+        "never stand in for evidence: RelevanceDecision requires a non-empty "
+        "evidence tuple for every ok decision, and the record gate requires at "
+        "least one of those spans to be valid."
     ),
 }
+
+#: The conditions under which ``RetrievalCase.scope_class`` may be exempt from
+#: field-level evidence, kept as data beside the exemption it qualifies so the
+#: two cannot drift apart. Enforced by
+#: :func:`src.extract.validator._check_scope_inheritance`.
+SCOPE_INHERITANCE_CONDITIONS: Final[tuple[str, ...]] = (
+    "the case and the decision concern the same doc_id",
+    "the case's scope_class equals the decision's scope_class",
+    "the decision's validation_state is valid",
+)
+
+#: Fields that hold spans rather than making a claim, and so are exempt from
+#: evidence requirements without any qualifying condition. Requiring evidence for
+#: an evidence container is a recursive demand that no record could satisfy: the
+#: span supporting ``severity_evidence`` would itself need a span.
+EVIDENCE_CONTAINER_FIELDS: Final[frozenset[str]] = frozenset(
+    {"evidence", "severity_evidence"}
+)
 
 #: Flat view of every exempt field name, for the completeness test.
 ALL_EXEMPT_FIELD_NAMES: Final[frozenset[str]] = frozenset().union(

@@ -552,6 +552,32 @@ def test_retrieval_case_rejects_a_case_id_from_another_document() -> None:
         make_case(case_id="reddit-999999999999#c01")
 
 
+@pytest.mark.parametrize("contract", [RetrievalCase, RelevanceDecision])
+def test_both_evidence_bearing_contracts_carry_a_validation_state(
+    contract: type,
+) -> None:
+    """The record-level half of the invalidation chain.
+
+    Without a stored state there is nowhere to write "this record did not pass",
+    and the only alternative is to drop the offending field and keep the rest —
+    which is what the evidence architecture forbids.
+    """
+    field = contract.model_fields["validation_state"]
+
+    assert field.annotation is ValidationState
+    assert field.default is ValidationState.pending
+
+
+@pytest.mark.parametrize("contract", [RetrievalCase, RelevanceDecision])
+def test_a_validation_state_outside_the_vocabulary_is_rejected(
+    contract: type,
+) -> None:
+    builder = make_case if contract is RetrievalCase else make_decision
+
+    with pytest.raises(PydanticValidationError, match="validation_state"):
+        builder(validation_state="quarantined")
+
+
 @pytest.mark.parametrize(
     ("status", "value", "should_raise"),
     [

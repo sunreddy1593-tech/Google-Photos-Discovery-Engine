@@ -30,9 +30,10 @@ it pass (spec Section 29.12).
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
-from typing import Iterable, Sequence
+from dataclasses import dataclass, field, replace
+from typing import Final, Iterable, Sequence, TypeVar
 
+from src.core.logging import get_logger
 from src.models.document_derived import RedactionSpan
 from src.models.enums import (
     DimensionObservationStatus,
@@ -54,6 +55,20 @@ from src.models.retrieval_case import RetrievalCase, dedupe_spans
 
 _WHITESPACE_RUN = re.compile(r"\s+")
 
+_LOG = get_logger("extract.validator")
+
+#: The two contracts that carry evidence-required fields, as a type variable so
+#: :meth:`RecordValidation.apply` returns the contract it was given rather than
+#: their union.
+RecordT = TypeVar("RecordT", RelevanceDecision, RetrievalCase)
+
+#: Offset states that mean the span has no usable coordinates. A case evidenced
+#: only by these cannot be ordered, so it takes the ``#u`` identifier form and
+#: never enters analysis (spec Section 26.3).
+_UNRESOLVED_OFFSET_STATES: Final[frozenset[OffsetState]] = frozenset(
+    {OffsetState.missing_unresolved, OffsetState.ambiguous_tied}
+)
+
 
 # --------------------------------------------------------------------------- #
 # Results
@@ -68,26 +83,102 @@ class SpanValidation:
     caller stores it either way. A rejected span is evidence that a fabrication
     was caught, and deleting it would erase the only record that the model
     claimed something the document does not say.
+
+    ``candidate`` is the span exactly as it arrived, before any rung touched it.
+    The ladder is allowed to move offsets and to replace a whitespace-normalised
+    quote with the document's own characters, so ``span`` is not always what the
+    model actually claimed. Keeping both means a reviewer can see the claim and
+    the verdict side by side, which is the difference between an auditable
+    rejection and an assertion that something was wrong.
     """
 
     span: EvidenceSpan
     ok: bool
     reason_code: ReasonCode | None = None
     message: str = ""
+    candidate: EvidenceSpan | None = None
 
     @property
     def repaired(self) -> bool:
         return self.span.repair_applied
 
+    @property
+    def original(self) -> EvidenceSpan:
+        """The span as received. Identical to ``span`` when no rung changed it."""
+        return self.candidate if self.candidate is not None else self.span
+
 
 @dataclass(frozen=True, slots=True)
 class RecordValidation:
-    """Outcome of applying the evidence map and status gate to one record."""
+    """Outcome of applying the evidence map and status gate to one record.
+
+    The three properties below are the rest of ARCHITECTURE Section 9.3 rung 4 —
+    "the parent record is invalidated, the failure is logged, and the document
+    enters the review queue" — expressed as data a later phase consumes.
+    ``ok`` is the invalidation, :attr:`requires_review` is the routing decision,
+    and :attr:`review_reason_code` is the code the Phase 3 queue files it under.
+    Phase 1 produces the routing decision; it does not build the queue (ADR-24).
+    """
 
     ok: bool
     all_evidence_spans: tuple[EvidenceSpan, ...] = ()
     errors: tuple[str, ...] = ()
     reason_codes: tuple[ReasonCode, ...] = ()
+    invalid_fields: tuple[str, ...] = ()
+    retained_spans: tuple[EvidenceSpan, ...] = ()
+
+    def apply(
+        self, record: RecordT
+    ) -> RecordT:
+        """Return ``record`` marked with this outcome.
+
+        On success the record becomes ``valid`` and is eligible for processed and
+        analysis output. On failure it becomes ``pending`` — not ``rejected`` —
+        and ``needs_human_review`` is set, because the record is not wrong so
+        much as unconfirmed, and review is a route back in rather than a verdict
+        (spec Section 19.4 step 5).
+
+        The record is returned rather than mutated because both contracts are
+        frozen, and re-validating through ``model_validate`` means a marked
+        record still has to satisfy every model rule — including the one that
+        refuses ``valid`` while a non-valid span is attached.
+        """
+        payload = record.model_dump()
+        payload.pop("is_relevant", None)
+        payload["validation_state"] = (
+            ValidationState.valid if self.ok else ValidationState.pending
+        )
+        if not self.ok:
+            payload["needs_human_review"] = True
+        return type(record).model_validate(payload)
+
+    @property
+    def requires_review(self) -> bool:
+        """Whether this record must be routed to a human before it can be used.
+
+        Every evidence failure needs a human, so this currently tracks ``ok``
+        exactly. It is a separate property rather than ``not ok`` at the call
+        site because the two answer different questions — "may this be stored as
+        valid" and "who has to look at it" — and Phase 3 adds review items that
+        are not validation failures at all, such as a duplicate in the simhash
+        review band.
+        """
+        return not self.ok
+
+    @property
+    def review_reason_code(self) -> ReasonCode | None:
+        """The single code this record is filed under, or ``None`` if it passed.
+
+        A failing record often collects several codes; a queue item needs one.
+        The order in :data:`_REVIEW_PRIORITY` is by how badly the finding
+        undermines the record: a fabricated quote is a fabrication whatever else
+        is also wrong with the record, and it must not be filed as a status
+        conflict just because that check happened to run first.
+        """
+        for candidate in _REVIEW_PRIORITY:
+            if candidate in self.reason_codes:
+                return candidate
+        return self.reason_codes[0] if self.reason_codes else None
 
     def raise_for_status(self) -> None:
         """Raise :class:`~src.core.errors.EvidenceError` when validation failed."""
@@ -100,15 +191,48 @@ class RecordValidation:
         )
 
 
+#: Review codes in descending order of how much they invalidate a record, used to
+#: pick one filing code from several findings.
+_REVIEW_PRIORITY: Final[tuple[ReasonCode, ...]] = (
+    ReasonCode.evidence_validation_failed,
+    ReasonCode.evidence_offsets_unresolved,
+    ReasonCode.severity_without_evidence,
+    ReasonCode.observation_status_conflict,
+)
+
+
 @dataclass
 class _Accumulator:
     errors: list[str] = field(default_factory=list)
     reason_codes: list[ReasonCode] = field(default_factory=list)
+    invalid_fields: list[str] = field(default_factory=list)
+    retained: list[EvidenceSpan] = field(default_factory=list)
 
-    def fail(self, message: str, reason_code: ReasonCode) -> None:
+    def fail(
+        self,
+        message: str,
+        reason_code: ReasonCode,
+        *,
+        field_name: str | None = None,
+        span: EvidenceSpan | None = None,
+    ) -> None:
+        """Record one failure, the field it affects, and the span that caused it.
+
+        ``field_name`` and ``span`` are what make the failure actionable rather
+        than merely reported: a reviewer needs to know which claim is
+        unsupported and what the model actually offered in support of it. The
+        prose message is for a human reading a log; these two are for the review
+        interface and for the counts.
+        """
         self.errors.append(message)
         if reason_code not in self.reason_codes:
             self.reason_codes.append(reason_code)
+        if field_name is not None and field_name not in self.invalid_fields:
+            self.invalid_fields.append(field_name)
+        if span is not None and all(
+            span.evidence_id != kept.evidence_id for kept in self.retained
+        ):
+            self.retained.append(span)
 
 
 # --------------------------------------------------------------------------- #
@@ -187,6 +311,22 @@ def _rebuild(span: EvidenceSpan, **updates: object) -> EvidenceSpan:
 
 
 def validate_span(
+    span: EvidenceSpan,
+    raw_text: str,
+    redaction_spans: Sequence[RedactionSpan] | Sequence[tuple[int, int]] = (),
+) -> SpanValidation:
+    """Run one span up the ladder, retaining the candidate as received.
+
+    A thin wrapper over :func:`_run_ladder` so that every rung's return value
+    carries the original claim without each one having to remember to attach it.
+    Retention is not optional: spec Section 29.12 forbids silently rewriting a
+    value, and a repair that leaves no trace of what it repaired is exactly that.
+    """
+    result = _run_ladder(span, raw_text, redaction_spans)
+    return replace(result, candidate=span)
+
+
+def _run_ladder(
     span: EvidenceSpan,
     raw_text: str,
     redaction_spans: Sequence[RedactionSpan] | Sequence[tuple[int, int]] = (),
@@ -454,11 +594,15 @@ def derive_all_evidence_spans(
 def validate_record(
     record: RelevanceDecision | RetrievalCase,
     spans: Iterable[EvidenceSpan] = (),
+    decision: RelevanceDecision | None = None,
 ) -> RecordValidation:
     """Apply the evidence map and the status gate to one record.
 
     ``spans`` is the record's field-level span set from the store, excluding the
-    spans the record already carries inline. Three things are checked:
+    spans the record already carries inline. ``decision`` is the
+    ``RelevanceDecision`` a ``RetrievalCase`` inherited its ``scope_class`` from;
+    supply it and the inheritance conditions are checked too. Four things are
+    checked:
 
     1. **Every span is attached to a field this contract enforces.** A span naming
        an exempt field, a field of another contract, or a field this record does
@@ -466,7 +610,13 @@ def validate_record(
     2. **Every evidence-required field satisfies its status gate.** ``stated``,
        ``explicitly_none``, and ``uncertain`` each need at least one *valid* span;
        ``not_stated`` and ``not_applicable`` need none and must carry none.
-    3. **``all_evidence_spans`` is derived**, never read from the record.
+    3. **No span attached to the record is unusable.** A rejected, unresolved, or
+       unchecked span invalidates the record itself, so an invalid claim can
+       never be resolved by dropping the field and keeping the remainder.
+    4. **An inherited ``scope_class`` is genuinely inherited**, when the decision
+       is supplied.
+
+    ``all_evidence_spans`` is derived here, never read from the record.
 
     A record whose ``technical_state`` is not ``ok`` is exempt from the gate: no
     decision was produced, so there is no claim to support, and requiring evidence
@@ -481,6 +631,9 @@ def validate_record(
     enforced = required_fields(contract)
     union = derive_all_evidence_spans(record, spans)
 
+    if isinstance(record, RetrievalCase) and decision is not None:
+        _check_scope_inheritance(record, decision, acc)
+
     by_field: dict[str, list[EvidenceSpan]] = {}
     for span in union:
         if span.field_name not in enforced:
@@ -489,6 +642,8 @@ def validate_record(
                 f"is not an evidence-required field of {contract}; a span "
                 f"attached to no field fails validation (spec Section 15.10)",
                 ReasonCode.evidence_validation_failed,
+                field_name=span.field_name,
+                span=span,
             )
             continue
         if span.owner_id != _owner_id(record):
@@ -496,8 +651,15 @@ def validate_record(
                 f"span {span.evidence_id} belongs to owner {span.owner_id!r}, not "
                 f"to this {contract} ({_owner_id(record)!r})",
                 ReasonCode.evidence_validation_failed,
+                field_name=span.field_name,
+                span=span,
             )
             continue
+        if not span.is_valid:
+            message, reason_code = _unusable_span_failure(span, contract)
+            acc.fail(
+                message, reason_code, field_name=span.field_name, span=span
+            )
         by_field.setdefault(span.field_name, []).append(span)
 
     for field_name in sorted(enforced):
@@ -516,6 +678,7 @@ def validate_record(
                 f"{field_name} has observation status {status.value}, which "
                 f"requires at least one valid evidence span; {detail}",
                 _missing_evidence_reason(field_name),
+                field_name=field_name,
             )
         if rule.evidence_must_be_empty and attached:
             acc.fail(
@@ -524,6 +687,7 @@ def validate_record(
                 f"source being silent is not something a quote can support "
                 f"(spec Section 17.17)",
                 ReasonCode.observation_status_conflict,
+                field_name=field_name,
             )
 
         value = _field_value(record, field_name)
@@ -532,19 +696,147 @@ def validate_record(
                 f"{field_name} has observation status {status.value}, which "
                 f"requires a value, but the field is empty",
                 ReasonCode.observation_status_conflict,
+                field_name=field_name,
             )
         if rule.value_must_be_empty and not _is_empty_value(value):
             acc.fail(
                 f"{field_name} has observation status {status.value}, which "
                 f"requires an empty value, but the field holds {value!r}",
                 ReasonCode.observation_status_conflict,
+                field_name=field_name,
             )
 
-    return RecordValidation(
+    result = RecordValidation(
         ok=not acc.errors,
         all_evidence_spans=union,
         errors=tuple(acc.errors),
         reason_codes=tuple(acc.reason_codes),
+        invalid_fields=tuple(acc.invalid_fields),
+        retained_spans=tuple(acc.retained),
+    )
+    if not result.ok:
+        _log_invalidation(record, contract, result)
+    return result
+
+
+def _log_invalidation(
+    record: RelevanceDecision | RetrievalCase,
+    contract: str,
+    result: RecordValidation,
+) -> None:
+    """Emit the failure line for an invalidated record.
+
+    Logging happens here rather than at the call site because the chain in
+    ARCHITECTURE Section 9.3 is not advice to the caller — a caller that forgets
+    to log leaves a fabrication invisible, and the one thing worse than a
+    fabricated quote is a fabricated quote nobody counted. The fields are
+    emitted as structured keys so Phase 8 can count review reasons by filtering
+    the log rather than parsing it (spec Section 29.14).
+    """
+    _LOG.warning(
+        "record invalidated by evidence validation",
+        extra={
+            "contract": contract,
+            "owner_id": _owner_id(record),
+            "doc_id": record.doc_id,
+            "review_reason_code": (
+                result.review_reason_code.value
+                if result.review_reason_code is not None
+                else None
+            ),
+            "reason_codes": [code.value for code in result.reason_codes],
+            "invalid_fields": list(result.invalid_fields),
+            "retained_span_ids": [
+                span.evidence_id for span in result.retained_spans
+            ],
+            "error_count": len(result.errors),
+            "errors": list(result.errors),
+            "requires_review": result.requires_review,
+        },
+    )
+
+
+def _check_scope_inheritance(
+    case: RetrievalCase, decision: RelevanceDecision, acc: _Accumulator
+) -> None:
+    """The three conditions under which a case may inherit its ``scope_class``.
+
+    ``RetrievalCase.scope_class`` is evidence-exempt on the grounds that it is
+    already-validated and inherited, and its span lives on the decision. That
+    exemption is only honest while the inheritance is real. Without these checks
+    a case could assert any scope class it liked, cite no span for it, and pass
+    the gate — the exemption would have become a hole exactly the size of the
+    project's central claim.
+
+    Each condition fails for a different reason:
+
+    * **Same ``doc_id``.** A decision about another document says nothing about
+      this one; inheriting across documents is borrowing a verdict.
+    * **Matching value.** A case claiming ``core_incomplete_recall`` under an
+      ``out_of_scope`` decision is not inheriting, it is overruling — and it
+      would inflate the in-scope count with documents the decision excluded.
+    * **The decision is valid.** An unconfirmed or rejected decision has no
+      evidence to lend, so inheriting from it manufactures support from nothing.
+    """
+    if case.doc_id != decision.doc_id:
+        acc.fail(
+            f"scope_class cannot be inherited from a decision about another "
+            f"document: case doc_id {case.doc_id!r} but decision "
+            f"{decision.decision_id!r} concerns {decision.doc_id!r}",
+            ReasonCode.evidence_validation_failed,
+            field_name="scope_class",
+        )
+    if case.scope_class is not decision.scope_class:
+        acc.fail(
+            f"scope_class={case.scope_class.value!r} does not match the "
+            f"inherited decision's {None if decision.scope_class is None else decision.scope_class.value!r}; "
+            f"a case may inherit a scope class but never overrule one "
+            f"(spec Section 15.4)",
+            ReasonCode.evidence_validation_failed,
+            field_name="scope_class",
+        )
+    if decision.validation_state is not ValidationState.valid:
+        acc.fail(
+            f"decision {decision.decision_id!r} is "
+            f"{decision.validation_state.value}, so it has no validated "
+            f"evidence to lend; scope_class cannot be inherited from an "
+            f"unconfirmed decision",
+            ReasonCode.evidence_validation_failed,
+            field_name="scope_class",
+        )
+
+
+def _unusable_span_failure(
+    span: EvidenceSpan, contract: str
+) -> tuple[str, ReasonCode]:
+    """Why one non-valid span invalidates its parent record.
+
+    ARCHITECTURE Section 9.3 rung 4 invalidates the *record*, not merely the
+    field. Checking only that each required field has at least one valid span
+    would let a record carrying one good quote and one fabricated one persist as
+    valid, and the fabrication would never be counted — which is precisely the
+    finding this project exists to measure (spec Section 18, risk R8).
+    """
+    if span.validation_state is ValidationState.rejected:
+        return (
+            f"span {span.evidence_id} on {span.field_name} was rejected by the "
+            f"validation ladder; a {contract} carrying a rejected span is "
+            f"invalid even where the field has other valid spans "
+            f"(ARCHITECTURE Section 9.3 rung 4)",
+            ReasonCode.evidence_validation_failed,
+        )
+    if span.offset_state in _UNRESOLVED_OFFSET_STATES:
+        return (
+            f"span {span.evidence_id} on {span.field_name} has unresolved "
+            f"offsets ({span.offset_state.value}); the record cannot be ordered "
+            f"or cited and is never persisted as valid (spec Section 26.3)",
+            ReasonCode.evidence_offsets_unresolved,
+        )
+    return (
+        f"span {span.evidence_id} on {span.field_name} is still "
+        f"{span.validation_state.value} and has not been through the validation "
+        f"ladder; an unchecked span is not evidence",
+        ReasonCode.evidence_validation_failed,
     )
 
 
@@ -575,6 +867,51 @@ def _owner_id(record: RelevanceDecision | RetrievalCase) -> str:
         record.decision_id
         if isinstance(record, RelevanceDecision)
         else record.case_id
+    )
+
+
+def gate_for_analysis(
+    record: RelevanceDecision | RetrievalCase,
+    spans: Iterable[EvidenceSpan] = (),
+    decision: RelevanceDecision | None = None,
+) -> tuple[EvidenceSpan, ...]:
+    """Return the evidence union for a record, or refuse to return anything.
+
+    The last leg of ARCHITECTURE Section 9.3 rung 4: an invalidated record
+    produces no processed or analysis output until a human corrects it
+    (spec Section 17.12, Section 26.3).
+
+    The signature is the enforcement. A boolean ``is_eligible`` would be a check
+    an aggregation could forget to call and still get its data; returning the
+    spans means the analysis code cannot obtain its evidence without passing
+    through the gate. Raises :class:`~src.core.errors.EvidenceError`, which is a
+    ``ValidationError`` and so is already caught by the pipeline's failure
+    handling rather than needing a new branch.
+    """
+    result = validate_record(record, spans, decision)
+    result.raise_for_status()
+    return result.all_evidence_spans
+
+
+def select_valid_for_analysis(
+    records: Iterable[RecordT],
+) -> tuple[RecordT, ...]:
+    """The records eligible for processed and analysis output.
+
+    Phase 1's stand-in for the ``v_*`` SQL views Phase 3 builds: eligibility is
+    a stored ``validation_state``, so the filter is the same predicate whether it
+    runs here or in a ``WHERE`` clause, and the two cannot drift.
+
+    Filtering on ``validation_state is valid`` rather than on ``not
+    needs_human_review`` is deliberate. The two differ on the record that has
+    been reviewed but not yet re-validated, and on the ``pending`` record nobody
+    has looked at — both of which a review flag alone would wave through
+    (spec Section 17.12).
+    """
+    return tuple(
+        record
+        for record in records
+        if record.validation_state is ValidationState.valid
     )
 
 
