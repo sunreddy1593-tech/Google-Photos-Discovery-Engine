@@ -429,12 +429,19 @@ def cache_key(
     schema_version: str,
     content_hash_value: str,
     decoding_params: Mapping[str, Any] | None = None,
+    ruleset_version: str | None = None,
     taxonomy_version: str | None = None,
 ) -> str:
     """SHA-256 cache key over canonical JSON of the call's inputs.
 
     Inputs per spec Section 19.5: content hash, provider, model, prompt id and
     version, schema version, and decoding parameters that affect output.
+
+    ``ruleset_version`` is opt-in. Relevance classification passes it, because a
+    ruleset change changes which documents are classified. Extraction does not.
+    Spec Section 19.5 does not list it; ``decision_fingerprint`` already does
+    (Section 26.2). Omitting it unless the caller asks keeps extraction keys
+    stable.
 
     ``taxonomy_version`` is **opt-in** and must be passed only by the two
     taxonomy-dependent stages: candidate generation and assignment. It is absent
@@ -451,6 +458,8 @@ def cache_key(
         "content_hash": content_hash_value,
         "decoding_params": dict(decoding_params or {}),
     }
+    if ruleset_version is not None:
+        payload["ruleset_version"] = ruleset_version
     if taxonomy_version is not None:
         payload["taxonomy_version"] = taxonomy_version
     blob = json.dumps(payload, sort_keys=True, separators=(",", ":"),

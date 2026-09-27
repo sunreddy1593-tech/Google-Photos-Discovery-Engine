@@ -5,9 +5,9 @@
 | | |
 |---|---|
 | **Completed phase** | Phase 3 — normalization and deduplication (2026-09-27) |
-| **Current phase** | Phase 4 — relevance classification, not started |
-| **Tests** | 612 passing, 0 failing. Phase 3 targeted files: 130 passing |
-| **Coverage** | 100% of `src/models/`. Phase 3 covered by `tests/test_normalize.py`, `tests/test_dedupe.py`, and `tests/test_review_queue.py` |
+| **Current phase** | Phase 4 — in progress. Offline relevance infrastructure only. Not complete. |
+| **Tests** | 682 passing, 4 skipped, 0 failing. Targeted Phase 4 files: 166 passing, 4 skipped. |
+| **Coverage** | 100% of `src/models/`. Phase 4 covered by `tests/test_relevance.py`, `tests/test_llm_gateway.py`, and `tests/test_pipeline_runner.py` |
 | **Last verified** | 2026-09-27 |
 | **Blockers** | Recalibrate the ADR-11 band on the scaled corpus. The pilot had no positive or in-band pairs, so duplicate recall is not estimated. |
 | **Next command** | See "Next command" below |
@@ -17,7 +17,7 @@
 ## Phase 3 — complete
 
 Normalization, deduplication, and the pilot calibration review are done.
-Phase 4 has not started. The Hamming 3/6 thresholds and `dedupe_min_tokens`
+Phase 4 infrastructure is in progress and is not complete. The Hamming 3/6 thresholds and `dedupe_min_tokens`
 stay at their defaults, retained provisionally. ADR-11 records the amendment.
 The scaled-corpus phase must calibrate again when positive or in-band pairs
 exist.
@@ -63,7 +63,7 @@ The manual pilot corpus is 35 genuine public records in the private workbook:
 Google Photos Help, Google Play Store, Apple App Store, YouTube, and Reddit.
 The workbook also holds 7 valid search-log sessions. `main.py collect` loads
 `AUTHOR_SALT` through configuration and calls `import_workbook`. Phase 3 is
-now complete; Phase 4 has not started.
+now complete. Phase 4 infrastructure is in progress and is not complete.
 
 Final import: 35 rows read, 35 accepted, 0 rejected, 3 `repeated_source_url`
 warnings, 7 search-log rows read, 7 valid, 0 issues. Each repeated URL is a
@@ -264,6 +264,117 @@ while `reason_summary` does not.
 
 ---
 
+## Phase 4 — in progress
+
+Relevance infrastructure is implemented and has been exercised offline.
+Phase 4 is not complete. No Anthropic, OpenAI, or other paid provider was
+called. The seed sheet was reviewed on 2026-09-27. Phase 5 has not started.
+
+`python main.py run --stages prefilter --offline` reads the Phase 2 documents
+and the Phase 3 derived rows. It writes gitignored files under
+`data/interim/phase4/`. It does not modify `raw_text` or derived records.
+Confirmed duplicates would be skipped; the pilot has none. Pending links
+would still be classified.
+
+Ruleset `prefilter/v1`. A document is an obvious exclusion candidate only
+when at least two distinct multi-word exclusion signals match and the text
+has no retrieval language. One keyword cannot drop a document. Retrieval
+language together with backup or deletion language stays on the classify
+route. The prefilter result is a routing record, not a `RelevanceDecision`.
+
+Pilot prefilter, 2026-09-27, 35 documents:
+
+| | |
+|---|---|
+| Documents | 35 |
+| Canonical | 35 |
+| Skipped confirmed duplicates | 0 |
+| Routed to classify | 35 |
+| Obvious exclusion candidates | 0 |
+| Mixed retrieval and exclusion, retained | 0 |
+| Single exclusion signal, retained | 0 |
+| No exclusion signal, retained for recall | 35 |
+| Matched exclusion signals | 0 |
+
+Eight documents mention backup, deletion, storage, or account words. None
+matched two multi-word exclusion phrases, so none were dropped. Posts that
+also say they cannot find a photo stayed on the classify route.
+
+Relevance dry-run wrote nothing and made no provider call. The null-provider
+run classified all 35 canonical documents as `provider_unavailable`, with
+empty evidence, null scope, 0 provider calls, 0 tokens, and an estimated
+cost of 0. Those rows are not `out_of_scope`. No response was cached.
+
+`data/interim/phase4/relevance_seed_review.csv` is the completed Phase 4
+seed review, dated 2026-09-27. It has 35 rows, one per pilot document.
+Every `doc_id` is present once. Every human scope, reason, and note is
+filled. Inclusion codes appear only on core and adjacent rows. Exclusion
+codes appear only on `out_of_scope`. No review code and no free-text reason
+appears. The sheet has no model prediction. It is not the Phase 6 gold set.
+
+| Scope class | Rows |
+|---|---|
+| `core_incomplete_recall` | 4 |
+| `adjacent_known_item_retrieval` | 12 |
+| `out_of_scope` | 19 |
+| Total | 35 |
+
+The pilot has fewer core incomplete-recall cases than intended. Collect
+8–12 additional strong core cases before treating the dataset as
+sufficiently balanced. The approved labels were not changed to improve
+that distribution.
+
+An offline prefilter rerun keeps `human_scope_class`, `human_reason_code`,
+and `human_notes` on the same `doc_id`. It does not use row number. The
+regenerated source columns matched the approved sheet, so columns A–G were
+left as reviewed. A blank or repeated `doc_id` is rejected and the existing
+file is left in place.
+
+Review items open when confidence is below `relevance.confidence_review_below`
+(0.7), when a prefilter candidate scope disagrees with the classifier, when
+evidence is missing, fabricated, or ambiguous, or when the provider response
+is still invalid after syntax-only JSON repair. The queue is the existing
+append-only review queue, in the Phase 4 output directory. Earlier human
+resolutions are kept.
+
+The relevance cache key is provider, model, decoding parameters
+(`temperature`, `max_tokens`), prompt id and version (`relevance/v1`), schema
+version, ruleset version, and document content hash. `taxonomy_version` is
+not included. A cache hit makes no provider call.
+
+### Specification notes for this slice
+
+- Spec Section 19.5 and ARCHITECTURE Section 8 omit `ruleset_version` from
+  the cache key. `decision_fingerprint` already includes it. Relevance passes
+  it. Callers that omit it, including a future extraction stage, keep the
+  previous key.
+- ARCHITECTURE lists an OpenAI adapter. ADR-14 and the Phase 4 plan mark it
+  as stretch. It was not built. `tenacity` was not added.
+- Spec Section 19.4 steps 3 and 4 ask for another model call. This slice
+  repairs only JSON syntax. An invalid enum or a preamble is a technical
+  failure plus a review item.
+- Spec Section 21.1 wants a prefilter drop reason on the stage event. Spec
+  Section 16.8, as implemented, rejects exclusion codes on stage events. An
+  exclusion code is accepted only when the stage is `prefilter` and the
+  status is `dropped`.
+- `timeout`, `provider_error`, and `skipped_dry_run` have no reason code in
+  Section 16.8. The decision keeps that technical state. The reason code is
+  `provider_unavailable`.
+- Spec Section 5.2 keeps duplicates flowing. This stage classifies canonical
+  documents. A confirmed duplicate is skipped and the event names the
+  canonical `doc_id`. A pending or rejected link is still classified.
+- The prompt requires verbatim evidence for `out_of_scope` as well as for
+  core and adjacent, because `RelevanceDecision` requires evidence whenever
+  `technical_state` is `ok`.
+- The run manifest is under `data/interim/phase4/`, not `data/exports/runs`.
+  The pilot output stays local.
+- `RelevancePayload.reason_code` accepts any `ReasonCode`, including a review
+  code paired with a scope class. `RelevanceDecision._check_reason_code_group`
+  rejects that pairing. This is recorded and not changed in the seed-review
+  integration.
+
+---
+
 ## Research track — pilot collection complete
 
 The private workbook holds 35 genuine public records with direct permalinks and
@@ -282,23 +393,39 @@ YouTube, and Reddit, plus 7 search-log sessions. It stays local and uncommitted.
 ## Next command
 
 ```powershell
-python main.py run --stages normalize,dedupe
+python main.py run --stages prefilter --offline
+python main.py run --stages relevance --dry-run --offline
+python main.py run --stages relevance --offline
 ```
 
 ```bash
-pytest tests/test_normalize.py tests/test_dedupe.py tests/test_review_queue.py tests/test_architecture.py -q
+pytest tests/test_relevance.py tests/test_llm_gateway.py tests/test_pipeline_runner.py tests/test_architecture.py -q
 pytest -q
 ```
 
-Both were green on 2026-09-27: 130 targeted tests passed; the full suite passed
-612. The pilot command derived 35 documents and wrote no duplicate links.
-The calibration sheet keeps 10 `distinct` decisions. Phase 3 is complete.
-Phase 4 has not started. The 3/6 thresholds stay provisional until the
-scaled corpus is calibrated.
+The offline pilot commands were green on 2026-09-27. Prefilter routed all 35
+documents to classification. The researcher completed
+`relevance_seed_review.csv` the same day: 4 core, 12 adjacent, and 19 out of
+scope. An offline rerun preserved every human decision on its `doc_id`.
+Dry-run wrote nothing. The null provider recorded 35 `provider_unavailable`
+decisions and made no network call. Phase 4 is not complete. No live model
+was called. Phase 5 has not started. The pilot needs 8–12 more strong core
+cases before the seed set is treated as balanced. The 3/6 duplicate
+thresholds stay provisional until the scaled corpus is calibrated. Both pytest
+commands above were green on 2026-09-27: 166 targeted tests passed, 4 skipped;
+the full suite passed 682, with 4 skipped.
 
 ## Known issues
 
-None. Phase 1 interpretations and the four places where the specification's
+`RelevancePayload` can accept a review reason code together with a scope
+class. `RelevanceDecision` rejects that pairing when the decision is built.
+The payload schema was not tightened during seed-review integration.
+
+The completed seed sheet has 4 `core_incomplete_recall` rows. That is fewer
+core cases than intended. Collect 8–12 additional strong core cases before
+treating the dataset as sufficiently balanced.
+
+Phase 1 interpretations and the four places where the specification's
 field lists did not match its own model definitions are recorded in
 `CHANGELOG.md` under "Interpretations" and "Conflicts found in the
 specification"; the machine-readable version of the fourth lives in

@@ -128,7 +128,7 @@ def test_cli_prints_counts_and_hides_secrets(
 
 
 def test_cli_rejects_a_later_stage(capsys) -> None:
-    code = main.main(["run", "--stages", "relevance"])
+    code = main.main(["run", "--stages", "extract"])
     captured = capsys.readouterr()
     assert code == 1
-    assert "normalize,dedupe" in captured.err
+    assert "prefilter" in captured.err

@@ -109,14 +109,17 @@ def build_parser() -> argparse.ArgumentParser:
         "run",
         help=f"{COMMANDS['run'][0]} [Phase 3]",
         description=(
-            "Run normalize and dedupe. Other stage lists are not implemented. "
-            "The command prints counts only."
+            "Run normalize and dedupe, or the offline Phase 4 prefilter and "
+            "relevance stages. The command prints counts only."
         ),
     )
     run.add_argument(
         "--stages",
         required=True,
-        help="Comma-separated stages. The implemented list is normalize,dedupe",
+        help=(
+            "Comma-separated stages. Implemented: normalize,dedupe "
+            "or prefilter and relevance, in that order"
+        ),
     )
     run.add_argument(
         "--input",
@@ -126,7 +129,29 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument(
         "--output",
         default=None,
-        help="Directory for derived records, links, and the review CSV",
+        help="Directory for stage outputs",
+    )
+    run.add_argument(
+        "--derived",
+        default=None,
+        help="documents_derived.jsonl from Phase 3",
+    )
+    run.add_argument(
+        "--links",
+        default=None,
+        help="duplicate_links.jsonl from Phase 3",
+    )
+    run.add_argument("--limit", type=int, default=None, help="Process at most N documents")
+    run.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Report counts without writing or calling a provider",
+    )
+    run.add_argument("--resume", default=None, metavar="RUN_ID", help="Skip completed relevance work")
+    run.add_argument(
+        "--offline",
+        action="store_true",
+        help="Force the null provider. No network call is made.",
     )
     run.set_defaults(handler=_run)
 
@@ -176,7 +201,21 @@ def _collect(args: argparse.Namespace) -> int:
 
 
 def _run(args: argparse.Namespace) -> int:
-    """Dispatch normalize,dedupe. Import logic stays in src.pipeline."""
+    """Dispatch implemented stages. Later stages still refuse."""
+    stages = [part.strip() for part in str(args.stages).split(",") if part.strip()]
+    if stages == ["normalize", "dedupe"]:
+        return _run_phase3(args)
+    if stages in (["prefilter"], ["relevance"], ["prefilter", "relevance"]):
+        return _run_phase4(args, stages)
+    print(
+        "Implemented stages are normalize,dedupe or prefilter and relevance, "
+        "in that order.",
+        file=sys.stderr,
+    )
+    return 1
+
+
+def _run_phase3(args: argparse.Namespace) -> int:
     from src.pipeline.runner import (
         DEFAULT_INPUT,
         DEFAULT_OUTPUT,
@@ -184,14 +223,6 @@ def _run(args: argparse.Namespace) -> int:
         load_collected_documents,
         run_normalize_dedupe,
     )
-
-    stages = [part.strip() for part in str(args.stages).split(",") if part.strip()]
-    if stages != ["normalize", "dedupe"]:
-        print(
-            "Only --stages normalize,dedupe is implemented.",
-            file=sys.stderr,
-        )
-        return 1
 
     source = Path(args.input) if args.input else DEFAULT_INPUT
     destination = Path(args.output) if args.output else DEFAULT_OUTPUT
@@ -203,12 +234,82 @@ def _run(args: argparse.Namespace) -> int:
     except ConfigError as exc:
         print(f"Configuration error: {exc}", file=sys.stderr)
         return 1
-    result = run_normalize_dedupe(
-        load_collected_documents(source),
-        settings.analysis.dedupe,
-        destination,
-    )
+    documents = load_collected_documents(source)
+    if args.limit is not None:
+        documents = documents[: args.limit]
+    if args.dry_run:
+        print(f"dry-run: normalize,dedupe would process {len(documents)} documents")
+        return 0
+    result = run_normalize_dedupe(documents, settings.analysis.dedupe, destination)
     print(format_summary(result), end="")
+    return 0
+
+
+def _run_phase4(args: argparse.Namespace, stages: list[str]) -> int:
+    from src.models.duplicate_link import DuplicateLink
+    from src.pipeline.runner import DEFAULT_INPUT, load_collected_documents
+    from src.pipeline.stages import format_phase4_summary, run_phase4
+
+    source = Path(args.input) if args.input else DEFAULT_INPUT
+    destination = Path(args.output) if args.output else Path("data/interim/phase4")
+    derived_path = (
+        Path(args.derived) if args.derived else Path("data/interim/phase3/documents_derived.jsonl")
+    )
+    links_path = (
+        Path(args.links) if args.links else Path("data/interim/phase3/duplicate_links.jsonl")
+    )
+    if not source.is_file():
+        print(f"Collected documents not found: {source.name}", file=sys.stderr)
+        return 1
+    if not derived_path.is_file():
+        print(f"Derived documents not found: {derived_path.name}", file=sys.stderr)
+        return 1
+    try:
+        settings = load_settings()
+    except ConfigError as exc:
+        print(f"Configuration error: {exc}", file=sys.stderr)
+        return 1
+    from src.models.document_derived import DocumentDerived
+
+    documents = load_collected_documents(source)
+    derived = [
+        DocumentDerived.model_validate_json(line)
+        for line in derived_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    links = []
+    if links_path.is_file():
+        links = [
+            DuplicateLink.model_validate_json(line)
+            for line in links_path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+    offline = bool(args.offline) or bool(args.dry_run)
+    result = run_phase4(
+        documents,
+        derived,
+        links,
+        output_dir=destination,
+        stages=stages,
+        limit=args.limit,
+        dry_run=bool(args.dry_run),
+        resume=args.resume,
+        offline=offline,
+        provider_name=settings.models.provider,
+        model_name=settings.models.relevance_model,
+        api_key=None if offline else settings.secrets.anthropic_api_key,
+        author_salt=settings.secrets.author_salt,
+        temperature=settings.models.temperature,
+        max_tokens=settings.models.max_tokens,
+        timeout_seconds=float(settings.models.timeout_seconds),
+        max_retries=settings.models.max_retries,
+        input_usd_per_million=settings.models.estimated_input_usd_per_million,
+        output_usd_per_million=settings.models.estimated_output_usd_per_million,
+        confidence_review_below=settings.analysis.relevance.confidence_review_below,
+        config_hash=settings.config_hash(),
+        project_root=settings.project_root,
+    )
+    print(format_phase4_summary(result), end="")
     return 0
 
 

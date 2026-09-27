@@ -134,6 +134,10 @@ class ModelsConfig(_Section):
     max_tokens: int = 4096
     timeout_seconds: int = 60
     max_retries: int = 3
+    # Accounting estimates only. They are not an invoice and they are not read
+    # from a provider. A no-key run records zero tokens either way.
+    estimated_input_usd_per_million: float = 0.0
+    estimated_output_usd_per_million: float = 0.0
 
 
 class DedupeConfig(_Section):
@@ -176,10 +180,20 @@ class RetrievalConfig(_Section):
     min_score: float = 0.15
 
 
+class RelevanceRoutingConfig(_Section):
+    """When a stored decision still needs a person.
+
+    The threshold does not change ``scope_class``. It only opens a review item.
+    """
+
+    confidence_review_below: float = Field(default=0.7, ge=0.0, le=1.0)
+
+
 class AnalysisConfig(_Section):
     dedupe: DedupeConfig
     export: ExportConfig = Field(default_factory=ExportConfig)
     retrieval: RetrievalConfig = Field(default_factory=RetrievalConfig)
+    relevance: RelevanceRoutingConfig = Field(default_factory=RelevanceRoutingConfig)
     recency_months: int = 12
     source_concentration_threshold: float = 0.40
     composite_score_enabled: bool = False

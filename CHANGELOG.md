@@ -5,6 +5,85 @@ decisions live in `DECISIONS.md`; this file records what was built.
 
 ---
 
+## 2026-09-27 — Phase 4 seed review integrated
+
+Phase 4 remains in progress. Phase 5 has not started. No live or paid model
+was called.
+
+The researcher completed `data/interim/phase4/relevance_seed_review.csv` on
+2026-09-27. The sheet has 35 rows: 4 `core_incomplete_recall`, 12
+`adjacent_known_item_retrieval`, and 19 `out_of_scope`. Every document id is
+unique. Every human scope, reason, and note is filled. Inclusion codes are
+used only with core and adjacent. Exclusion codes are used only with
+`out_of_scope`. No review code or free-text reason is present. The approved
+labels were not edited.
+
+An offline `prefilter` rerun preserves those three human fields by `doc_id`.
+Regenerated source columns matched the reviewed sheet. A blank or repeated
+`doc_id` is now rejected, and the existing file is left in place.
+
+The pilot has fewer core incomplete-recall cases than intended. Collect 8–12
+additional strong core cases before treating the dataset as sufficiently
+balanced.
+
+`RelevancePayload` still accepts a review reason code on a scoped response.
+`RelevanceDecision` rejects that pairing. That gap is recorded and was not
+changed here.
+
+Targeted tests: `pytest tests/test_relevance.py tests/test_llm_gateway.py tests/test_pipeline_runner.py tests/test_architecture.py -q` → 166 passed, 4 skipped. Full suite: `pytest -q` → 682 passed, 4 skipped.
+
+---
+
+## 2026-09-27 — Phase 4A offline infrastructure
+
+Phase 4 is in progress and is not complete. Phase 5 has not started. No
+Anthropic, OpenAI, or other paid classification was run.
+
+The runner now accepts `prefilter` and `relevance`, including `--limit`,
+`--dry-run`, `--resume`, and `--offline`. Dry-run writes nothing and calls
+no provider. A missing key or `--offline` uses the null provider and records
+`provider_unavailable` with null scope and empty evidence. Those rows are
+not counted as `out_of_scope`.
+
+Ruleset `prefilter/v1` routes a document to the classifier unless at least
+two distinct multi-word exclusion signals match and the text has no
+retrieval language. One keyword cannot drop a document. Mixed retrieval and
+backup or deletion language continues. The result is routing, not a research
+claim. Confirmed duplicates are skipped. `raw_text` and Phase 3 derived
+records are not modified.
+
+Prompt `relevance/v1` asks for `doc_id`, scope class, a controlled reason
+code, a short summary, confidence, and a verbatim evidence span. It does not
+ask for `is_relevant`. The user post is quoted as untrusted data. Evidence
+for an `ok` decision, including `out_of_scope`, goes through the existing
+evidence ladder. Fabricated or ambiguous spans become technical failures
+with empty evidence and a review item. Syntax-only JSON repair does not
+change values.
+
+The relevance cache key includes provider, model, decoding parameters,
+prompt version, schema version, ruleset version, and content hash. It does
+not include taxonomy version. A hit makes no provider call. The cache
+refuses to store an API key or the author salt.
+
+Review uses the existing append-only queue. Items open for low confidence
+(below 0.7), a prefilter/classifier contradiction, missing or ambiguous
+evidence, an unsafe span, or output that is still invalid after repair.
+Earlier resolutions are preserved.
+
+Pilot, offline, 35 documents: 35 routed to classify, 0 obvious exclusions,
+0 mixed-signal retains, 0 single-signal retains, 0 confirmed duplicates
+skipped. Dry-run wrote 0 files and made 0 provider calls. The null provider
+wrote 35 `provider_unavailable` decisions, 0 provider calls, 0 tokens, and
+estimated cost 0. No response was cached.
+
+`data/interim/phase4/relevance_seed_review.csv` has 35 rows and blank human
+fields. It has no model prediction. It is not the Phase 6 gold set. Labeling
+is pending.
+
+Targeted Phase 4 tests and the full suite passed: 678 passed, 4 skipped.
+
+---
+
 ## 2026-09-27 — Phase 3 closed: pilot calibration recorded
 
 Phase 3 is complete. Phase 4 has not started. Thresholds, matching, canonical

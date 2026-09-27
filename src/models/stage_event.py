@@ -26,6 +26,7 @@ from pydantic import AwareDatetime, Field, model_validator
 
 from src.models.base import VersionedModel
 from src.models.enums import (
+    EXCLUSION_REASON_CODES,
     REVIEW_REASON_CODES,
     ReasonCode,
     Stage,
@@ -80,6 +81,36 @@ class StageEvent(VersionedModel):
                 raise ValueError(
                     f"status={self.status.value} carries no reason_code, got "
                     f"{self.reason_code.value!r}"
+                )
+            return self
+
+        # Spec 21.1 reports prefilter drops with their exclusion reasons. Spec
+        # 16.8, as enforced for every other stage, rejects those same codes on
+        # a stage event. The drop is a routing result on the prefilter stage,
+        # not a RelevanceDecision, so the exclusion code is allowed only here.
+        if (
+            self.stage is Stage.prefilter
+            and self.status is StageStatus.dropped
+            and self.reason_code in EXCLUSION_REASON_CODES
+        ):
+            return self
+
+        # A confirmed duplicate is not classified again. No review code means
+        # "this document is a duplicate", so the canonical id lives in detail
+        # and the reason code stays empty. Other skipped events still need one.
+        if (
+            self.stage is Stage.prefilter
+            and self.status is StageStatus.skipped
+            and self.detail.get("route") == "skipped_non_canonical"
+        ):
+            if self.reason_code is not None:
+                raise ValueError(
+                    "a non-canonical prefilter skip records canonical_doc_id in "
+                    "detail and does not carry a scope or review reason_code"
+                )
+            if not self.detail.get("canonical_doc_id"):
+                raise ValueError(
+                    "a non-canonical prefilter skip must name canonical_doc_id"
                 )
             return self
 

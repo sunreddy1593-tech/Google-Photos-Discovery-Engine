@@ -38,3 +38,8 @@ source_concentration_threshold: 0.40   # disclose above this share (Section 11.2
 # formula and a sensitivity analysis.
 composite_score_enabled: false
 composite_weights: {}
+
+relevance:
+  # Routing cutoff only. A decision below this value is stored and queued.
+  # It does not change the scope class and it is not a research finding.
+  confidence_review_below: 0.7

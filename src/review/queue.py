@@ -66,6 +66,62 @@ def open_items(
     return tuple(items)
 
 
+_RELEVANCE_PRIORITY: dict[ReasonCode, int] = {
+    ReasonCode.prefilter_classifier_conflict: 1,
+    ReasonCode.evidence_validation_failed: 1,
+    ReasonCode.evidence_offsets_unresolved: 1,
+    ReasonCode.repair_ladder_exhausted: 1,
+    ReasonCode.schema_validation_failed: 1,
+    ReasonCode.response_parse_failed: 2,
+    ReasonCode.low_confidence: 2,
+    ReasonCode.rate_limited: 2,
+    ReasonCode.provider_unavailable: 3,
+}
+
+
+def open_relevance_items(
+    pairs: list[tuple[str, ReasonCode]] | tuple[tuple[str, ReasonCode], ...],
+    *,
+    opened_at: datetime,
+) -> tuple[ReviewItem, ...]:
+    """One open item per decision id and reason. Duplicate pairs collapse."""
+    items: list[ReviewItem] = []
+    seen: set[tuple[str, str]] = set()
+    for target_id, reason in pairs:
+        key = (target_id, reason.value)
+        if key in seen:
+            continue
+        seen.add(key)
+        items.append(
+            ReviewItem(
+                item_id=sha1_short("review", "relevance_decision", target_id, reason.value),
+                target_type="relevance_decision",
+                target_id=target_id,
+                reason_code=reason,
+                priority=_RELEVANCE_PRIORITY.get(reason, 3),
+                state="open",
+                opened_at=opened_at,
+            )
+        )
+    items.sort(key=lambda item: (item.priority, item.item_id))
+    return tuple(items)
+
+
+def merge_items(
+    existing: tuple[ReviewItem, ...] | list[ReviewItem],
+    incoming: tuple[ReviewItem, ...] | list[ReviewItem],
+) -> tuple[ReviewItem, ...]:
+    """Append new open items. Existing rows, including resolutions, stay."""
+    kept = list(existing)
+    have = {item.item_id for item in existing}
+    for item in incoming:
+        if item.item_id not in have:
+            kept.append(item)
+            have.add(item.item_id)
+    kept.sort(key=lambda item: (item.priority, item.item_id, item.state))
+    return tuple(kept)
+
+
 def append_resolution(
     items: tuple[ReviewItem, ...] | list[ReviewItem],
     item_id: str,

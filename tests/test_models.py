@@ -928,6 +928,36 @@ def test_stage_event_rejects_a_scope_reason_code() -> None:
         _event(status=StageStatus.dropped, reason_code=ReasonCode.billing_or_subscription)
 
 
+def test_prefilter_drop_may_carry_an_exclusion_reason() -> None:
+    """Spec 21.1 wants the drop reason on the prefilter event.
+
+    The same code is still rejected on every other stage.
+    """
+    event = _event(
+        stage=Stage.prefilter,
+        status=StageStatus.dropped,
+        reason_code=ReasonCode.storage_backup_or_sync,
+    )
+    assert event.reason_code is ReasonCode.storage_backup_or_sync
+
+
+def test_non_canonical_prefilter_skip_names_the_canonical_document() -> None:
+    event = _event(
+        stage=Stage.prefilter,
+        status=StageStatus.skipped,
+        reason_code=None,
+        detail={"route": "skipped_non_canonical", "canonical_doc_id": "doc-a"},
+    )
+    assert event.reason_code is None
+    with pytest.raises(PydanticValidationError, match="canonical_doc_id"):
+        _event(
+            stage=Stage.prefilter,
+            status=StageStatus.skipped,
+            reason_code=None,
+            detail={"route": "skipped_non_canonical"},
+        )
+
+
 def test_stage_events_are_immutable() -> None:
     """Invariant I14: a later event never rewrites an earlier one."""
     event = _event()

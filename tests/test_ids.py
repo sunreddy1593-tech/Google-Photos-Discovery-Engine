@@ -434,6 +434,12 @@ def test_cache_key_omits_taxonomy_version_by_default() -> None:
     assert _key() != _key(taxonomy_version="v1")
 
 
+def test_cache_key_omits_ruleset_version_unless_the_caller_passes_it() -> None:
+    """Relevance passes the ruleset. Extraction does not, so its key stays put."""
+    assert _key() == _key(ruleset_version=None)
+    assert _key() != _key(ruleset_version="prefilter/v2")
+
+
 def test_cache_key_moves_with_every_documented_input() -> None:
     base = _key()
     assert _key(provider="openai") != base

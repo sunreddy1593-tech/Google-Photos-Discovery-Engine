@@ -224,21 +224,21 @@ def test_phase_1_packages_exist() -> None:
 # --------------------------------------------------------------------------- #
 
 
-def test_no_later_phase_packages_exist_yet() -> None:
-    """Phase 3 adds normalize, dedupe, review, and pipeline.
+def test_phase4_packages_exist_and_later_phases_do_not() -> None:
+    """Phase 4 adds relevance and llm. Later packages stay absent.
 
-    Spec Section 29.4: one phase at a time. ``src/relevance`` is the Phase 4
-    classifier package and is unrelated to ``src/models/relevance.py``, which is
-    the contract. The names below are still later work.
+    ``src/relevance`` is the classifier. ``src/models/relevance.py`` is the
+    contract. Extraction prompts, taxonomy, analysis, retrieval, and the store
+    are still later work.
     """
+    for name in ("relevance", "llm", "normalize", "dedupe", "review", "pipeline"):
+        assert (SRC / name).is_dir(), name
     premature = [
         name
-        for name in ("relevance", "llm", "taxonomy", "analyze", "retrieve", "store")
+        for name in ("taxonomy", "analyze", "retrieve", "store")
         if (SRC / name).exists()
     ]
     assert not premature, f"these belong to later phases: {premature}"
-    for name in ("normalize", "dedupe", "review", "pipeline"):
-        assert (SRC / name).is_dir(), name
 
 
 def test_collect_imports_only_core_models_and_itself() -> None:
@@ -279,6 +279,9 @@ def test_phase3_stages_do_not_import_each_other() -> None:
             "src.dedupe",
             "src.review",
             "src.pipeline",
+            "src.relevance",
+            "src.llm",
+            "src.extract",
         ),
     }
     offenders = [
@@ -289,6 +292,26 @@ def test_phase3_stages_do_not_import_each_other() -> None:
         if _is_internal(module) and not module.startswith(prefixes)
     ]
     assert not offenders, "phase 3 import boundary:\n" + "\n".join(offenders)
+
+
+def test_phase4_modules_do_not_import_each_others_stages() -> None:
+    """Relevance may use the gateway. It may not import the evidence stage.
+
+    The runner applies the ladder. A relevance module that imported
+    ``src.extract`` would couple classification to extraction.
+    """
+    allowed = {
+        "relevance": ("src.core", "src.models", "src.relevance"),
+        "llm": ("src.core", "src.models", "src.llm"),
+    }
+    offenders = [
+        f"{_module_label(path)} imports {module}"
+        for name, prefixes in allowed.items()
+        for path in _python_files(SRC / name)
+        for module in _imported_modules(path)
+        if _is_internal(module) and not module.startswith(prefixes)
+    ]
+    assert not offenders, "phase 4 import boundary:\n" + "\n".join(offenders)
 
 
 def test_extract_holds_only_the_validator_so_far() -> None:

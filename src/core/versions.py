@@ -25,9 +25,11 @@ from typing import Final
 #: Section 15 changes shape. Participates in all three fingerprints.
 SCHEMA_VERSION: Final[str] = "1.0.0"
 
-#: Deterministic rule logic: the prefilter and the scope-class rules in
-#: ``src/relevance/rules.py``. Participates in ``decision_fingerprint`` only.
-RULESET_VERSION: Final[str] = "1.0.0"
+#: Deterministic prefilter rules in ``src/relevance/rules.py``. Participates in
+#: ``decision_fingerprint`` and, for relevance calls, the response cache key.
+#: ``prefilter/v1`` is the first shipped ruleset: high recall, and a single
+#: keyword is never enough to drop a document.
+RULESET_VERSION: Final[str] = "prefilter/v1"
 
 #: Text normalization and length-preserving redaction (spec Section 15.6).
 #: Stamped onto ``DocumentDerived``. Deliberately absent from every cache key:
@@ -48,9 +50,9 @@ TAXONOMY_VERSION: Final[str] = "0-unassigned"
 #: invalidates only its own cache, which is why these are separate from
 #: ``SCHEMA_VERSION`` rather than folded into it.
 #:
-#: Empty at Phase 0: no prompt exists yet. Phase 4 adds ``relevance``, Phase 5
-#: adds ``extraction``, Phase 8 adds the taxonomy prompts, Phase 9 adds ``ask``.
-PROMPT_VERSIONS: Final[dict[str, str]] = {}
+#: Phase 4 registers ``relevance``. Phase 5 adds ``extraction``, Phase 8 the
+#: taxonomy prompts, Phase 9 ``ask``. A prompt edit bumps its own entry.
+PROMPT_VERSIONS: Final[dict[str, str]] = {"relevance": "relevance/v1"}
 
 
 def prompt_version(prompt_id: str) -> str:
