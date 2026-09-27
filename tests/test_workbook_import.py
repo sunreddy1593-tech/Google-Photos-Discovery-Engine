@@ -821,7 +821,7 @@ def _xml_raw_text(path: Path) -> dict[str, str]:
     return texts
 
 
-def test_pilot_workbook_accepts_seven_documents_and_warns_on_the_shared_url(
+def test_pilot_workbook_accepts_all_documents_and_reports_shared_urls(
     tmp_path: Path,
 ) -> None:
     path = _pilot_workbook()
@@ -832,6 +832,7 @@ def test_pilot_workbook_accepts_seven_documents_and_warns_on_the_shared_url(
     header_at = {cell.value: cell.column for cell in sheet[1]}
     authors: list[str] = []
     author_by_item: dict[str, str | None] = {}
+    urls_by_value: dict[str, list[tuple[int, str]]] = {}
     for excel_row in range(2, sheet.max_row + 1):
         item_id = sheet.cell(row=excel_row, column=header_at["source_item_id"]).value
         if not isinstance(item_id, str) or not item_id.strip():
@@ -842,44 +843,70 @@ def test_pilot_workbook_accepts_seven_documents_and_warns_on_the_shared_url(
             author_by_item[item_id] = author
         else:
             author_by_item[item_id] = None
+        source_url = sheet.cell(row=excel_row, column=header_at["source_url"]).value
+        if isinstance(source_url, str) and source_url.strip():
+            urls_by_value.setdefault(source_url.strip(), []).append((excel_row, item_id))
+
+    expected_document_count = len(author_by_item)
+    expected_repeated = tuple(
+        (
+            url,
+            tuple(row for row, _item in pairs),
+            tuple(item for _row, item in pairs),
+        )
+        for url, pairs in sorted(
+            (
+                (url, sorted(pairs))
+                for url, pairs in urls_by_value.items()
+                if len(pairs) >= 2
+            ),
+            key=lambda item: tuple(row for row, _item in item[1]),
+        )
+    )
 
     assert authors, "pilot workbook has no author_name_raw values to hash"
+    assert expected_document_count >= 30
 
     buffer = io.StringIO()
     configure_logging(logging.DEBUG, stream=buffer)
     result = _import(path, tmp_path / "pilot")
     other = _import(path, tmp_path / "pilot-other-salt", salt=OTHER_SALT)
 
-    assert result.report.rows_read == 7
-    assert result.report.rows_accepted == 7
+    assert result.report.rows_read == expected_document_count
+    assert result.report.rows_accepted == expected_document_count
     assert result.report.rows_rejected == 0
+    assert len(result.documents) == expected_document_count
     assert result.report.duplicate_ids == ()
-    assert result.report.search_log_rows_read == 1
-    assert result.report.search_log_rows_valid == 1
+    assert result.report.search_log_rows_read == 7
+    assert result.report.search_log_rows_valid == 7
     assert result.report.search_log_issues == ()
     for entry in result.report.search_log:
         assert entry.results_scanned >= 0
         assert entry.documents_kept >= 0
         assert entry.documents_kept <= entry.results_scanned
         assert entry.searched_at.tzinfo is not None
-    assert len(result.report.repeated_urls) == 1
-    repeated = result.report.repeated_urls[0]
-    assert repeated.excel_rows == (7, 8)
-    assert set(repeated.source_item_ids) == {
-        "389789402",
-        "389789402_op_reply_01",
-    }
-    assert any(warning.code == "repeated_source_url" for warning in result.report.warnings)
+    repeated_groups = tuple(
+        (item.source_url, item.excel_rows, item.source_item_ids)
+        for item in result.report.repeated_urls
+    )
+    warning_groups = tuple(
+        (warning.source_url, warning.excel_rows, warning.source_item_ids)
+        for warning in result.report.warnings
+        if warning.code == "repeated_source_url"
+    )
+    assert repeated_groups == expected_repeated
+    assert warning_groups == expected_repeated
+    thread_pair = next(
+        item for item in result.report.repeated_urls if item.excel_rows == (7, 8)
+    )
+    assert thread_pair.source_item_ids == ("389789402", "389789402_op_reply_01")
 
     by_id = {document.source_item_id: document for document in result.documents}
-    core = {"273154473", "469956273", "48648439", "101084512", "133630115"}
-    waterfall = {"389789402", "389789402_op_reply_01"}
-    assert set(by_id) == core | waterfall
+    assert set(by_id) == set(author_by_item)
     xml_text = _xml_raw_text(path)
     for item_id, document in by_id.items():
         assert document.raw_text == xml_text[item_id]
         assert document.raw_text_sha256 == raw_text_sha256(document.raw_text)
-        assert document.source_platform is SourcePlatform.google_support
         assert document.evidence_tier is EvidenceTier.direct_user
         assert document.collection_method.value == "manual_copy"
         assert document.author_salt_id == author_salt_id(SALT)
@@ -897,7 +924,7 @@ def test_pilot_workbook_accepts_seven_documents_and_warns_on_the_shared_url(
             assert document.author_hash is None
         else:
             assert document.author_hash == author_hash(
-                SALT, SourcePlatform.google_support.value, author
+                SALT, document.source_platform.value, author
             )
             _assert_name_absent(
                 document.author_hash or "", author, where=f"author_hash for {item_id}"
@@ -913,10 +940,9 @@ def test_pilot_workbook_accepts_seven_documents_and_warns_on_the_shared_url(
         else:
             assert other_by_id[item_id].author_hash != by_id[item_id].author_hash
             assert other_by_id[item_id].author_hash == author_hash(
-                OTHER_SALT, SourcePlatform.google_support.value, author
+                OTHER_SALT, by_id[item_id].source_platform.value, author
             )
     assert by_id["389789402_op_reply_01"].metadata.get("researcher_notes")
-    assert all(document.rating is None for document in result.documents)
 
     jsonl_lines = result.documents_path.read_text(encoding="utf-8").splitlines()  # type: ignore[union-attr]
     without_text: list[str] = []

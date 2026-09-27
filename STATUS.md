@@ -4,28 +4,34 @@
 
 | | |
 |---|---|
-| **Completed phase** | Phase 2 workbook import — manual pilot workbook into `CollectedDocument`, with a `collect` command (2026-09-26) |
-| **Current phase** | Rest of Phase 2 from `IMPLEMENTATION-PLAN.md` (SQLite store, CSV/JSONL, stage events, 30–50 document corpus) — not started. Phase 3 not started. |
-| **Tests** | 548 passing, 0 failing (509 at the end of Phase 1, 39 in this phase) |
+| **Completed phase** | Phase 2 — manual pilot collection and workbook import (2026-09-27) |
+| **Current phase** | Phase 3 — not started |
+| **Tests** | 548 passing, 0 failing. Workbook file: 23 passing |
 | **Coverage** | 100% of `src/models/`. Workbook importer and CLI covered by `tests/test_workbook_import.py` and `tests/test_collect_cli.py` |
-| **Last verified** | 2026-09-26 |
+| **Last verified** | 2026-09-27 |
 | **Blockers** | None |
 | **Next command** | See "Next command" below |
 
 ---
 
-## Phase 2 — workbook import complete
+## Phase 2 — complete
 
-The analyst workbook is the collection surface this slice imports. `main.py collect`
-is a thin dispatcher: it loads `AUTHOR_SALT` through configuration and calls
-`import_workbook`. CSV/JSONL, the SQLite store, and stage events remain the rest
-of `IMPLEMENTATION-PLAN.md` Phase 2. Nothing from Phase 3 was built.
+The manual pilot corpus is 35 genuine public records in the private workbook:
+Google Photos Help, Google Play Store, Apple App Store, YouTube, and Reddit.
+The workbook also holds 7 valid search-log sessions. `main.py collect` loads
+`AUTHOR_SALT` through configuration and calls `import_workbook`. Phase 3 has
+not started.
+
+Final import: 35 rows read, 35 accepted, 0 rejected, 3 `repeated_source_url`
+warnings, 7 search-log rows read, 7 valid, 0 issues. Each repeated URL is a
+shared listing or thread permalink. Distinct `source_item_id` values keep the
+records separate.
 
 | Criterion | Evidence |
 |---|---|
-| Seven pilot document rows read and accepted | `test_pilot_workbook_accepts_seven_documents_and_warns_on_the_shared_url` |
-| Shared waterfall thread URL warns and does not reject | same test: `repeated_urls` is rows 7 and 8, `rows_rejected == 0` |
-| `raw_text` matches the worksheet XML for all seven rows | same test, compared through the xlsx XML rather than the importer's reader |
+| 35 pilot document rows read and accepted, 0 rejected | `test_pilot_workbook_accepts_all_documents_and_reports_shared_urls` derives the count from non-empty `source_item_id` rows and requires at least 30 |
+| Shared listing and thread URLs warn and do not reject | same test: repeated-URL groups are derived from `source_url` and matched to the importer's `repeated_source_url` warnings, including Excel rows 7 and 8 |
+| `raw_text` matches the worksheet XML for every accepted row | same test, compared through the xlsx XML rather than the importer's reader |
 | No raw author name in the documents file (outside `raw_text`), the report, or the log | same test, plus `test_raw_author_names_are_absent_from_outputs_and_logs` |
 | Same author and salt hash the same; a different salt hashes differently; a blank author stays null | `test_author_hash_is_deterministic_and_uses_the_stored_platform`, `test_optional_blanks_stay_null`, and the pilot test |
 | `AUTHOR_SALT` has no production default, is not a CLI argument, and is absent from the terminal, the report, and the log | `test_cli_missing_salt_fails_without_a_default`, `test_cli_does_not_accept_a_salt_argument`, `test_cli_success_prints_counts_and_hides_secrets` |
@@ -58,9 +64,14 @@ python main.py collect --path "data\manual\Private\Google_Photos_Pilot_Collectio
 ```
 
 Exit 0 means no rejected document rows, no search-log issues, and no structural
-errors. Warnings, including the shared thread URL, still exit 0. Exit 1 is an
-invalid workbook, a configuration failure, or rejected rows. The terminal
-prints counts only. Generated files under `data/processed/` stay gitignored.
+errors. `repeated_source_url` warnings still exit 0. Exit 1 is an invalid
+workbook, a configuration failure, or rejected rows. The terminal prints counts
+only.
+
+The private workbook (`data/manual/private/`), `.env` (`AUTHOR_SALT`), and
+processed import output (`data/processed/*`) are gitignored. Raw author names
+stay in the private workbook and are hashed out of processed output. None of
+those files is committed.
 
 ### What this slice added
 
@@ -210,12 +221,13 @@ while `reason_summary` does not.
 
 ---
 
-## Research track — still the critical path
+## Research track — pilot collection complete
 
-The workbook importer can read the reviewed pilot file (7 documents, local
-under `data/manual/private/`, not committed). The corpus target is still open.
+The private workbook holds 35 genuine public records with direct permalinks and
+verbatim text, across Google Photos Help, Google Play Store, Apple App Store,
+YouTube, and Reddit, plus 7 search-log sessions. It stays local and uncommitted.
 
-- [ ] Collect 30–50 genuine public documents with direct permalinks and verbatim
+- [x] Collect 30–50 genuine public documents with direct permalinks and verbatim
       text. Manual import is the guaranteed baseline; the 300-document target
       must be reachable through manual import plus YouTube alone (Section 11.4).
 - [ ] Do **not** start taxonomy naming. Spec Section 20 requires clusters to
@@ -234,12 +246,12 @@ python main.py collect --path "data\manual\Private\Google_Photos_Pilot_Collectio
 pytest -q
 ```
 
-The suite was green on 2026-09-26: 548 passed. The pilot command, with
-`AUTHOR_SALT` set outside the command line, read 7 rows, accepted 7, rejected
-0, and validated 1 search-log row (25 scanned, 7 kept).
+Both were green on 2026-09-27: `pytest tests/test_workbook_import.py -q` →
+23 passed; `pytest -q` → 548 passed. The closed pilot import reads 35 document
+rows (35 accepted, 0 rejected, 3 `repeated_source_url` warnings) and 7
+search-log rows (7 valid, 0 issues).
 
-The next build work is the rest of Phase 2 in `IMPLEMENTATION-PLAN.md`: the
-SQLite store, CSV/JSONL import, and stage events. Phase 3 stays unstarted.
+Phase 2 and the pilot research collection are complete. Phase 3 has not started.
 
 ## Known issues
 

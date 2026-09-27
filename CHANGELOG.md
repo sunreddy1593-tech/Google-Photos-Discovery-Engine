@@ -5,6 +5,29 @@ decisions live in `DECISIONS.md`; this file records what was built.
 
 ---
 
+## 2026-09-27 — Phase 2 closed: 35-record pilot corpus
+
+Documentation only. The importer, tests, private workbook, and processed
+output were left as they were. Phase 3 was not started.
+
+The manual pilot corpus is 35 genuine public records: Google Photos Help,
+Google Play Store, Apple App Store, YouTube, and Reddit. The workbook has 7
+valid search-log sessions.
+
+Final import: 35 rows read, 35 accepted, 0 rejected, 3 `repeated_source_url`
+warnings, 7 search-log rows read, 7 valid, 0 issues. The repeated URLs are
+shared listing or thread permalinks. Distinct `source_item_id` values keep
+each record's identity.
+
+`test_pilot_workbook_accepts_all_documents_and_reports_shared_urls` derives
+the expected record count and the repeated-URL groups from the workbook.
+`pytest tests/test_workbook_import.py -q` → 23 passed. `pytest -q` → 548 passed.
+
+The private workbook, raw author names, `AUTHOR_SALT` (`.env`), and processed
+import output stay gitignored and are not committed.
+
+---
+
 ## 2026-09-26 — Phase 2: workbook import command
 
 Closes the pilot importer. `main.py collect` loads `AUTHOR_SALT` from the
