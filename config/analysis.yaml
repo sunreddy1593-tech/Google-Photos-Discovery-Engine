@@ -2,10 +2,11 @@
 # Reported in every run manifest (spec Sections 26, 26.5).
 
 dedupe:
-  # Defaults from ADR-21, pending Phase 3 calibration against the pilot corpus.
-  simhash_duplicate_max: 3        # Hamming <= 3: confident near-duplicate
-  simhash_review_band_max: 6      # Hamming 4-6: routed to human review
-  min_tokens: 25                  # below this, no automatic near-duplicate call
+  # Hamming band: ADR-11, retained as the ADR-21 default. Calibration is still
+  # pending. The token minimum and the cross-author guard below are ADR-21.
+  simhash_duplicate_max: 3        # ADR-11: Hamming <= 3 is a confident near-duplicate
+  simhash_review_band_max: 6      # ADR-11: Hamming 4-6 is routed to human review
+  min_tokens: 25                  # ADR-21: below this, no automatic near-duplicate call
 
   # Must stay false. Two people independently writing "can't find my photos" are
   # two users with the same complaint, which is the strongest prevalence signal

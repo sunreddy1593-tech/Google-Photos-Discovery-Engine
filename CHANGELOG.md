@@ -5,6 +5,142 @@ decisions live in `DECISIONS.md`; this file records what was built.
 
 ---
 
+## 2026-09-27 — Phase 3 closed: pilot calibration recorded
+
+Phase 3 is complete. Phase 4 has not started. Thresholds, matching, canonical
+selection, duplicate links, the operational review queue, and funnel counts
+are unchanged.
+
+The researcher reviewed all 10 nearest negative controls in
+`data/interim/phase3/duplicate_calibration.csv` and marked each `distinct`.
+No pair was in Hamming 0–3 or 4–6. The controls were distances 21–23. ADR-11
+now records that the 3/6 band is retained provisionally. The pilot has no
+positive duplicate examples, so duplicate recall is not estimated. Calibration
+repeats on the scaled corpus.
+
+A rerun keeps `researcher_decision` and `researcher_notes` for the same two
+`doc_id` values, in either column order. Blank, `distinct`, and `duplicate`
+are the only accepted decisions. An invalid value is rejected and the existing
+file is left in place. Calibration decisions do not create links or
+review-queue items.
+
+Targeted tests: 130 passed. Full suite: 612 passed.
+
+---
+
+## 2026-09-27 — Phase 3 calibration sheet
+
+Phase 3 stays in progress. ADR-11 is not amended. Duplicate detection,
+thresholds, canonical selection, link assignment, and the review queue are
+unchanged.
+
+`duplicate_review.csv` remains the operational queue and lists only
+`DuplicateLink` rows. The pilot queue is still header-only: no pair is inside
+Hamming 0–3 or 4–6.
+
+`data/interim/phase3/duplicate_calibration.csv` is a separate local sheet. It
+contains every in-band pair, plus the 10 nearest pairs farther than the review
+band. The pilot sheet has those 10 controls. Distances start at 21. Researcher
+decision and notes are blank. Excerpts come from `raw_text_audit`. The controls
+are not links, are not counted as duplicates, and do not open review items.
+Human review of the sheet is still pending.
+
+---
+
+## 2026-09-27 — Phase 3 dedupe audit
+
+Phase 3 stays in progress. ADR-11 and ADR-21 were not amended.
+
+### Canonical selection
+
+Unchanged. The current Phase 3 plan, ADR-20, spec Section 26.1, and
+`DuplicateLink.canonical_doc_id` all select the lowest `doc_id`. They reject
+first-collected because `collected_at` follows ingestion order. A null
+`collected_at` cannot reach dedupe: import requires the timestamp, and the
+model field is not optional. `doc_id` is the tie-break only in the sense that
+it is the whole rule; equal timestamps do not switch the comparison over to
+collection time.
+
+### Exact content
+
+Unchanged, and it already matches the plan. Identical `content_hash` values
+always produce one `exact_text` link per non-canonical member. Both documents
+stay stored. Different `author_hash` values do not remove that link. Spec
+Section 19.6 and ADR-21 say the link is `pending_review` with
+`different_authors_identical_text` rather than `auto_confirmed`. That is the
+written safety rule, not a new exemption from content-hash grouping.
+
+### Cross-post
+
+Corrected. `author_hash` is `HMAC(salt, source_platform | username)`, so it is
+platform-scoped. Equal hashes across platforms are not produced for one
+username and are not treated as proof of one person.
+
+The deterministic rule: different platforms plus an exact or near content
+match, and not a quoted repeat, is `cross_post`. It is never
+`auto_confirmed`. When the stored hashes differ, the reason is
+`different_authors_identical_text`. When they match or an author is missing,
+the reason is `low_confidence`. Quoted repeats stay `quoted_repeat`. Short
+text still fails the token minimum first. Hamming 4–6 on one platform stays
+in the review band.
+
+### ADR names
+
+The Hamming 3/6 band is ADR-11, retained as the ADR-21 default. The token
+minimum and the cross-author guard are ADR-21. `config/analysis.yaml` now
+says that. Calling the safety package ADR-21 is correct; ADR-11 is superseded
+and was not renamed in `DECISIONS.md`.
+
+---
+
+## 2026-09-27 — Phase 3 started: normalization and deduplication
+
+Not complete. ADR-11 and ADR-21 are unchanged. No relevance, extraction,
+taxonomy, analysis, retrieval, or Streamlit work.
+
+### Added
+
+- **`src/normalize/`** — NFKC and whitespace collapse, length-preserving
+  redaction (`#` masks, same character length), offline canonical URLs, word
+  `token_count`, 64-bit simhash, and `content_hash` via the existing helper.
+  `language_detected` carries `language_reported` when no detector is
+  available. `CollectedDocument` and `raw_text` are not modified.
+- **`src/dedupe/`** — exact, near, cross-post, quoted-repeat, and
+  same-source-item links. The canonical document is the lowest `doc_id`.
+  Safety conditions come from `config/analysis.yaml`. A shared listing or
+  thread URL does not create a link. Documents are not deleted.
+- **`src/review/queue.py`** — open items for pending links. Resolution appends
+  a row.
+- **`src/pipeline/runner.py`** and `main.py run --stages normalize,dedupe`.
+  Outputs are JSONL plus `duplicate_review.csv` under `data/interim/phase3/`,
+  which is gitignored. Timestamps are the ruleset instant, so a second run
+  matches byte for byte.
+- **Tests** in `tests/test_normalize.py`, `tests/test_dedupe.py`, and
+  `tests/test_review_queue.py`. Targeted: 27 passed. Full suite: 606 passed.
+
+### Pilot
+
+35 documents derived. 0 redaction spans. 0 duplicate links. 0 pairs at
+Hamming 0–3 and 0 at 4–6 (minimum distance 21). The review CSV has a header
+and no pairs. Calibration is still pending; this run does not amend ADR-11.
+
+### Interpretations
+
+1. **Canonical selection follows ADR-20, not first-collected.** The
+   `DuplicateLink` contract and `canonical_doc_id()` already define the lowest
+   `doc_id`. Collection time is not a tie-break.
+2. **Same-source-item is platform identity, not URL equality.** Two records
+   that share a listing or thread URL and have different `source_item_id`
+   values stay distinct. A share link is the same item only when one side has
+   no item id and that id is present in both canonical URLs.
+3. **No SQLite projection in this slice.** Phase 2's local output is JSONL.
+   Derived rows, links, stage events, and the review queue are JSONL in
+   `data/interim/`. The prevalence views are not built yet.
+4. **Redirects that need a network call are not resolved.** Canonical URLs
+   fold known share hosts and drop tracking parameters offline.
+
+---
+
 ## 2026-09-27 — Phase 2 closed: 35-record pilot corpus
 
 Documentation only. The importer, tests, private workbook, and processed

@@ -225,21 +225,20 @@ def test_phase_1_packages_exist() -> None:
 
 
 def test_no_later_phase_packages_exist_yet() -> None:
-    """Phase 2 adds ``src/collect`` and nothing after it.
+    """Phase 3 adds normalize, dedupe, review, and pipeline.
 
     Spec Section 29.4: one phase at a time. ``src/relevance`` is the Phase 4
     classifier package and is unrelated to ``src/models/relevance.py``, which is
-    the contract. ``src/collect`` is the manual-import package this phase is
-    allowed to create; the names below are still later work.
+    the contract. The names below are still later work.
     """
     premature = [
         name
-        for name in ("normalize", "dedupe", "relevance",
-                     "llm", "taxonomy", "analyze", "retrieve",
-                     "review", "pipeline", "store")
+        for name in ("relevance", "llm", "taxonomy", "analyze", "retrieve", "store")
         if (SRC / name).exists()
     ]
     assert not premature, f"these belong to later phases: {premature}"
+    for name in ("normalize", "dedupe", "review", "pipeline"):
+        assert (SRC / name).is_dir(), name
 
 
 def test_collect_imports_only_core_models_and_itself() -> None:
@@ -260,6 +259,36 @@ def test_collect_imports_only_core_models_and_itself() -> None:
     assert not offenders, "collect may import only core and models:\n" + "\n".join(
         offenders
     )
+
+
+def test_phase3_stages_do_not_import_each_other() -> None:
+    """Normalization, dedupe, and review are separate stages.
+
+    The runner in ``src/pipeline`` is the only module allowed to call more than
+    one of them. A stage that imported another stage would hide a dependency
+    the architecture keeps explicit (Section 17.1).
+    """
+    allowed = {
+        "normalize": ("src.core", "src.models", "src.normalize"),
+        "dedupe": ("src.core", "src.models", "src.dedupe"),
+        "review": ("src.core", "src.models", "src.review"),
+        "pipeline": (
+            "src.core",
+            "src.models",
+            "src.normalize",
+            "src.dedupe",
+            "src.review",
+            "src.pipeline",
+        ),
+    }
+    offenders = [
+        f"{_module_label(path)} imports {module}"
+        for name, prefixes in allowed.items()
+        for path in _python_files(SRC / name)
+        for module in _imported_modules(path)
+        if _is_internal(module) and not module.startswith(prefixes)
+    ]
+    assert not offenders, "phase 3 import boundary:\n" + "\n".join(offenders)
 
 
 def test_extract_holds_only_the_validator_so_far() -> None:

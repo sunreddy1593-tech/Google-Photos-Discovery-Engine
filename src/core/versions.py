@@ -35,6 +35,10 @@ RULESET_VERSION: Final[str] = "1.0.0"
 #: changes the canonical text.
 NORMALIZER_VERSION: Final[str] = "1.0.0"
 
+#: Near-duplicate ruleset: 64-bit simhash, 3-word shingles, thresholds from
+#: ``config/analysis.yaml``. Stamped onto ``DuplicateLink.method_version``.
+DEDUPE_VERSION: Final[str] = "1.0.0"
+
 #: The taxonomy does not exist yet and must not before the pilot review
 #: (spec Section 20, invariant I10). ``config/taxonomy.yaml`` ships with this
 #: same sentinel and an empty cluster list. Phase 8 replaces it.

@@ -224,6 +224,14 @@ Status legend: **Accepted** · **Accepted (default, calibration pending)** · **
   in the review band on the pilot corpus, then record the final value as an amendment to this
   entry. The threshold is not settled until that review happens; short store-review texts in
   particular tend to collide at low Hamming distance without being duplicates.
+- **Phase 3 calibration amendment (2026-09-27):** The 35-document pilot was evaluated. No pair
+  fell in the automatic band (Hamming 0–3). No pair fell in the review band (Hamming 4–6). The
+  ten nearest eligible negative controls had distances 21–23. The researcher reviewed all ten
+  and classified all ten as distinct. The 3/6 thresholds are retained provisionally. The pilot
+  supports the threshold's conservatism, but it contains no positive duplicate examples, so
+  duplicate recall cannot yet be estimated. This is not a comprehensive validation. Calibration
+  must be repeated during the scaled-corpus phase when genuine positive or in-band pairs become
+  available.
 - **Rejected:** A single hard cutoff with no review band (forces a false binary on exactly the
   ambiguous cases that need a human).
 
@@ -499,7 +507,10 @@ every change below is a specification change rather than a refactor.
   than an input to the score.
 - **Calibration obligation:** In Phase 3, review every pair the defaults flag and every pair in
   the review band on the pilot corpus, then amend this entry with the final `dedupe_min_tokens`
-  and band values.
+  and band values. **Phase 3 pilot result (2026-09-27), recorded on ADR-11:** no in-band pairs;
+  the ten nearest controls (Hamming 21–23) were all judged distinct. `dedupe_min_tokens` and the
+  3/6 band are unchanged and provisional. The pilot does not estimate duplicate recall. Repeat
+  the calibration on the scaled corpus.
 - **Rejected:** Similarity thresholds alone; a single hard cutoff with no review band.
 
 ## ADR-22 — Source feasibility tiers; no verification claim without primary documentation

@@ -4,13 +4,56 @@
 
 | | |
 |---|---|
-| **Completed phase** | Phase 2 — manual pilot collection and workbook import (2026-09-27) |
-| **Current phase** | Phase 3 — not started |
-| **Tests** | 548 passing, 0 failing. Workbook file: 23 passing |
-| **Coverage** | 100% of `src/models/`. Workbook importer and CLI covered by `tests/test_workbook_import.py` and `tests/test_collect_cli.py` |
+| **Completed phase** | Phase 3 — normalization and deduplication (2026-09-27) |
+| **Current phase** | Phase 4 — relevance classification, not started |
+| **Tests** | 612 passing, 0 failing. Phase 3 targeted files: 130 passing |
+| **Coverage** | 100% of `src/models/`. Phase 3 covered by `tests/test_normalize.py`, `tests/test_dedupe.py`, and `tests/test_review_queue.py` |
 | **Last verified** | 2026-09-27 |
-| **Blockers** | None |
+| **Blockers** | Recalibrate the ADR-11 band on the scaled corpus. The pilot had no positive or in-band pairs, so duplicate recall is not estimated. |
 | **Next command** | See "Next command" below |
+
+---
+
+## Phase 3 — complete
+
+Normalization, deduplication, and the pilot calibration review are done.
+Phase 4 has not started. The Hamming 3/6 thresholds and `dedupe_min_tokens`
+stay at their defaults, retained provisionally. ADR-11 records the amendment.
+The scaled-corpus phase must calibrate again when positive or in-band pairs
+exist.
+
+`python main.py run --stages normalize,dedupe` reads the Phase 2
+`collected_documents.jsonl` and writes gitignored files under
+`data/interim/phase3/`. Collected documents are not modified. `raw_text` is
+unchanged. `raw_text_audit` is length-preserving. The canonical document of a
+duplicate group is the lowest `doc_id` (ADR-20). A shared listing or thread
+URL is not a duplicate.
+
+Pilot run, 2026-09-27, 35 documents:
+
+| | |
+|---|---|
+| Documents derived | 35 |
+| Documents with redactions | 0 |
+| Redaction spans | 0 |
+| Duplicate links | 0 |
+| Auto-confirmed | 0 |
+| Pending review | 0 |
+| Hamming 0–3 | 0 |
+| Hamming 4–6 | 0 |
+
+Closest pair was Hamming distance 21. Five documents are under
+`dedupe_min_tokens` (25) and none were similar enough to open a review item.
+`duplicate_review.csv` stays the operational queue and is header-only.
+`data/interim/phase3/duplicate_calibration.csv` holds the 10 nearest
+out-of-band pairs, distances 21–23. The researcher classified all 10 as
+distinct. Those decisions stay on the sheet across reruns and do not create
+links or review-queue items. Duplicate links remain empty.
+
+Human calibration: 10/10 negative controls distinct. Threshold retained
+provisionally. Recalibration is carried into the scaled-corpus phase.
+
+Targeted tests: `pytest tests/test_normalize.py tests/test_dedupe.py tests/test_review_queue.py tests/test_architecture.py -q` → 130 passed. Full suite: `pytest -q` → 612 passed.
 
 ---
 
@@ -19,8 +62,8 @@
 The manual pilot corpus is 35 genuine public records in the private workbook:
 Google Photos Help, Google Play Store, Apple App Store, YouTube, and Reddit.
 The workbook also holds 7 valid search-log sessions. `main.py collect` loads
-`AUTHOR_SALT` through configuration and calls `import_workbook`. Phase 3 has
-not started.
+`AUTHOR_SALT` through configuration and calls `import_workbook`. Phase 3 is
+now complete; Phase 4 has not started.
 
 Final import: 35 rows read, 35 accepted, 0 rejected, 3 `repeated_source_url`
 warnings, 7 search-log rows read, 7 valid, 0 issues. Each repeated URL is a
@@ -239,19 +282,19 @@ YouTube, and Reddit, plus 7 search-log sessions. It stays local and uncommitted.
 ## Next command
 
 ```powershell
-python main.py collect --path "data\manual\Private\Google_Photos_Pilot_Collection_Workbook.xlsx" --output "data\processed\pilot-import"
+python main.py run --stages normalize,dedupe
 ```
 
 ```bash
+pytest tests/test_normalize.py tests/test_dedupe.py tests/test_review_queue.py tests/test_architecture.py -q
 pytest -q
 ```
 
-Both were green on 2026-09-27: `pytest tests/test_workbook_import.py -q` →
-23 passed; `pytest -q` → 548 passed. The closed pilot import reads 35 document
-rows (35 accepted, 0 rejected, 3 `repeated_source_url` warnings) and 7
-search-log rows (7 valid, 0 issues).
-
-Phase 2 and the pilot research collection are complete. Phase 3 has not started.
+Both were green on 2026-09-27: 130 targeted tests passed; the full suite passed
+612. The pilot command derived 35 documents and wrote no duplicate links.
+The calibration sheet keeps 10 `distinct` decisions. Phase 3 is complete.
+Phase 4 has not started. The 3/6 thresholds stay provisional until the
+scaled corpus is calibrated.
 
 ## Known issues
 

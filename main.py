@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 from typing import Final, NoReturn
 
 from src.core.config import ConfigError, load_settings
@@ -104,8 +105,33 @@ def build_parser() -> argparse.ArgumentParser:
     )
     collect.set_defaults(handler=_collect)
 
+    run = subparsers.add_parser(
+        "run",
+        help=f"{COMMANDS['run'][0]} [Phase 3]",
+        description=(
+            "Run normalize and dedupe. Other stage lists are not implemented. "
+            "The command prints counts only."
+        ),
+    )
+    run.add_argument(
+        "--stages",
+        required=True,
+        help="Comma-separated stages. The implemented list is normalize,dedupe",
+    )
+    run.add_argument(
+        "--input",
+        default=None,
+        help="collected_documents.jsonl from Phase 2 (default: the pilot import)",
+    )
+    run.add_argument(
+        "--output",
+        default=None,
+        help="Directory for derived records, links, and the review CSV",
+    )
+    run.set_defaults(handler=_run)
+
     for name, (help_text, phase) in COMMANDS.items():
-        if name == "collect":
+        if name in {"collect", "run"}:
             continue
         sub = subparsers.add_parser(
             name, help=f"{help_text} [Phase {phase}]", description=help_text
@@ -147,6 +173,43 @@ def _collect(args: argparse.Namespace) -> int:
         print(f"Configuration error: {exc}", file=sys.stderr)
         return 1
     return run_workbook_import(args.path, args.output, author_salt=author_salt)
+
+
+def _run(args: argparse.Namespace) -> int:
+    """Dispatch normalize,dedupe. Import logic stays in src.pipeline."""
+    from src.pipeline.runner import (
+        DEFAULT_INPUT,
+        DEFAULT_OUTPUT,
+        format_summary,
+        load_collected_documents,
+        run_normalize_dedupe,
+    )
+
+    stages = [part.strip() for part in str(args.stages).split(",") if part.strip()]
+    if stages != ["normalize", "dedupe"]:
+        print(
+            "Only --stages normalize,dedupe is implemented.",
+            file=sys.stderr,
+        )
+        return 1
+
+    source = Path(args.input) if args.input else DEFAULT_INPUT
+    destination = Path(args.output) if args.output else DEFAULT_OUTPUT
+    if not source.is_file():
+        print(f"Collected documents not found: {source.name}", file=sys.stderr)
+        return 1
+    try:
+        settings = load_settings()
+    except ConfigError as exc:
+        print(f"Configuration error: {exc}", file=sys.stderr)
+        return 1
+    result = run_normalize_dedupe(
+        load_collected_documents(source),
+        settings.analysis.dedupe,
+        destination,
+    )
+    print(format_summary(result), end="")
+    return 0
 
 
 def _check_config(_args: argparse.Namespace) -> int:
