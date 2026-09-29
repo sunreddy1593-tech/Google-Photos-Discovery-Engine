@@ -763,13 +763,36 @@ def _xml_raw_text(path: Path) -> dict[str, str]:
 
     Reads the worksheet XML directly, and finds columns by header name, so this
     oracle does not share openpyxl's reader and does not depend on column order.
+    Shared-string cells are resolved from ``xl/sharedStrings.xml``.
     """
     def load_xml(payload: bytes) -> ET.Element:
         if payload.startswith(b"\xef\xbb\xbf"):
             payload = payload[3:]
         return ET.fromstring(payload)
 
+    def shared_strings(archive: zipfile.ZipFile) -> list[str]:
+        if "xl/sharedStrings.xml" not in archive.namelist():
+            return []
+        table = load_xml(archive.read("xl/sharedStrings.xml"))
+        return [
+            "".join(node.text or "" for node in item.findall(".//x:t", _NS))
+            for item in table.findall("x:si", _NS)
+        ]
+
+    def cell_text(cell: ET.Element, strings: list[str]) -> str | None:
+        kind = cell.get("t")
+        if kind == "inlineStr":
+            node = cell.find("x:is/x:t", _NS)
+            return None if node is None else node.text
+        node = cell.find("x:v", _NS)
+        if node is None or node.text is None:
+            return None
+        if kind == "s":
+            return strings[int(node.text)]
+        return node.text
+
     with zipfile.ZipFile(path) as archive:
+        strings = shared_strings(archive)
         workbook = load_xml(archive.read("xl/workbook.xml"))
         rels = load_xml(archive.read("xl/_rels/workbook.xml.rels"))
         rel_ns = {"r": "http://schemas.openxmlformats.org/package/2006/relationships"}
@@ -800,10 +823,10 @@ def _xml_raw_text(path: Path) -> dict[str, str]:
     assert header_row is not None
     columns: dict[str, str] = {}
     for cell in header_row.findall("x:c", _NS):
-        node = cell.find("x:v", _NS)
+        text = cell_text(cell, strings)
         ref = cell.get("r") or ""
-        if node is not None and node.text:
-            columns[node.text] = column_of(ref)
+        if text:
+            columns[text] = column_of(ref)
     id_column = columns["source_item_id"]
     text_column = columns["raw_text"]
 
@@ -811,10 +834,10 @@ def _xml_raw_text(path: Path) -> dict[str, str]:
     for row in root.findall("x:sheetData/x:row", _NS)[1:]:
         cells: dict[str, str] = {}
         for cell in row.findall("x:c", _NS):
-            node = cell.find("x:v", _NS)
+            text = cell_text(cell, strings)
             ref = cell.get("r") or ""
-            if node is not None and node.text is not None:
-                cells[column_of(ref)] = node.text
+            if text is not None:
+                cells[column_of(ref)] = text
         item_id = cells.get(id_column)
         if item_id and text_column in cells:
             texts[item_id] = cells[text_column]
@@ -848,6 +871,15 @@ def test_pilot_workbook_accepts_all_documents_and_reports_shared_urls(
             urls_by_value.setdefault(source_url.strip(), []).append((excel_row, item_id))
 
     expected_document_count = len(author_by_item)
+    search_log = load_workbook(path)["search_log"]
+    search_header = {cell.value: cell.column for cell in search_log[1]}
+    expected_search_log_count = 0
+    for excel_row in range(2, search_log.max_row + 1):
+        session_id = search_log.cell(
+            row=excel_row, column=search_header["search_session_id"]
+        ).value
+        if isinstance(session_id, str) and session_id.strip():
+            expected_search_log_count += 1
     expected_repeated = tuple(
         (
             url,
@@ -866,6 +898,7 @@ def test_pilot_workbook_accepts_all_documents_and_reports_shared_urls(
 
     assert authors, "pilot workbook has no author_name_raw values to hash"
     assert expected_document_count >= 30
+    assert expected_search_log_count > 0
 
     buffer = io.StringIO()
     configure_logging(logging.DEBUG, stream=buffer)
@@ -877,8 +910,8 @@ def test_pilot_workbook_accepts_all_documents_and_reports_shared_urls(
     assert result.report.rows_rejected == 0
     assert len(result.documents) == expected_document_count
     assert result.report.duplicate_ids == ()
-    assert result.report.search_log_rows_read == 7
-    assert result.report.search_log_rows_valid == 7
+    assert result.report.search_log_rows_read == expected_search_log_count
+    assert result.report.search_log_rows_valid == expected_search_log_count
     assert result.report.search_log_issues == ()
     for entry in result.report.search_log:
         assert entry.results_scanned >= 0
@@ -946,11 +979,18 @@ def test_pilot_workbook_accepts_all_documents_and_reports_shared_urls(
 
     jsonl_lines = result.documents_path.read_text(encoding="utf-8").splitlines()  # type: ignore[union-attr]
     without_text: list[str] = []
+    without_notes: list[str] = []
     for line in jsonl_lines:
         payload = json.loads(line)
         assert payload["raw_text"] == by_id[payload["source_item_id"]].raw_text
         payload.pop("raw_text")
         without_text.append(json.dumps(payload))
+        metadata = payload.get("metadata")
+        if isinstance(metadata, dict):
+            metadata = dict(metadata)
+            metadata.pop("researcher_notes", None)
+            payload = {**payload, "metadata": metadata}
+        without_notes.append(json.dumps(payload))
     blobs = {
         "collected documents": "\n".join(without_text),
         "import report json": result.report_json_path.read_text(encoding="utf-8"),
@@ -964,6 +1004,9 @@ def test_pilot_workbook_accepts_all_documents_and_reports_shared_urls(
             _assert_name_absent(blob, author, where=where)
         _assert_name_absent(blob, SALT, where=where)
         _assert_name_absent(blob, OTHER_SALT, where=where)
-        assert "author_name_raw" not in blob or where != "collected documents"
+        if where == "collected documents":
+            # Researcher notes may name the blank column. The stored record
+            # still must not have an author_name_raw field.
+            assert "author_name_raw" not in "\n".join(without_notes)
     _assert_name_absent(full_documents, SALT, where="collected documents raw text")
     _assert_name_absent(other_documents, OTHER_SALT, where="other-salt documents")
