@@ -6,7 +6,7 @@
 |---|---|
 | **Completed phase** | Phase 3 — normalization and deduplication (2026-09-27) |
 | **Current phase** | Phase 4 — in progress. Offline relevance infrastructure only. Not complete. |
-| **Tests** | 682 passing, 4 skipped, 0 failing. Targeted Phase 4 files: 166 passing, 4 skipped. |
+| **Tests** | 682 passing, 4 skipped, 0 failing. `tests/test_relevance.py` and `tests/test_pipeline_runner.py`: 26 passing. |
 | **Coverage** | 100% of `src/models/`. Phase 4 covered by `tests/test_relevance.py`, `tests/test_llm_gateway.py`, and `tests/test_pipeline_runner.py` |
 | **Last verified** | 2026-09-27 |
 | **Blockers** | Recalibrate the ADR-11 band on the scaled corpus. The pilot had no positive or in-band pairs, so duplicate recall is not estimated. |
@@ -306,29 +306,24 @@ empty evidence, null scope, 0 provider calls, 0 tokens, and an estimated
 cost of 0. Those rows are not `out_of_scope`. No response was cached.
 
 `data/interim/phase4/relevance_seed_review.csv` is the completed Phase 4
-seed review, dated 2026-09-27. It has 35 rows, one per pilot document.
-Every `doc_id` is present once. Every human scope, reason, and note is
-filled. Inclusion codes appear only on core and adjacent rows. Exclusion
-codes appear only on `out_of_scope`. No review code and no free-text reason
-appears. The sheet has no model prediction. It is not the Phase 6 gold set.
+seed review. The first 35 rows were approved on 2026-09-27. The remaining
+15 were labeled on 2026-09-29. The sheet now has 50 rows, one per current
+pilot document. Every `doc_id` is present once. Every human scope, reason,
+and note is filled. Inclusion codes appear only on core and adjacent rows.
+Exclusion codes appear only on `out_of_scope`. No review code and no
+free-text reason appears. The 35 earlier labels were not changed. The sheet
+has no model prediction. It is not the Phase 6 gold set.
 
 | Scope class | Rows |
 |---|---|
-| `core_incomplete_recall` | 4 |
-| `adjacent_known_item_retrieval` | 12 |
-| `out_of_scope` | 19 |
-| Total | 35 |
+| `core_incomplete_recall` | 12 |
+| `adjacent_known_item_retrieval` | 14 |
+| `out_of_scope` | 24 |
+| Total | 50 |
 
-The pilot has fewer core incomplete-recall cases than intended. Collect
-8–12 additional strong core cases before treating the dataset as
-sufficiently balanced. The approved labels were not changed to improve
-that distribution.
-
-An offline prefilter rerun keeps `human_scope_class`, `human_reason_code`,
-and `human_notes` on the same `doc_id`. It does not use row number. The
-regenerated source columns matched the approved sheet, so columns A–G were
-left as reviewed. A blank or repeated `doc_id` is rejected and the existing
-file is left in place.
+An offline prefilter on 2026-09-29 read 50 documents, routed all 50 to
+classification, and made 0 provider calls. It kept every human decision on
+the same `doc_id`, including the original 35. Source columns were unchanged.
 
 Review items open when confidence is below `relevance.confidence_review_below`
 (0.7), when a prefilter candidate scope disagrees with the classifier, when
@@ -403,27 +398,26 @@ pytest tests/test_relevance.py tests/test_llm_gateway.py tests/test_pipeline_run
 pytest -q
 ```
 
-The offline pilot commands were green on 2026-09-27. Prefilter routed all 35
-documents to classification. The researcher completed
-`relevance_seed_review.csv` the same day: 4 core, 12 adjacent, and 19 out of
-scope. An offline rerun preserved every human decision on its `doc_id`.
-Dry-run wrote nothing. The null provider recorded 35 `provider_unavailable`
-decisions and made no network call. Phase 4 is not complete. No live model
-was called. Phase 5 has not started. The pilot needs 8–12 more strong core
-cases before the seed set is treated as balanced. The 3/6 duplicate
-thresholds stay provisional until the scaled corpus is calibrated. Both pytest
-commands above were green on 2026-09-27: 166 targeted tests passed, 4 skipped;
-the full suite passed 682, with 4 skipped.
+The 50-record seed review was checked on 2026-09-29. Offline prefilter
+routed all 50 documents to classification, preserved every human label by
+`doc_id`, and made 0 provider calls. Phase 4 is not complete. No live model
+was called. Phase 5 has not started. The sheet has 12 core, 14 adjacent, and
+24 out of scope.
+
+```bash
+pytest tests/test_relevance.py tests/test_pipeline_runner.py -q
+pytest -q
+```
+
+Both were green on 2026-09-29: 26 passed in the two Phase 4 files; the full
+suite passed 682, with 4 skipped. The 3/6 duplicate thresholds stay
+provisional until the scaled corpus is calibrated.
 
 ## Known issues
 
 `RelevancePayload` can accept a review reason code together with a scope
 class. `RelevanceDecision` rejects that pairing when the decision is built.
 The payload schema was not tightened during seed-review integration.
-
-The completed seed sheet has 4 `core_incomplete_recall` rows. That is fewer
-core cases than intended. Collect 8–12 additional strong core cases before
-treating the dataset as sufficiently balanced.
 
 Phase 1 interpretations and the four places where the specification's
 field lists did not match its own model definitions are recorded in

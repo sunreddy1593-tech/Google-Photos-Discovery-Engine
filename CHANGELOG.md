@@ -5,6 +5,27 @@ decisions live in `DECISIONS.md`; this file records what was built.
 
 ---
 
+## 2026-09-29 — Phase 4 seed review completed for 50 records
+
+Phase 4 remains in progress. Phase 5 has not started. No live or paid model
+was called.
+
+The remaining 15 blank rows in `data/interim/phase4/relevance_seed_review.csv`
+now have human scope, reason, and notes. The 35 labels approved on
+2026-09-27 were not changed. Source columns were not changed. The sheet has
+50 unique document ids: 12 `core_incomplete_recall`, 14
+`adjacent_known_item_retrieval`, and 24 `out_of_scope`. Every human field is
+filled. Inclusion codes are used only with core and adjacent. Exclusion codes
+are used only with `out_of_scope`. No review code or free-text reason is
+present.
+
+`python main.py run --stages prefilter --offline` on 2026-09-29 kept all 50
+rows and all 50 human decisions, matched by `doc_id`. Provider calls: 0.
+
+Targeted tests: `pytest tests/test_relevance.py tests/test_pipeline_runner.py -q` → 26 passed. Full suite: `pytest -q` → 682 passed, 4 skipped.
+
+---
+
 ## 2026-09-27 — Phase 4 seed review integrated
 
 Phase 4 remains in progress. Phase 5 has not started. No live or paid model
