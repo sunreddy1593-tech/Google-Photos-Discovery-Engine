@@ -96,6 +96,12 @@ def seed_row_from_prefilter(
     )
 
 
+def load_seed_review(path: Path | str) -> tuple[SeedRow, ...]:
+    """Load the sheet in ``doc_id`` order. Invalid human fields raise."""
+    stored = _load(Path(path))
+    return tuple(stored[doc_id] for doc_id in sorted(stored))
+
+
 def write_seed_review(path: Path | str, rows: list[SeedRow]) -> None:
     """Write the sheet. Invalid human fields leave the existing file in place."""
     _require_unique_doc_ids([row.doc_id for row in rows])

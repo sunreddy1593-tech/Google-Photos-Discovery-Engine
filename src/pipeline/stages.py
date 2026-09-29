@@ -128,6 +128,8 @@ def run_phase4(
     project_root: Path | None = None,
     provider: StructuredProvider | None = None,
     sleeper=None,
+    cache_dir: Path | None = None,
+    provider_call_budget: int | None = None,
 ) -> Phase4Result:
     """Run prefilter, relevance, or both. Dry-run writes nothing and calls no provider."""
     destination = Path(output_dir)
@@ -160,7 +162,7 @@ def run_phase4(
     skips = non_canonical_map(links)
     prefilter_rows = _prefilter_rows(ordered, derived_by_id, skips)
 
-    cache_dir = destination.parent / "cache"
+    cache_dir = Path(cache_dir) if cache_dir is not None else destination.parent / "cache"
     denylist = tuple(secret for secret in (api_key, author_salt) if secret)
     chosen = provider
     if chosen is None:
@@ -195,6 +197,7 @@ def run_phase4(
             output_usd_per_million=output_usd_per_million,
             denylist=denylist,
             sleeper=sleeper,
+            call_budget=provider_call_budget,
         )
         done = _succeeded_targets(destination / "checkpoints.jsonl", resume) if resume else set()
         existing = _load_decisions(destination / "relevance_decisions.jsonl")

@@ -71,6 +71,10 @@ class UsageTotals:
         self.by_state[state.value] = self.by_state.get(state.value, 0) + 1
 
 
+class ProviderBudgetError(RuntimeError):
+    """Another provider call would pass the caller's budget."""
+
+
 class ModelGateway:
     """Content-addressed completions with a bounded retry."""
 
@@ -91,6 +95,7 @@ class ModelGateway:
         denylist: tuple[str, ...] = (),
         sleeper: Sleeper | None = None,
         clock: Callable[[], datetime] | None = None,
+        call_budget: int | None = None,
     ) -> None:
         self.provider = provider
         self.cache = cache
@@ -106,6 +111,7 @@ class ModelGateway:
         self.denylist = tuple(secret for secret in denylist if secret)
         self._sleeper = sleeper or _sleep
         self._clock = clock or (lambda: datetime.now(UTC))
+        self.call_budget = call_budget
         self.usage = UsageTotals()
         self._log = get_logger("llm.gateway")
 
@@ -256,6 +262,13 @@ class ModelGateway:
         calls = 0
         last_state: DecisionTechnicalState | None = None
         for attempt in range(self.max_retries):
+            if (
+                self.call_budget is not None
+                and self.usage.provider_calls + calls >= self.call_budget
+            ):
+                raise ProviderBudgetError(
+                    f"provider call budget is {self.call_budget}"
+                )
             calls += 1
             try:
                 response = self.provider.complete_structured(prompt, schema, params)

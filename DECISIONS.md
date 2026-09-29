@@ -38,11 +38,12 @@ Status legend: **Accepted** · **Accepted (default, calibration pending)** · **
 | 22 | Source feasibility tiers and documentation-linked verification | Accepted |
 | 23 | Public-export excerpt profile | Accepted (redistribution terms pending Phase 10) |
 | 24 | Review queue built in Phase 3 | Accepted |
-| 25 | Gold-set redesign: splits, separated labels, metric families | Accepted |
+| 25 | Gold-set redesign: splits, separated labels, metric families | Accepted, clarified by ADR-30 |
 | 26 | Rebuild equality is canonical content hashes | Accepted |
 | 27 | MVP versus stretch scope | Accepted |
 | 28 | First prompt is Phase 0 only; every phase has a prompt | Accepted |
 | 29 | M1 reports the case count rather than targeting it | Accepted |
+| 30 | Phase 4 seed split is not the Phase 6 gold split | Accepted |
 
 ---
 
@@ -641,7 +642,7 @@ every change below is a specification change rather than a refactor.
 ## ADR-25 — Gold-set redesign: separated labels, frozen holdout, named metric families
 
 - **Date:** 2026-09-21
-- **Status:** Accepted
+- **Status:** Accepted, clarified by ADR-30 (2026-09-29)
 - **Spec sections:** §15.11, §24 Phase 6, §23.7
 - **Decision:**
   1. `GoldDocumentLabel` (relevance, one per document) and `GoldCase` (extraction, **zero, one, or
@@ -744,6 +745,37 @@ every change below is a specification change rather than a refactor.
   just informative about which stage needs attention, not about whether the project is on track.
 - **Rejected:** Keeping the band as guidance with a warning not to tune toward it. A numeric range
   in a milestone is read as a target regardless of the surrounding prose.
+
+## ADR-30 — Phase 4 seed split and abstention metrics do not amend the gold set
+
+- **Date:** 2026-09-29
+- **Status:** Accepted
+- **Clarifies:** ADR-25
+- **Spec sections:** §24 Phase 4, §24 Phase 6, §23.7
+- **Decision:**
+  1. `relevance-seed-split/v1` is a Phase 4 prompt-development split only. It assigns 35
+     development records and 15 holdout records, stratified by scope class. Within a scope
+     class, documents are ordered by `doc_id` and holdout seats are `floor(i * n / k)`.
+  2. This split does not replace or amend the Phase 6 gold-set split. Phase 6 still uses the
+     independently specified hash of `doc_id`, about 40 percent development and 60 percent
+     holdout, stratified by source platform and scope class. The open question of the exact
+     gold ratio remains a Phase 6 decision.
+  3. No Phase 4 seed result may be presented as final product performance. The seed holdout
+     has not been used for prompt tuning.
+  4. For the Phase 4 seed evaluator, an `ok` prediction with a scope participates in the
+     three-class confusion matrix and in covered-only class metrics. A non-`ok` decision or a
+     null scope does not receive a predicted class. Those rows are excluded from covered-only
+     class metrics. They are abstentions and remain in the denominator of overall end-to-end
+     exact-scope accuracy. A missing prediction does the same. Both accuracies are reported.
+     Phase 6 gold metrics remain the families in ADR-25, including the rule that a non-`ok`
+     technical state is excluded from those gold metrics and the excluded count is reported.
+- **Rationale:** The 50-record seed is the set available for prompt development. Using it as if
+  it were the frozen gold split would make a later quality report a fitted number. Keeping
+  abstentions in the overall denominator stops a run that never decides from looking accurate
+  on the rows it happened to finish. Covered-only metrics still describe the decisions that
+  were actually completed.
+- **Rejected:** Replacing ADR-25's hash split with the 35/15 seed split. Dropping non-`ok`
+  rows from the Phase 4 overall accuracy. Treating a null scope as `out_of_scope`.
 
 ---
 

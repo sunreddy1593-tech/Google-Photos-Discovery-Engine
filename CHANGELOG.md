@@ -5,6 +5,65 @@ decisions live in `DECISIONS.md`; this file records what was built.
 
 ---
 
+## 2026-09-29 — Phase 4 holdout protection and smoke preparation
+
+Phase 4 remains in progress. Phase 5 has not started. No live model was
+called. The 15-record holdout has not been used for prompt tuning. No Phase 4
+seed result is final product performance.
+
+ADR-30 clarifies ADR-25. `relevance-seed-split/v1` is a 35/15
+scope-stratified prompt-development split. It does not replace the Phase 6
+hash-based gold split. Covered-only class metrics use `ok` predictions.
+Non-ok decisions and null scopes are abstentions. They stay in the overall
+accuracy denominator, together with missing predictions.
+
+Live relevance classification defaults to development records. Holdout
+classification requires `--holdout-unlock` and a prompt lock of configuration
+hashes, not labels. `python main.py smoke --dry-run` plans the six
+development documents and makes 0 provider calls. A live smoke writes a new
+directory and does not merge into the historical null-provider decisions.
+The provider-call budget is six.
+
+Targeted tests: `pytest tests/test_relevance.py tests/test_relevance_evaluation.py tests/test_pipeline_runner.py -q` → 36 passed. `pytest tests/test_relevance_governance.py -q` → 8 passed. Full suite: `pytest -q` → 710 passed, 4 skipped.
+
+---
+
+## 2026-09-29 — Phase 4 relevance evaluation preparation
+
+Phase 4 remains in progress. Phase 5 has not started. No live or paid model
+was called. The 15-record holdout has not been used for prompt tuning. No
+performance claim is supported.
+
+The approved seed sheet is split by `doc_id` under version
+`relevance-seed-split/v1`. Development has 35 documents: 8 core, 10
+adjacent, and 17 out of scope. Holdout has 15: 4 core, 4 adjacent, and
+7 out of scope. Within a scope class, ids are sorted and holdout seats are
+`floor(i * n / k)`. A valid manifest is preserved. An invalid one is
+rejected and left in place. The manifest is
+`data/interim/phase4/relevance_split_manifest.csv`.
+
+`python main.py evaluate --split development|holdout|all` scores stored
+decisions against the approved labels. It does not classify and it does not
+call a provider. Reports are `relevance_evaluation.json` and
+`relevance_evaluation.md` in the same directory. A null scope or a non-ok
+technical state is an abstention, kept in the overall-accuracy denominator.
+Covered-only accuracy is separate. Missing predictions are listed. Unknown
+document ids fail validation.
+
+The stored decisions are still the null-provider run: 35
+`provider_unavailable` rows and 15 documents with no decision. Scoring
+`all` reports abstention 1.0, technical-failure rate 0.7, overall accuracy
+0.0, 0 provider calls, 0 tokens, and estimated cost 0. That is the stored
+baseline, not a model score.
+
+This split is not the ADR-25 gold split. ADR-25 uses a hash of `doc_id`,
+about 40/60, stratified by platform and scope, and it drops non-ok rows
+from every metric. Those rules were not applied here.
+
+Targeted tests: `pytest tests/test_relevance.py tests/test_pipeline_runner.py -q` → 26 passed. `pytest tests/test_relevance_evaluation.py -q` → 10 passed. Full suite: `pytest -q` → 696 passed, 4 skipped.
+
+---
+
 ## 2026-09-29 — Phase 4 seed review completed for 50 records
 
 Phase 4 remains in progress. Phase 5 has not started. No live or paid model

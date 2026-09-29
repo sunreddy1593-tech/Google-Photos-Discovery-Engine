@@ -6,9 +6,9 @@
 |---|---|
 | **Completed phase** | Phase 3 — normalization and deduplication (2026-09-27) |
 | **Current phase** | Phase 4 — in progress. Offline relevance infrastructure only. Not complete. |
-| **Tests** | 682 passing, 4 skipped, 0 failing. `tests/test_relevance.py` and `tests/test_pipeline_runner.py`: 26 passing. |
-| **Coverage** | 100% of `src/models/`. Phase 4 covered by `tests/test_relevance.py`, `tests/test_llm_gateway.py`, and `tests/test_pipeline_runner.py` |
-| **Last verified** | 2026-09-27 |
+| **Tests** | 710 passing, 4 skipped, 0 failing. `tests/test_relevance.py`, `tests/test_relevance_evaluation.py`, and `tests/test_pipeline_runner.py`: 36 passing. `tests/test_relevance_governance.py`: 8 passing. |
+| **Coverage** | 100% of `src/models/`. Phase 4 covered by `tests/test_relevance.py`, `tests/test_relevance_evaluation.py`, `tests/test_relevance_governance.py`, `tests/test_llm_gateway.py`, and `tests/test_pipeline_runner.py` |
+| **Last verified** | 2026-09-29 |
 | **Blockers** | Recalibrate the ADR-11 band on the scaled corpus. The pilot had no positive or in-band pairs, so duplicate recall is not estimated. |
 | **Next command** | See "Next command" below |
 
@@ -325,6 +325,72 @@ An offline prefilter on 2026-09-29 read 50 documents, routed all 50 to
 classification, and made 0 provider calls. It kept every human decision on
 the same `doc_id`, including the original 35. Source columns were unchanged.
 
+### Evaluation preparation
+
+Evaluation infrastructure is ready. The 15-record holdout has not been used
+for prompt tuning. No live model has been called. No performance claim is
+supported.
+
+Split version `relevance-seed-split/v1`. Within each scope class, documents
+are ordered by `doc_id`. Holdout seats are `floor(i * n / k)`. The local
+manifest is `data/interim/phase4/relevance_split_manifest.csv`. A valid
+existing manifest is kept byte for byte. An invalid one is rejected and is
+not rewritten.
+
+| Split | Core | Adjacent | Out of scope | Total |
+|---|---|---|---|---|
+| Development | 8 | 10 | 17 | 35 |
+| Holdout | 4 | 4 | 7 | 15 |
+
+`python main.py evaluate --split development|holdout|all` scores stored
+decisions. It does not classify documents and it does not call a provider.
+The report files are `data/interim/phase4/relevance_evaluation.json` and
+`data/interim/phase4/relevance_evaluation.md`.
+
+The decisions on disk are the earlier null-provider run: 35
+`provider_unavailable` rows with null scope, and 15 documents with no
+decision. Scoring `all` on 2026-09-29 reports 50 documents, 15 missing
+predictions, abstention rate 1.0, technical-failure rate 0.7, overall
+exact-scope accuracy 0.0, covered-only accuracy 0.0, 0 provider calls, 0
+cache hits, 0 tokens, estimated cost 0, and no average latency. Those zeros
+describe the stored null-provider rows. They are not a model score.
+
+ADR-30 resolves the metric conflict. An `ok` prediction participates in the
+three-class confusion matrix and in covered-only class metrics. A non-ok
+decision or a null scope does not receive a predicted class and is excluded
+from those covered-only metrics. It is an abstention, not `out_of_scope`,
+and it stays in the overall end-to-end accuracy denominator. A missing
+prediction does the same. Both accuracies are reported. Phase 6 gold metrics
+remain the ADR-25 families.
+
+### Holdout protection and smoke preparation
+
+Live relevance classification defaults to the 35 development records. A live
+holdout or all-split classification is rejected unless the caller passes
+`--holdout-unlock` and a prompt-lock artifact whose prompt id, prompt
+version, prompt hash, provider, model, temperature, and max tokens match the
+run. The lock stores configuration and hashes only. Offline runs and
+`evaluate` still read stored decisions, including the historical
+null-provider file. No live holdout classification was run.
+
+The development smoke manifest is
+`data/interim/phase4/relevance_smoke_manifest.csv`, version
+`relevance-smoke/v1`. It holds the first two development `doc_id`s in each
+scope class and no human labels. A valid file is preserved.
+
+```powershell
+python main.py smoke --dry-run
+```
+
+That dry run makes 0 provider calls. A later live smoke writes a new
+directory under `data/interim/phase4/smoke/` and does not merge into the
+historical `relevance_decisions.jsonl`. The budget is six provider calls.
+
+Human labels are not placed in the prompt or a provider payload. The
+classifier does not read the seed sheet. The evaluator loads the labels when
+it scores stored decisions. The split reads scope class only to assign
+seats, and that assignment stays in the local manifest.
+
 Review items open when confidence is below `relevance.confidence_review_below`
 (0.7), when a prefilter candidate scope disagrees with the classifier, when
 evidence is missing, fabricated, or ambiguous, or when the provider response
@@ -367,6 +433,11 @@ not included. A cache hit makes no provider call.
   code paired with a scope class. `RelevanceDecision._check_reason_code_group`
   rejects that pairing. This is recorded and not changed in the seed-review
   integration.
+- ADR-30 records the resolution. `relevance-seed-split/v1` is prompt
+  development only. Phase 6 keeps the hash-based, platform-and-scope gold
+  split. Phase 4 covered-only metrics use `ok` predictions. Overall
+  end-to-end accuracy keeps abstentions. `data/gold` and
+  `scripts/evaluate.py` were not created.
 
 ---
 
@@ -400,17 +471,21 @@ pytest -q
 
 The 50-record seed review was checked on 2026-09-29. Offline prefilter
 routed all 50 documents to classification, preserved every human label by
-`doc_id`, and made 0 provider calls. Phase 4 is not complete. No live model
-was called. Phase 5 has not started. The sheet has 12 core, 14 adjacent, and
-24 out of scope.
+`doc_id`, and made 0 provider calls. Evaluation infrastructure is ready.
+The 15-record holdout has not been used for prompt tuning. No live model
+has been called, and no performance claim is supported. Phase 4 is not
+complete. Phase 5 has not started.
 
 ```bash
-pytest tests/test_relevance.py tests/test_pipeline_runner.py -q
+python main.py smoke --dry-run
+python main.py evaluate --split all
+pytest tests/test_relevance.py tests/test_relevance_evaluation.py tests/test_pipeline_runner.py -q
 pytest -q
 ```
 
-Both were green on 2026-09-29: 26 passed in the two Phase 4 files; the full
-suite passed 682, with 4 skipped. The 3/6 duplicate thresholds stay
+On 2026-09-29 the Phase 4 pytest command passed 36, and the full suite
+passed 710, with 4 skipped. `tests/test_relevance_governance.py` passed 8.
+The smoke dry-run made 0 provider calls. The 3/6 duplicate thresholds stay
 provisional until the scaled corpus is calibrated.
 
 ## Known issues
