@@ -21,25 +21,76 @@ class ProviderCallError(ProviderError):
     class.
     """
 
-    def __init__(self, message: str, state: DecisionTechnicalState) -> None:
+    def __init__(
+        self,
+        message: str,
+        state: DecisionTechnicalState,
+        *,
+        retry_after_seconds: float | None = None,
+        latency_seconds: float | None = None,
+    ) -> None:
         super().__init__(message)
         self.state = state
+        self.retry_after_seconds = retry_after_seconds
+        self.latency_seconds = latency_seconds
 
 
-def unavailable(message: str) -> ProviderCallError:
-    return ProviderCallError(message, DecisionTechnicalState.provider_unavailable)
+def unavailable(message: str, *, latency_seconds: float | None = None) -> ProviderCallError:
+    return ProviderCallError(
+        message,
+        DecisionTechnicalState.provider_unavailable,
+        latency_seconds=latency_seconds,
+    )
 
 
-def provider_failed(message: str) -> ProviderCallError:
-    return ProviderCallError(message, DecisionTechnicalState.provider_error)
+def provider_failed(message: str, *, latency_seconds: float | None = None) -> ProviderCallError:
+    return ProviderCallError(
+        message,
+        DecisionTechnicalState.provider_error,
+        latency_seconds=latency_seconds,
+    )
 
 
-def timed_out(message: str) -> ProviderCallError:
-    return ProviderCallError(message, DecisionTechnicalState.timeout)
+def timed_out(message: str, *, latency_seconds: float | None = None) -> ProviderCallError:
+    return ProviderCallError(
+        message,
+        DecisionTechnicalState.timeout,
+        latency_seconds=latency_seconds,
+    )
 
 
-def rate_limited(message: str) -> ProviderCallError:
-    return ProviderCallError(message, DecisionTechnicalState.rate_limited)
+def rate_limited(
+    message: str,
+    *,
+    retry_after_seconds: float | None = None,
+    latency_seconds: float | None = None,
+) -> ProviderCallError:
+    return ProviderCallError(
+        message,
+        DecisionTechnicalState.rate_limited,
+        retry_after_seconds=retry_after_seconds,
+        latency_seconds=latency_seconds,
+    )
+
+
+class ProviderFatalError(ProviderCallError):
+    """A failure that will reject every later document, such as bad credentials.
+
+    The gateway does not retry it, and the stage stops the run after recording
+    the document that hit it.
+    """
+
+
+def authentication_failed(
+    message: str,
+    *,
+    latency_seconds: float | None = None,
+) -> ProviderFatalError:
+    return ProviderFatalError(
+        message,
+        DecisionTechnicalState.provider_error,
+        latency_seconds=latency_seconds,
+    )
 
 
 @dataclass(frozen=True)
@@ -65,6 +116,10 @@ class ProviderResponse:
     output_tokens: int
     model: str
     provider: str
+    latency_seconds: float | None = None
+    requested_temperature: float | None = None
+    effective_temperature: float | None = None
+    cached_input_tokens: int | None = None
 
 
 class StructuredProvider(Protocol):

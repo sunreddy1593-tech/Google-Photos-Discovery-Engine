@@ -58,6 +58,7 @@ class Secrets(BaseSettings):
 
     anthropic_api_key: str | None = None
     openai_api_key: str | None = None
+    groq_api_key: str | None = None
     author_salt: str | None = None
     reddit_client_id: str | None = None
     reddit_client_secret: str | None = None
@@ -127,17 +128,46 @@ class SourcesConfig(_Section):
 
 class ModelsConfig(_Section):
     provider: str
+    api_key_env: str = "ANTHROPIC_API_KEY"
     prefilter_model: str | None = None
     relevance_model: str
     extraction_model: str
+    anthropic_relevance_model: str = "claude-sonnet-4-5"
+    groq_relevance_model: str = "openai/gpt-oss-120b"
     temperature: float = 0.0
     max_tokens: int = 4096
     timeout_seconds: int = 60
     max_retries: int = 3
-    # Accounting estimates only. They are not an invoice and they are not read
-    # from a provider. A no-key run records zero tokens either way.
+    # List-price estimates only. They are not an invoice and they are not
+    # actual billed cost. Cached input is optional; a missing count bills
+    # every input token at the normal input rate.
     estimated_input_usd_per_million: float = 0.0
+    estimated_cached_input_usd_per_million: float | None = None
     estimated_output_usd_per_million: float = 0.0
+    list_price_source: str = ""
+    list_price_retrieved_on: str = ""
+
+    def relevance_choice(self, override: str | None = None) -> tuple[str, str, str]:
+        """Active relevance provider, model, and environment-variable name.
+
+        The returned name is the variable, never a key value. An explicit
+        override selects that adapter. Anthropic stays available when Groq is
+        the configured smoke provider.
+        """
+        name = override or self.provider
+        if name == "groq":
+            model = self.relevance_model if self.provider == "groq" else self.groq_relevance_model
+            return "groq", model, "GROQ_API_KEY"
+        if name == "anthropic":
+            model = (
+                self.relevance_model
+                if self.provider == "anthropic"
+                else self.anthropic_relevance_model
+            )
+            return "anthropic", model, "ANTHROPIC_API_KEY"
+        if override is None:
+            return self.provider, self.relevance_model, self.api_key_env
+        raise ValueError(f"unsupported relevance provider {name!r}")
 
 
 class DedupeConfig(_Section):
@@ -359,6 +389,7 @@ def env_snapshot() -> dict[str, bool]:
         for name in (
             "ANTHROPIC_API_KEY",
             "OPENAI_API_KEY",
+            "GROQ_API_KEY",
             "AUTHOR_SALT",
             "REDDIT_CLIENT_ID",
             "REDDIT_CLIENT_SECRET",

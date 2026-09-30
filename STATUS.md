@@ -6,9 +6,9 @@
 |---|---|
 | **Completed phase** | Phase 3 — normalization and deduplication (2026-09-27) |
 | **Current phase** | Phase 4 — in progress. Offline relevance infrastructure only. Not complete. |
-| **Tests** | 710 passing, 4 skipped, 0 failing. `tests/test_relevance.py`, `tests/test_relevance_evaluation.py`, and `tests/test_pipeline_runner.py`: 36 passing. `tests/test_relevance_governance.py`: 8 passing. |
-| **Coverage** | 100% of `src/models/`. Phase 4 covered by `tests/test_relevance.py`, `tests/test_relevance_evaluation.py`, `tests/test_relevance_governance.py`, `tests/test_llm_gateway.py`, and `tests/test_pipeline_runner.py` |
-| **Last verified** | 2026-09-29 |
+| **Tests** | 728 passing, 5 skipped, 0 failing. `tests/test_groq_provider.py`, `tests/test_llm_gateway.py`, `tests/test_relevance_governance.py`, and `tests/test_pipeline_runner.py`: 45 passing. |
+| **Coverage** | 100% of `src/models/`. Phase 4 covered by `tests/test_relevance.py`, `tests/test_relevance_evaluation.py`, `tests/test_relevance_governance.py`, `tests/test_llm_gateway.py`, `tests/test_pipeline_runner.py`, and `tests/test_groq_provider.py` |
+| **Last verified** | 2026-09-30 |
 | **Blockers** | Recalibrate the ADR-11 band on the scaled corpus. The pilot had no positive or in-band pairs, so duplicate recall is not estimated. |
 | **Next command** | See "Next command" below |
 
@@ -377,6 +377,18 @@ The development smoke manifest is
 `data/interim/phase4/relevance_smoke_manifest.csv`, version
 `relevance-smoke/v1`. It holds the first two development `doc_id`s in each
 scope class and no human labels. A valid file is preserved.
+
+Groq is a provisional Phase 4 relevance provider (ADR-31), configured as
+`openai/gpt-oss-120b`. Anthropic remains implemented. This is not a claim
+that Groq is better, and it is not a production default. No live Groq call
+has been made. A requested temperature of 0 is sent as `1e-8`. The six-call
+budget reserves one attempt for each of the six documents. A retry is allowed
+only when calls remain after that reservation. Invalid credentials stop the
+run. List price, retrieved 2026-09-30 from Groq's published price for this
+model, is USD 0.15 per million input tokens, USD 0.075 per million cached
+input tokens, and USD 0.60 per million output tokens. Missing cached-token
+counts use the input rate. Actual billed cost stays unknown unless the
+provider reports it. The list price is not a free-tier claim.
 
 ```powershell
 python main.py smoke --dry-run

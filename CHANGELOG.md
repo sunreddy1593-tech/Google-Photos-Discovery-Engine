@@ -5,6 +5,25 @@ decisions live in `DECISIONS.md`; this file records what was built.
 
 ---
 
+## 2026-09-30 — Groq adapter for the Phase 4 relevance smoke
+
+Phase 4 remains in progress. Phase 5 has not started. No live provider was
+called. The holdout was not unlocked.
+
+ADR-31 adds Groq as a provisional relevance provider. Anthropic stays
+implemented. The smoke configuration is `groq` and `openai/gpt-oss-120b`,
+with `GROQ_API_KEY`. JSON Schema mode does not skip application validation.
+A requested temperature of 0 is sent as `1e-8`, and that floor is part of the
+Groq cache key. Retries count toward the six-call budget, and only when the
+remaining budget is greater than the number of documents not yet attempted.
+With six documents, each gets one attempt. Invalid credentials stop the run.
+List price for `openai/gpt-oss-120b`, retrieved 2026-09-30 from Groq's
+published price, is USD 0.15 input, USD 0.075 cached input, and USD 0.60
+output per million tokens. Actual billed cost stays unknown unless the
+provider reports it. Free-tier usage is not assumed.
+
+---
+
 ## 2026-09-29 — Phase 4 holdout protection and smoke preparation
 
 Phase 4 remains in progress. Phase 5 has not started. No live model was

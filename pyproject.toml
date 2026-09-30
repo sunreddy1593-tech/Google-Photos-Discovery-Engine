@@ -14,7 +14,7 @@ requires-python = ">=3.12,<3.13"
 # Phase 0 installs the core set only. Later phases add their own:
 #   Phase 2  openpyxl (workbook import). httpx stays out until a collector
 #            actually makes an HTTP call.
-#   Phase 4  anthropic (the OpenAI SDK stays out until that adapter is built)
+#   Phase 4  anthropic, groq (the OpenAI SDK stays out; Groq uses its own SDK)
 #   Phase 7  google-api-python-client, praw
 #   Phase 8  pandas  ·  Phase 10  streamlit
 dependencies = [
@@ -24,6 +24,7 @@ dependencies = [
     "python-dotenv>=1,<2",
     "openpyxl>=3.1,<4",
     "anthropic>=0.34,<1",
+    "groq>=0.13,<1",
 ]
 
 [project.optional-dependencies]

@@ -27,7 +27,7 @@ SRC = PROJECT_ROOT / "src"
 #: Provider SDKs. Only ``src/llm/providers/`` may import these (Phase 4 onward);
 #: everything else goes through the gateway, which is what keeps the deterministic
 #: path free of a hard dependency on a vendor package.
-PROVIDER_SDKS = frozenset({"anthropic", "openai", "cohere", "google.generativeai"})
+PROVIDER_SDKS = frozenset({"anthropic", "groq", "openai", "cohere", "google.generativeai"})
 
 #: Presentation-only dependencies. No module under ``src/`` may import these: the
 #: pipeline must run headless, and ``app.py`` is the only Streamlit entry point.

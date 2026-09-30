@@ -11,11 +11,13 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from src.core.versions import prompt_version
+from src.core.ids import sha256_hex
+from src.core.versions import RULESET_VERSION, SCHEMA_VERSION, prompt_version
 from src.models.document_derived import DocumentDerived
 from src.models.duplicate_link import DuplicateLink
 from src.models.collected_document import CollectedDocument
 from src.pipeline.stages import phase4_run_id, run_phase4
+from src.llm.providers.groq import effective_temperature
 from src.relevance.prompts import PROMPT_ID
 from src.relevance.smoke import SMOKE_CALL_BUDGET, SmokeSelectionError, assert_development_smoke
 from src.relevance.split import SplitAssignment
@@ -108,6 +110,13 @@ def run_smoke(
     api_key: str | None = None,
     provider_instance=None,
     project_root: Path | None = None,
+    sleeper=None,
+    max_retries: int = 3,
+    input_usd_per_million: float = 0.0,
+    output_usd_per_million: float = 0.0,
+    cached_input_usd_per_million: float | None = None,
+    list_price_source: str = "",
+    list_price_retrieved_on: str = "",
 ) -> SmokePlan:
     """Classify the smoke ids, or stop before any call when ``dry_run`` is set."""
     plan = plan_smoke_run(
@@ -125,6 +134,8 @@ def run_smoke(
     )
     historical_decisions = Path(historical_dir) / HISTORICAL_DECISIONS
     before = historical_decisions.read_bytes() if historical_decisions.is_file() else None
+    if not dry_run and not offline and provider_instance is None and provider != "null" and not api_key:
+        raise SmokeRunError(f"{provider} API key is not set")
     if dry_run:
         if before is not None and historical_decisions.read_bytes() != before:
             raise SmokeRunError("dry run changed the historical decisions")
@@ -135,6 +146,39 @@ def run_smoke(
     chosen_derived = [row for row in derived if row.doc_id in allowed]
     if {document.doc_id for document in chosen_documents} != allowed:
         raise SmokeSelectionError("smoke documents do not match the development manifest")
+    requested, effective = _decoding(provider, temperature)
+    model_call = {
+        "provider": provider,
+        "model": model,
+        "requested_temperature": requested,
+        "effective_temperature": effective,
+        "max_tokens": max_tokens,
+        "prompt_id": plan.prompt_id,
+        "prompt_version": plan.prompt_version,
+        "schema_version": SCHEMA_VERSION,
+        "ruleset_version": RULESET_VERSION,
+        "model_config_hash": _model_config_hash(
+            provider=provider,
+            model=model,
+            requested_temperature=requested,
+            effective_temperature=effective,
+            max_tokens=max_tokens,
+            prompt_id=plan.prompt_id,
+            prompt_version=plan.prompt_version,
+        ),
+        "call_budget": plan.call_budget,
+        "list_price_usd_per_million": {
+            "input": input_usd_per_million,
+            "cached_input": cached_input_usd_per_million,
+            "output": output_usd_per_million,
+        },
+        "list_price_source": list_price_source,
+        "list_price_retrieved_on": list_price_retrieved_on,
+        "cost_note": (
+            "actual billed cost is unknown; the list price is an estimate, "
+            "not an invoice, and usage is not assumed to be free"
+        ),
+    }
     result = run_phase4(
         chosen_documents,
         chosen_derived,
@@ -152,6 +196,12 @@ def run_smoke(
         provider_call_budget=plan.call_budget,
         provider=provider_instance,
         project_root=project_root or Path.cwd(),
+        model_call=model_call,
+        sleeper=sleeper,
+        max_retries=max_retries,
+        input_usd_per_million=input_usd_per_million,
+        output_usd_per_million=output_usd_per_million,
+        cached_input_usd_per_million=cached_input_usd_per_million,
     )
     if result.provider_calls > SMOKE_CALL_BUDGET:
         raise SmokeRunError(
@@ -187,7 +237,25 @@ def _refuse_historical(destination: Path, historical_dir: Path) -> None:
         raise SmokeRunError("smoke output already has decisions; refusing to merge")
 
 
+def _decoding(provider: str, temperature: float) -> tuple[float, float]:
+    requested = float(temperature)
+    if provider == "groq":
+        return requested, effective_temperature(requested)
+    return requested, requested
+
+
+def _model_config_hash(**fields: object) -> str:
+    blob = json.dumps(fields, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return sha256_hex(blob)
+
+
 def _write_smoke_record(plan: SmokePlan, provider_calls: int, cache_hits: int, cache_misses: int) -> None:
+    manifest_path = plan.output_dir / "run_manifest.json"
+    model_call = {}
+    if manifest_path.is_file():
+        stored = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if isinstance(stored.get("model_call"), dict):
+            model_call = stored["model_call"]
     payload = {
         "doc_ids": list(plan.doc_ids),
         "prompt_id": plan.prompt_id,
@@ -201,6 +269,7 @@ def _write_smoke_record(plan: SmokePlan, provider_calls: int, cache_hits: int, c
         "cache_misses": cache_misses,
         "provider_calls": provider_calls,
         "call_budget": plan.call_budget,
+        "model_call": model_call,
     }
     path = plan.output_dir / "smoke_run.json"
     path.write_text(

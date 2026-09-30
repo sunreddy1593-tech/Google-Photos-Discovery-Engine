@@ -18,7 +18,7 @@ from src.core.ids import event_id, sha1_short
 from src.core.versions import RULESET_VERSION, SCHEMA_VERSION, prompt_version
 from src.extract.validator import validate_span
 from src.llm.gateway import ModelGateway
-from src.llm.providers.base import StructuredProvider
+from src.llm.providers.base import ProviderFatalError, StructuredProvider
 from src.llm.select import select_provider
 from src.models.collected_document import CollectedDocument
 from src.models.document_derived import DocumentDerived
@@ -91,6 +91,8 @@ class Phase4Result:
     offline: bool
     output_dir: Path
     files_written: tuple[str, ...] = field(default_factory=tuple)
+    latency_seconds: tuple[float, ...] = ()
+    cached_input_tokens: int | None = None
 
 
 def non_canonical_map(links: list[DuplicateLink] | tuple[DuplicateLink, ...]) -> dict[str, str]:
@@ -123,6 +125,7 @@ def run_phase4(
     max_retries: int = 3,
     input_usd_per_million: float = 0.0,
     output_usd_per_million: float = 0.0,
+    cached_input_usd_per_million: float | None = None,
     confidence_review_below: float = 0.7,
     config_hash: str = "",
     project_root: Path | None = None,
@@ -130,6 +133,7 @@ def run_phase4(
     sleeper=None,
     cache_dir: Path | None = None,
     provider_call_budget: int | None = None,
+    model_call: dict | None = None,
 ) -> Phase4Result:
     """Run prefilter, relevance, or both. Dry-run writes nothing and calls no provider."""
     destination = Path(output_dir)
@@ -182,6 +186,9 @@ def run_phase4(
     input_tokens = 0
     output_tokens = 0
     estimated_cost = 0.0
+    latency_seconds: tuple[float, ...] = ()
+    cached_input_tokens: int | None = None
+    fatal_error: ProviderFatalError | None = None
 
     if "relevance" in stages and not dry_run:
         gateway = ModelGateway(
@@ -195,6 +202,7 @@ def run_phase4(
             max_retries=max_retries,
             input_usd_per_million=input_usd_per_million,
             output_usd_per_million=output_usd_per_million,
+            cached_input_usd_per_million=cached_input_usd_per_million,
             denylist=denylist,
             sleeper=sleeper,
             call_budget=provider_call_budget,
@@ -208,20 +216,45 @@ def run_phase4(
             or (resume and decision.doc_id in done)
         ]
         fresh: list[RelevanceDecision] = []
-        for row in prefilter_rows:
-            if not row.passed:
-                continue
-            if resume and row.doc_id in done and any(item.doc_id == row.doc_id for item in existing):
-                continue
-            outcome = _classify_one(
-                gateway,
-                ordered_by_id(ordered)[row.doc_id],
-                derived_by_id[row.doc_id],
-                row,
-                model_name=model_name,
-                confidence_review_below=confidence_review_below,
-                denylist=denylist,
+        pending = [
+            row
+            for row in prefilter_rows
+            if row.passed
+            and not (
+                resume
+                and row.doc_id in done
+                and any(item.doc_id == row.doc_id for item in existing)
             )
+        ]
+        documents_by_id = ordered_by_id(ordered)
+        for index, row in enumerate(pending):
+            try:
+                outcome = _classify_one(
+                    gateway,
+                    documents_by_id[row.doc_id],
+                    derived_by_id[row.doc_id],
+                    row,
+                    model_name=model_name,
+                    confidence_review_below=confidence_review_below,
+                    denylist=denylist,
+                    unattempted_documents=len(pending) - index - 1,
+                )
+            except ProviderFatalError:
+                outcome = failure_outcome(
+                    doc_id=row.doc_id,
+                    content_hash=derived_by_id[row.doc_id].content_hash,
+                    model_name=model_name,
+                    state=DecisionTechnicalState.provider_error,
+                    decided_at=PHASE_INSTANT,
+                    message="the provider rejected the credentials",
+                )
+                relevance_outcomes.append(outcome)
+                fresh.append(outcome.decision)
+                fatal_error = ProviderFatalError(
+                    "the provider rejected the credentials",
+                    DecisionTechnicalState.provider_error,
+                )
+                break
             relevance_outcomes.append(outcome)
             fresh.append(outcome.decision)
         decisions = _merge_decisions(kept, fresh)
@@ -231,6 +264,10 @@ def run_phase4(
         input_tokens = gateway.usage.input_tokens
         output_tokens = gateway.usage.output_tokens
         estimated_cost = gateway.usage.estimated_cost_usd
+        latency_seconds = tuple(gateway.usage.latency_seconds)
+        cached_input_tokens = (
+            gateway.usage.cached_input_tokens if gateway.usage.cached_input_reported else None
+        )
     else:
         decisions = _load_decisions(destination / "relevance_decisions.jsonl") if not dry_run else []
 
@@ -292,9 +329,15 @@ def run_phase4(
             output_tokens=output_tokens,
             estimated_cost=estimated_cost,
             destination=destination,
+            latency_seconds=latency_seconds,
+            cached_input_tokens=cached_input_tokens,
+            model_call=model_call,
         )
         write_manifest(destination / "run_manifest.json", manifest)
         files.append("run_manifest.json")
+
+    if fatal_error is not None:
+        raise fatal_error
 
     counts = _count(prefilter_rows)
     by_state: dict[str, int] = {}
@@ -335,6 +378,8 @@ def run_phase4(
         input_tokens=input_tokens,
         output_tokens=output_tokens,
         estimated_cost_usd=estimated_cost,
+        latency_seconds=latency_seconds,
+        cached_input_tokens=cached_input_tokens,
         seed_rows=seed_count,
         dry_run=dry_run,
         offline=offline or active_provider_name == "null",
@@ -503,6 +548,7 @@ def _classify_one(
     model_name: str,
     confidence_review_below: float,
     denylist: tuple[str, ...],
+    unattempted_documents: int = 0,
 ) -> ClassificationOutcome:
     prompt = render_relevance_prompt(doc_id=document.doc_id, raw_text_audit=derived.raw_text_audit)
     if any(secret and secret in prompt for secret in denylist):
@@ -523,6 +569,7 @@ def _classify_one(
         prompt_version=prompt_version(PROMPT_ID),
         ruleset_version=RULESET_VERSION,
         discard_keys=("is_relevant",),
+        unattempted_documents=unattempted_documents,
     )
     if completed.technical_state is not DecisionTechnicalState.ok or not isinstance(
         completed.validated, RelevancePayload
@@ -755,6 +802,9 @@ def _manifest(
     output_tokens: int,
     estimated_cost: float,
     destination: Path,
+    latency_seconds: tuple[float, ...] = (),
+    cached_input_tokens: int | None = None,
+    model_call: dict | None = None,
 ) -> dict[str, object]:
     counts = _count(prefilter_rows)
     drop_reasons: dict[str, int] = {}
@@ -775,7 +825,7 @@ def _manifest(
         path = destination / name
         if path.is_file():
             hashes[name] = artifact_hash(_read_jsonl(path), key)
-    return manifest_payload(
+    payload = manifest_payload(
         run_id=run_id,
         stages=stages,
         dry_run=dry_run,
@@ -807,6 +857,22 @@ def _manifest(
         output_hashes=hashes,
         generated_at=PHASE_INSTANT,
     )
+    if model_call is not None:
+        recorded = dict(model_call)
+        recorded["provider_calls"] = provider_calls
+        recorded["cache_hits"] = cache_hits
+        recorded["cache_misses"] = cache_misses
+        recorded["input_tokens"] = input_tokens
+        recorded["output_tokens"] = output_tokens
+        recorded["cached_input_tokens"] = cached_input_tokens
+        recorded["estimated_list_price_usd"] = round(estimated_cost, 6)
+        # List price is not an invoice. Leave billed cost unknown unless a
+        # provider response explicitly supplies it. Nothing here does.
+        recorded["actual_billed_cost_usd"] = None
+        recorded["free_tier_usage"] = False
+        recorded["latency_seconds"] = [round(value, 6) for value in latency_seconds]
+        payload["model_call"] = recorded
+    return payload
 
 
 def _count(rows: list[PrefilterResult]) -> dict[str, int]:

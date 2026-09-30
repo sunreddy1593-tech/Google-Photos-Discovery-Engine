@@ -44,6 +44,7 @@ Status legend: **Accepted** · **Accepted (default, calibration pending)** · **
 | 28 | First prompt is Phase 0 only; every phase has a prompt | Accepted |
 | 29 | M1 reports the case count rather than targeting it | Accepted |
 | 30 | Phase 4 seed split is not the Phase 6 gold split | Accepted |
+| 31 | Groq is a provisional Phase 4 relevance provider | Accepted |
 
 ---
 
@@ -776,6 +777,42 @@ every change below is a specification change rather than a refactor.
   were actually completed.
 - **Rejected:** Replacing ADR-25's hash split with the 35/15 seed split. Dropping non-`ok`
   rows from the Phase 4 overall accuracy. Treating a null scope as `out_of_scope`.
+
+## ADR-31 — Groq is a provisional Phase 4 relevance provider
+
+- **Date:** 2026-09-30
+- **Status:** Accepted
+- **Does not amend:** ADR-14. Anthropic remains an implemented adapter.
+- **Spec sections:** §19, §24 Phase 4
+- **Decision:** The Phase 4 relevance smoke may call Groq through the existing gateway.
+  The active configuration is provider `groq`, model `openai/gpt-oss-120b`, and
+  `GROQ_API_KEY`. Structured output uses JSON Schema mode for `RelevancePayload`.
+  Application validation is unchanged: a bad scope/reason pair, a bad confidence, or a
+  span that is not verbatim becomes a technical failure or a review item, never
+  `out_of_scope`. A requested temperature of 0 is sent as the fixed floor `1e-8`. The
+  cache key and the run manifest record that floor. The prompt lock still identifies
+  the requested temperature from configuration. Groq and Anthropic cache entries do not
+  overlap. Every external attempt, including a retry, counts toward the six-call smoke
+  budget. A 429 uses `Retry-After` when it is a number of seconds, capped at 60.
+  Waiting does not count as a call. A retry is allowed only when the remaining
+  external-call budget is greater than the number of documents that have not yet
+  been attempted. With six documents and a budget of six, each document gets one
+  attempt, and a 429 does not consume the next document's attempt. Invalid
+  credentials stop the run. Actual billed cost is recorded only when the provider
+  supplies it. The list-price estimate is separate. Free-tier usage is not assumed.
+  This choice is provisional. It is not a claim that Groq is better than Anthropic,
+  and it is not a production default.
+- **List price, retrieved 2026-09-30:** Groq's published list price for
+  `openai/gpt-oss-120b` is USD 0.15 per million input tokens, USD 0.075 per
+  million cached input tokens, and USD 0.60 per million output tokens. Source:
+  Groq published list price for `openai/gpt-oss-120b`. If a response does not
+  report cached input tokens, the estimate bills every input token at USD 0.15.
+  The estimate is not copied into actual billed cost.
+- **Rationale:** The smoke needs one live provider, a hard call budget, and a cache
+  identity that will not replay an Anthropic response as a Groq response. Leaving
+  Anthropic in place keeps the original adapter available without a second code path.
+- **Rejected:** Replacing Anthropic. Using the OpenAI SDK to reach Groq. Treating every
+  Groq response as free. Letting structured output skip the evidence ladder.
 
 ---
 

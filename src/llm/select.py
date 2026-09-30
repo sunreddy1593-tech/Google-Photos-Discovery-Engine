@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from src.llm.providers.anthropic import AnthropicProvider
 from src.llm.providers.base import StructuredProvider
+from src.llm.providers.groq import GroqProvider
 from src.llm.providers.null import NullProvider
 
 
@@ -22,4 +23,6 @@ def select_provider(
         return NullProvider()
     if configured_name == "anthropic":
         return AnthropicProvider(api_key)
+    if configured_name == "groq":
+        return GroqProvider(api_key)
     return NullProvider()

@@ -173,6 +173,12 @@ def build_parser() -> argparse.ArgumentParser:
         default="data/interim/phase4/relevance_prompt_lock.json",
         help="Prompt-lock artifact required for a live holdout classification",
     )
+    run.add_argument(
+        "--provider",
+        choices=["groq", "anthropic"],
+        default=None,
+        help="Relevance provider. The default is config/models.yaml.",
+    )
     run.set_defaults(handler=_run)
 
     smoke = subparsers.add_parser(
@@ -213,6 +219,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--cache",
         default="data/interim/cache",
         help="Existing relevance response cache",
+    )
+    smoke.add_argument(
+        "--provider",
+        choices=["groq", "anthropic"],
+        default=None,
+        help="Relevance provider. The default is config/models.yaml.",
     )
     smoke.set_defaults(handler=_smoke_relevance)
 
@@ -393,6 +405,9 @@ def _run_phase4(args: argparse.Namespace, stages: list[str]) -> int:
             if line.strip()
         ]
     offline = bool(args.offline) or bool(args.dry_run)
+    provider_name, model_name, env_name, api_key = _relevance_runtime(
+        settings, getattr(args, "provider", None)
+    )
     if "relevance" in stages and not offline:
         from src.relevance.lock import HoldoutLocked, authorize_live_classification
         from src.relevance.split import SplitError, doc_ids_for_split, load_split_manifest
@@ -403,8 +418,8 @@ def _run_phase4(args: argparse.Namespace, stages: list[str]) -> int:
                 split_name=args.split,
                 holdout_unlocked=bool(args.holdout_unlock),
                 lock_path=args.prompt_lock,
-                provider=settings.models.provider,
-                model=settings.models.relevance_model,
+                provider=provider_name,
+                model=model_name,
                 temperature=settings.models.temperature,
                 max_tokens=settings.models.max_tokens,
             )
@@ -417,6 +432,9 @@ def _run_phase4(args: argparse.Namespace, stages: list[str]) -> int:
         if not documents:
             print("No documents in the authorized split.", file=sys.stderr)
             return 1
+        if not api_key:
+            print(f"{env_name} is not set.", file=sys.stderr)
+            return 1
     result = run_phase4(
         documents,
         derived,
@@ -427,9 +445,9 @@ def _run_phase4(args: argparse.Namespace, stages: list[str]) -> int:
         dry_run=bool(args.dry_run),
         resume=args.resume,
         offline=offline,
-        provider_name=settings.models.provider,
-        model_name=settings.models.relevance_model,
-        api_key=None if offline else settings.secrets.anthropic_api_key,
+        provider_name=provider_name,
+        model_name=model_name,
+        api_key=None if offline else api_key,
         author_salt=settings.secrets.author_salt,
         temperature=settings.models.temperature,
         max_tokens=settings.models.max_tokens,
@@ -437,6 +455,7 @@ def _run_phase4(args: argparse.Namespace, stages: list[str]) -> int:
         max_retries=settings.models.max_retries,
         input_usd_per_million=settings.models.estimated_input_usd_per_million,
         output_usd_per_million=settings.models.estimated_output_usd_per_million,
+        cached_input_usd_per_million=settings.models.estimated_cached_input_usd_per_million,
         confidence_review_below=settings.analysis.relevance.confidence_review_below,
         config_hash=settings.config_hash(),
         project_root=settings.project_root,
@@ -457,6 +476,9 @@ def _smoke_relevance(args: argparse.Namespace) -> int:
         return 1
     try:
         settings = load_settings()
+        provider_name, model_name, env_name, api_key = _relevance_runtime(
+            settings, args.provider
+        )
         assignments = load_split_manifest(split_path)
         doc_ids = ensure_smoke_manifest(args.manifest, assignments)
         plan = plan_smoke_run(
@@ -465,8 +487,8 @@ def _smoke_relevance(args: argparse.Namespace) -> int:
             output_parent=args.output,
             historical_dir=args.historical,
             cache_dir=args.cache,
-            provider=settings.models.provider,
-            model=settings.models.relevance_model,
+            provider=provider_name,
+            model=model_name,
             temperature=settings.models.temperature,
             max_tokens=settings.models.max_tokens,
             dry_run=True if args.dry_run else False,
@@ -483,15 +505,21 @@ def _smoke_relevance(args: argparse.Namespace) -> int:
         print(f"  provider             {plan.provider}")
         print(f"  model                {plan.model}")
         print(f"  temperature          {plan.temperature}")
+        print(f"  effective temperature { _effective_temperature(plan.provider, plan.temperature) }")
         print(f"  max tokens           {plan.max_tokens}")
         print(f"  cache                {plan.cache_dir}")
         print(f"  call budget          {plan.call_budget}")
         print("  provider calls       0")
         return 0
 
+    if not api_key:
+        print(f"{env_name} is not set.", file=sys.stderr)
+        return 1
+
     from src.models.document_derived import DocumentDerived
     from src.models.duplicate_link import DuplicateLink
     from src.pipeline.runner import DEFAULT_INPUT, load_collected_documents
+    from src.llm.providers.base import ProviderFatalError
     from src.pipeline.smoke_run import run_smoke
 
     source = DEFAULT_INPUT
@@ -523,22 +551,42 @@ def _smoke_relevance(args: argparse.Namespace) -> int:
             output_parent=args.output,
             historical_dir=args.historical,
             cache_dir=args.cache,
-            provider=settings.models.provider,
-            model=settings.models.relevance_model,
+            provider=provider_name,
+            model=model_name,
             temperature=settings.models.temperature,
             max_tokens=settings.models.max_tokens,
             dry_run=False,
             offline=False,
-            api_key=settings.secrets.anthropic_api_key,
+            api_key=api_key,
             project_root=settings.project_root,
+            max_retries=settings.models.max_retries,
+            input_usd_per_million=settings.models.estimated_input_usd_per_million,
+            output_usd_per_million=settings.models.estimated_output_usd_per_million,
+            cached_input_usd_per_million=settings.models.estimated_cached_input_usd_per_million,
+            list_price_source=settings.models.list_price_source,
+            list_price_retrieved_on=settings.models.list_price_retrieved_on,
         )
-    except (SmokeSelectionError, SmokeRunError) as exc:
+    except (SmokeSelectionError, SmokeRunError, ProviderFatalError) as exc:
         print(f"Smoke error: {exc}", file=sys.stderr)
         return 1
     print(f"Relevance smoke wrote {finished.output_dir}")
     print(f"  provider calls       {finished.provider_calls}")
     print(f"  call budget          {finished.call_budget}")
     return 0
+
+
+def _relevance_runtime(settings, override: str | None) -> tuple[str, str, str, str | None]:
+    """Provider, model, environment-variable name, and key. The key may be absent."""
+    provider, model, env_name = settings.models.relevance_choice(override)
+    return provider, model, env_name, getattr(settings.secrets, env_name.lower(), None)
+
+
+def _effective_temperature(provider: str, requested: float) -> float:
+    if provider == "groq":
+        from src.llm.providers.groq import effective_temperature
+
+        return effective_temperature(requested)
+    return float(requested)
 
 
 def _evaluate_relevance(args: argparse.Namespace) -> int:
@@ -640,6 +688,7 @@ def _check_config(_args: argparse.Namespace) -> int:
         field
         for field in (
             "anthropic_api_key",
+            "groq_api_key",
             "openai_api_key",
             "author_salt",
             "reddit_client_id",

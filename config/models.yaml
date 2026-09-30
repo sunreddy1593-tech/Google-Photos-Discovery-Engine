@@ -1,31 +1,38 @@
 # Model provider and model names. Never hard-coded in source (spec Section 29.11).
 #
-# Anthropic is the default provider (ADR-14). The OpenAI adapter is stretch scope
-# (ADR-27): nothing in the MVP reads OPENAI_API_KEY, and no dual-provider
-# consensus check exists in Part 1.
+# Anthropic remains an implemented adapter (ADR-14). Groq is the provisional
+# Phase 4 relevance-smoke provider (ADR-31). This is not a claim that Groq is
+# better, and it is not a production default. The OpenAI adapter is stretch
+# scope (ADR-27).
 #
-# Verify current model identifiers before the first Phase 4 run — these names are
-# configuration, and a stale one produces a provider error rather than silently
-# using something else.
+# Model names are configuration. A stale one produces a provider error.
 
-provider: anthropic
+provider: groq
+api_key_env: GROQ_API_KEY
 
-# Cheaper model for the high-volume, low-judgement pass.
+# Cheaper model name kept for a later high-volume pass. The smoke does not use it.
 prefilter_model: claude-haiku-4-5
 
-relevance_model: claude-sonnet-4-5
+relevance_model: openai/gpt-oss-120b
+groq_relevance_model: openai/gpt-oss-120b
+anthropic_relevance_model: claude-sonnet-4-5
 extraction_model: claude-sonnet-4-5
 
-# Temperature 0 everywhere. Extraction must be reproducible from the cache, and a
-# non-zero temperature would make two runs of the same prompt on the same
-# document legitimately disagree — which is indistinguishable from a bug.
+# Requested temperature stays 0. The Groq adapter sends a fixed 1e-8 floor,
+# because Groq rewrites an exact zero, and records both values. The cache key
+# uses that same floor, so it stays deterministic.
 temperature: 0.0
 
 max_tokens: 4096
 timeout_seconds: 60
 max_retries: 3
 
-# Local accounting estimates for a future paid run. Not an invoice, and not
-# used when the null provider handles the call. Update these before any live run.
-estimated_input_usd_per_million: 3.0
-estimated_output_usd_per_million: 15.0
+# Groq published list price for openai/gpt-oss-120b, retrieved 2026-09-30.
+# These rates estimate list price only. They are not an invoice, they are not
+# actual billed cost, and they do not mean the account is on the free tier.
+# If a response omits cached input tokens, every input token uses the input rate.
+estimated_input_usd_per_million: 0.15
+estimated_cached_input_usd_per_million: 0.075
+estimated_output_usd_per_million: 0.60
+list_price_source: Groq published list price for openai/gpt-oss-120b
+list_price_retrieved_on: "2026-09-30"

@@ -18,9 +18,11 @@ from src.core.ids import cache_key
 from src.core.logging import get_logger
 from src.core.versions import SCHEMA_VERSION
 from src.llm.cache import CacheEntry, CacheSecretError, ResponseCache
+from src.llm.pricing import estimate_list_price_usd
 from src.llm.providers.base import (
     CompletionParams,
     ProviderCallError,
+    ProviderFatalError,
     StructuredProvider,
 )
 from src.llm.repair import parse_json_document
@@ -33,6 +35,7 @@ _RETRYABLE = frozenset(
         DecisionTechnicalState.provider_error,
     }
 )
+RETRY_AFTER_CAP_SECONDS = 60.0
 
 Sleeper = Callable[[float], None]
 
@@ -65,6 +68,9 @@ class UsageTotals:
     input_tokens: int = 0
     output_tokens: int = 0
     estimated_cost_usd: float = 0.0
+    cached_input_tokens: int = 0
+    cached_input_reported: bool = False
+    latency_seconds: list[float] = field(default_factory=list)
     by_state: dict[str, int] = field(default_factory=dict)
 
     def add_state(self, state: DecisionTechnicalState) -> None:
@@ -91,6 +97,7 @@ class ModelGateway:
         max_retries: int,
         input_usd_per_million: float,
         output_usd_per_million: float,
+        cached_input_usd_per_million: float | None = None,
         schema_version: str = SCHEMA_VERSION,
         denylist: tuple[str, ...] = (),
         sleeper: Sleeper | None = None,
@@ -107,6 +114,7 @@ class ModelGateway:
         self.max_retries = max(1, max_retries)
         self.input_usd_per_million = input_usd_per_million
         self.output_usd_per_million = output_usd_per_million
+        self.cached_input_usd_per_million = cached_input_usd_per_million
         self.schema_version = schema_version
         self.denylist = tuple(secret for secret in denylist if secret)
         self._sleeper = sleeper or _sleep
@@ -129,12 +137,14 @@ class ModelGateway:
         taxonomy_version: str | None = None,
         discard_keys: tuple[str, ...] = (),
         dry_run: bool = False,
+        unattempted_documents: int = 0,
     ) -> GatewayResult:
         """One completion. ``taxonomy_version`` is omitted by relevance."""
-        params_map = {
-            "temperature": self.temperature,
-            "max_tokens": self.max_tokens,
-        }
+        params_map = _decoding_params(
+            self.provider_name,
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
+        )
         if decoding:
             params_map.update(dict(decoding))
         key = cache_key(
@@ -179,7 +189,12 @@ class ModelGateway:
             max_tokens=self.max_tokens,
             timeout_seconds=self.timeout_seconds,
         )
-        response_text, calls, input_tokens, output_tokens, failure = self._call(prompt, schema, params)
+        response_text, calls, input_tokens, cached_input_tokens, output_tokens, failure = self._call(
+            prompt,
+            schema,
+            params,
+            unattempted_documents=unattempted_documents,
+        )
         self.usage.provider_calls += calls
         if failure is not None:
             self.usage.add_state(failure)
@@ -209,9 +224,10 @@ class ModelGateway:
                 provider_calls=calls,
                 message="response withheld",
             )
-        cost = self._cost(input_tokens, output_tokens)
+        cost = self._cost(input_tokens, output_tokens, cached_input_tokens)
         self.usage.input_tokens += input_tokens
         self.usage.output_tokens += output_tokens
+        self._remember_cached_input(cached_input_tokens)
         self.usage.estimated_cost_usd += cost
         try:
             self.cache.write(
@@ -258,7 +274,9 @@ class ModelGateway:
         prompt: str,
         schema: Mapping[str, Any],
         params: CompletionParams,
-    ) -> tuple[str | None, int, int, int, DecisionTechnicalState | None]:
+        *,
+        unattempted_documents: int,
+    ) -> tuple[str | None, int, int, int | None, int, DecisionTechnicalState | None]:
         calls = 0
         last_state: DecisionTechnicalState | None = None
         for attempt in range(self.max_retries):
@@ -266,23 +284,70 @@ class ModelGateway:
                 self.call_budget is not None
                 and self.usage.provider_calls + calls >= self.call_budget
             ):
+                self.usage.provider_calls += calls
                 raise ProviderBudgetError(
                     f"provider call budget is {self.call_budget}"
                 )
             calls += 1
             try:
                 response = self.provider.complete_structured(prompt, schema, params)
+            except ProviderFatalError as exc:
+                self._remember_latency(exc.latency_seconds)
+                self.usage.provider_calls += calls
+                raise
             except ProviderCallError as exc:
                 # The null provider is not a billable call and cannot succeed on retry.
                 if self.provider_name == "null":
-                    return None, 0, 0, 0, exc.state
+                    return None, 0, 0, None, 0, exc.state
                 last_state = exc.state
-                if exc.state not in _RETRYABLE or attempt + 1 == self.max_retries:
-                    return None, calls, 0, 0, exc.state
-                self._sleeper(min(2.0, 0.2 * (2**attempt)))
+                self._remember_latency(exc.latency_seconds)
+                if not self._should_retry(exc, attempt, calls, unattempted_documents):
+                    if self._should_delay_next_document(exc, calls, unattempted_documents):
+                        self._sleeper(_retry_wait(exc, attempt))
+                    return None, calls, 0, None, 0, exc.state
+                self._sleeper(_retry_wait(exc, attempt))
                 continue
-            return response.text, calls, response.input_tokens, response.output_tokens, None
-        return None, calls, 0, 0, last_state or DecisionTechnicalState.provider_error
+            self._remember_latency(response.latency_seconds)
+            return (
+                response.text,
+                calls,
+                response.input_tokens,
+                response.cached_input_tokens,
+                response.output_tokens,
+                None,
+            )
+        return None, calls, 0, None, 0, last_state or DecisionTechnicalState.provider_error
+
+    def _should_retry(
+        self,
+        exc: ProviderCallError,
+        attempt: int,
+        calls: int,
+        unattempted_documents: int,
+    ) -> bool:
+        """A retry may use only surplus budget beyond one attempt per remaining document."""
+        if exc.state not in _RETRYABLE or attempt + 1 == self.max_retries:
+            return False
+        if self.call_budget is None:
+            return True
+        remaining = self.call_budget - (self.usage.provider_calls + calls)
+        return remaining > unattempted_documents
+
+    def _should_delay_next_document(
+        self,
+        exc: ProviderCallError,
+        calls: int,
+        unattempted_documents: int,
+    ) -> bool:
+        """Retry-After can pause the next document. The pause is not a call."""
+        if unattempted_documents <= 0 or exc.retry_after_seconds is None:
+            return False
+        if exc.state not in _RETRYABLE:
+            return False
+        if self.call_budget is None:
+            return False
+        remaining = self.call_budget - (self.usage.provider_calls + calls)
+        return remaining <= unattempted_documents
 
     def _accept_text(
         self,
@@ -331,14 +396,53 @@ class ModelGateway:
             repair_applied=repaired,
         )
 
+    def _remember_latency(self, seconds: float | None) -> None:
+        if seconds is not None:
+            self.usage.latency_seconds.append(float(seconds))
+
+    def _remember_cached_input(self, cached_input_tokens: int | None) -> None:
+        if cached_input_tokens is None:
+            return
+        if not self.usage.cached_input_reported:
+            self.usage.cached_input_tokens = 0
+            self.usage.cached_input_reported = True
+        self.usage.cached_input_tokens += max(int(cached_input_tokens), 0)
+
     def _contains_secret(self, text: str) -> bool:
         return any(secret in text for secret in self.denylist)
 
-    def _cost(self, input_tokens: int, output_tokens: int) -> float:
-        return (
-            input_tokens * self.input_usd_per_million
-            + output_tokens * self.output_usd_per_million
-        ) / 1_000_000
+    def _cost(
+        self,
+        input_tokens: int,
+        output_tokens: int,
+        cached_input_tokens: int | None,
+    ) -> float:
+        return float(
+            estimate_list_price_usd(
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                cached_input_tokens=cached_input_tokens,
+                input_usd_per_million=self.input_usd_per_million,
+                output_usd_per_million=self.output_usd_per_million,
+                cached_input_usd_per_million=self.cached_input_usd_per_million,
+            )
+        )
+
+
+def _decoding_params(provider_name: str, *, temperature: float, max_tokens: int) -> dict[str, Any]:
+    """Cache identity. Groq records the fixed floor it sends for temperature 0."""
+    if provider_name == "groq":
+        from src.llm.providers.groq import cache_decoding_params
+
+        return cache_decoding_params(temperature=temperature, max_tokens=max_tokens)
+    return {"temperature": temperature, "max_tokens": max_tokens}
+
+
+def _retry_wait(exc: ProviderCallError, attempt: int) -> float:
+    """Honor Retry-After when the adapter captured it. The wait stays bounded."""
+    if exc.retry_after_seconds is not None:
+        return min(max(float(exc.retry_after_seconds), 0.0), RETRY_AFTER_CAP_SECONDS)
+    return min(2.0, 0.2 * (2**attempt))
 
 
 def _schema_message(exc: PydanticValidationError) -> str:
