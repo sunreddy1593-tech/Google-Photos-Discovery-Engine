@@ -11,10 +11,13 @@ import json
 import time
 from typing import Any, Mapping
 
+from src.core.ids import sha256_hex
 from src.llm.providers.base import (
     CompletionParams,
+    ProviderCallError,
     ProviderResponse,
     authentication_failed,
+    diagnostic_from_exception,
     provider_failed,
     rate_limited,
     timed_out,
@@ -35,14 +38,78 @@ def effective_temperature(requested: float) -> float:
     return float(requested)
 
 
-def cache_decoding_params(*, temperature: float, max_tokens: int) -> dict[str, float | int]:
-    """Deterministic decoding identity for a Groq cache entry."""
+def cache_decoding_params(
+    *,
+    temperature: float,
+    max_tokens: int,
+    schema: Mapping[str, Any] | None = None,
+) -> dict[str, float | int | str]:
+    """Deterministic decoding identity for a Groq cache entry.
+
+    When ``schema`` is present, the key includes the transmitted strict schema.
+    Older entries, written before that digest, stay on disk and are not reused.
+    """
     requested = float(temperature)
-    return {
+    params: dict[str, float | int | str] = {
         "temperature": effective_temperature(requested),
         "requested_temperature": requested,
         "max_tokens": int(max_tokens),
     }
+    if schema is not None:
+        params["transmitted_schema_sha256"] = transmitted_schema_sha256(schema)
+    return params
+
+
+def groq_request_schema(schema: Mapping[str, Any], *, doc_id: str) -> dict[str, Any]:
+    """Strict schema for one document. ``doc_id`` may be only that document's id."""
+    wire = groq_strict_schema(schema)
+    properties = wire.get("properties")
+    if isinstance(properties, dict) and "doc_id" in properties:
+        properties["doc_id"] = {"type": "string", "enum": [doc_id]}
+    return wire
+
+
+def groq_strict_schema(schema: Mapping[str, Any]) -> dict[str, Any]:
+    """Copy a JSON Schema into the form Groq strict mode accepts.
+
+    Every object, including objects under ``$defs``, lists each of its
+    properties in ``required`` and sets ``additionalProperties`` to false.
+    Nullable unions stay nullable. The input mapping is not modified.
+    """
+    copied = json.loads(json.dumps(schema))
+    _require_every_property(copied)
+    return copied
+
+
+def transmitted_schema_sha256(schema: Mapping[str, Any]) -> str:
+    """Digest of the schema the Groq adapter sends, not the application schema."""
+    wire = groq_strict_schema(schema)
+    blob = json.dumps(wire, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return sha256_hex(blob)
+
+
+def _require_every_property(node: Any) -> None:
+    if isinstance(node, list):
+        for item in node:
+            _require_every_property(item)
+        return
+    if not isinstance(node, dict):
+        return
+    properties = node.get("properties")
+    if isinstance(properties, dict):
+        node["required"] = list(properties)
+        node["additionalProperties"] = False
+        if "type" not in node:
+            node["type"] = "object"
+        if {"quote", "start_char", "end_char"} <= set(properties):
+            description = node.get("description")
+            if isinstance(description, str) and "optional" in description.lower():
+                node["description"] = (
+                    "One verbatim span. quote, start_char, and end_char are required. "
+                    "Use null when an offset is unknown or unreliable. Do not omit those keys."
+                )
+    for value in node.values():
+        _require_every_property(value)
 
 
 class GroqProvider:
@@ -70,7 +137,13 @@ class GroqProvider:
         effective = effective_temperature(requested)
         started = time.perf_counter()
         try:
-            client = groq.Groq(api_key=self._api_key, timeout=params.timeout_seconds)
+            # max_retries=0 leaves retry control with the gateway. The
+            # completion call has no per-request retry override.
+            client = groq.Groq(
+                api_key=self._api_key,
+                timeout=params.timeout_seconds,
+                max_retries=0,
+            )
             completion = client.chat.completions.create(
                 model=params.model,
                 messages=[
@@ -90,16 +163,18 @@ class GroqProvider:
                     "json_schema": {
                         "name": SCHEMA_NAME,
                         "strict": True,
-                        "schema": json.loads(
-                            json.dumps(schema, sort_keys=True, ensure_ascii=False)
-                        ),
+                        "schema": groq_strict_schema(schema),
                     },
                 },
             )
         except Exception as exc:
             elapsed = time.perf_counter() - started
-            _raise_mapped(groq, exc, elapsed)
-            raise provider_failed("the provider returned an error") from None
+            raise _mapped_error(
+                groq,
+                exc,
+                elapsed,
+                redact=_request_redactions(prompt, self._api_key),
+            ) from None
 
         elapsed = time.perf_counter() - started
         text = _message_text(completion)
@@ -118,36 +193,96 @@ class GroqProvider:
         )
 
 
-def _raise_mapped(groq: Any, exc: BaseException, elapsed: float) -> None:
+def _request_redactions(prompt: str, api_key: str) -> tuple[str, ...]:
+    """Credential and fenced source text. The schema explanation is not included."""
+    spans = [api_key] if api_key else []
+    fence = next(
+        (
+            line
+            for line in prompt.splitlines()
+            if line.startswith("USER_POST") and set(line) <= set("USER_POSTX")
+        ),
+        None,
+    )
+    if fence is not None and prompt.count("\n" + fence) + int(prompt.startswith(fence)) >= 1:
+        start = prompt.find(fence)
+        end = prompt.rfind(fence)
+        if end > start:
+            body = prompt[start + len(fence) : end].strip()
+            if len(body) >= 8:
+                spans.append(body)
+    return tuple(spans)
+
+
+def _mapped_error(
+    groq: Any,
+    exc: BaseException,
+    elapsed: float,
+    *,
+    redact: tuple[str, ...] = (),
+) -> ProviderCallError:
     """Map vendor errors. The public message does not include the key or the body."""
     if isinstance(exc, getattr(groq, "APITimeoutError", ())):
-        raise timed_out("the provider timed out", latency_seconds=elapsed) from None
+        return timed_out(
+            "the provider timed out",
+            latency_seconds=elapsed,
+            diagnostic=diagnostic_from_exception(exc, category="timeout", redact=redact),
+        )
     if isinstance(exc, getattr(groq, "RateLimitError", ())):
-        raise rate_limited(
+        return rate_limited(
             "the provider rate-limited the request",
             retry_after_seconds=_retry_after(exc),
             latency_seconds=elapsed,
-        ) from None
+            diagnostic=diagnostic_from_exception(exc, category="rate_limited", redact=redact),
+        )
     if isinstance(exc, getattr(groq, "APIConnectionError", ())):
-        raise unavailable(
+        return unavailable(
             "the provider could not be reached",
             latency_seconds=elapsed,
-        ) from None
+            diagnostic=diagnostic_from_exception(exc, category="connection", redact=redact),
+        )
     if isinstance(exc, getattr(groq, "AuthenticationError", ())) or _status_code(exc) == 401:
-        raise authentication_failed(
+        return authentication_failed(
             "the provider rejected the credentials",
             latency_seconds=elapsed,
-        ) from None
+            diagnostic=diagnostic_from_exception(exc, category="authentication", redact=redact),
+        )
     if isinstance(exc, getattr(groq, "APIStatusError", ())):
-        raise provider_failed(
+        return provider_failed(
             "the provider returned an error",
             latency_seconds=elapsed,
-        ) from None
+            diagnostic=diagnostic_from_exception(
+                exc, category=_status_category(exc), redact=redact
+            ),
+        )
     if isinstance(exc, getattr(groq, "APIError", ())):
-        raise provider_failed(
+        return provider_failed(
             "the provider returned an error",
             latency_seconds=elapsed,
-        ) from None
+            diagnostic=diagnostic_from_exception(exc, category="sdk_error", redact=redact),
+        )
+    return provider_failed(
+        "the provider returned an error",
+        latency_seconds=elapsed,
+        diagnostic=diagnostic_from_exception(exc, category="local_exception", redact=redact),
+    )
+
+
+def _status_category(exc: BaseException) -> str:
+    status = _status_code(exc)
+    if status == 400:
+        return "invalid_request"
+    if status == 403:
+        return "permission_denied"
+    if status == 404:
+        return "not_found"
+    if status == 409:
+        return "conflict"
+    if status == 422:
+        return "unprocessable"
+    if status is not None and status >= 500:
+        return "server_error"
+    return "http_status"
 
 
 def _retry_after(exc: BaseException) -> float | None:

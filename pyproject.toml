@@ -14,7 +14,9 @@ requires-python = ">=3.12,<3.13"
 # Phase 0 installs the core set only. Later phases add their own:
 #   Phase 2  openpyxl (workbook import). httpx stays out until a collector
 #            actually makes an HTTP call.
-#   Phase 4  anthropic, groq (the OpenAI SDK stays out; Groq uses its own SDK)
+#   Phase 4  anthropic, groq (the OpenAI SDK stays out; Groq uses its own SDK).
+#            groq>=0.13,<1 resolves to 0.37.1 as of 2026-09-30. Release 1.x is
+#            outside that bound and is not installed.
 #   Phase 7  google-api-python-client, praw
 #   Phase 8  pandas  ·  Phase 10  streamlit
 dependencies = [

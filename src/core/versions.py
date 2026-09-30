@@ -52,7 +52,12 @@ TAXONOMY_VERSION: Final[str] = "0-unassigned"
 #:
 #: Phase 4 registers ``relevance``. Phase 5 adds ``extraction``, Phase 8 the
 #: taxonomy prompts, Phase 9 ``ask``. A prompt edit bumps its own entry.
-PROMPT_VERSIONS: Final[dict[str, str]] = {"relevance": "relevance/v1"}
+#: ``relevance/v4`` states general scope rules and, when supplied, parent
+#: context as a separate document. ``relevance/v3`` stated the document id.
+#: ``relevance/v2`` required offset keys but did not supply the id. Older
+#: versions stay valid for stored decisions and cache entries; those entries
+#: are not reused.
+PROMPT_VERSIONS: Final[dict[str, str]] = {"relevance": "relevance/v4"}
 
 
 def prompt_version(prompt_id: str) -> str:

@@ -29,13 +29,17 @@ from src.llm.providers.groq import (
     GroqProvider,
     cache_decoding_params,
     effective_temperature,
+    groq_request_schema,
+    groq_strict_schema,
+    transmitted_schema_sha256,
 )
 from src.llm.select import select_provider
-from src.models.enums import DecisionTechnicalState, ReasonCode, ScopeClass
+from src.models.enums import DecisionTechnicalState, OffsetState, ReasonCode, ScopeClass
 from src.pipeline.smoke_run import SmokeRunError, run_smoke
 from src.pipeline.stages import PHASE_INSTANT, classify_with_ladder
 from src.relevance.lock import HoldoutLocked, authorize_live_classification
-from src.relevance.prompts import relevance_json_schema
+from src.core.versions import prompt_version
+from src.relevance.prompts import relevance_json_schema, render_relevance_prompt
 from src.relevance.schema import RelevancePayload
 from src.relevance.split import SplitAssignment
 
@@ -50,7 +54,7 @@ class _Limited(Exception):
 
 def _groq_module(create):
     return SimpleNamespace(
-        Groq=lambda api_key, timeout: SimpleNamespace(
+        Groq=lambda api_key, timeout, max_retries=0: SimpleNamespace(
             chat=SimpleNamespace(completions=SimpleNamespace(create=create))
         ),
         APITimeoutError=type("APITimeoutError", (Exception,), {}),
@@ -161,6 +165,13 @@ def test_groq_request_uses_json_schema_and_hides_the_key(monkeypatch) -> None:
     assert kwargs["response_format"]["type"] == "json_schema"
     assert kwargs["response_format"]["json_schema"]["name"] == "relevance_payload"
     assert kwargs["response_format"]["json_schema"]["strict"] is True
+    wire = kwargs["response_format"]["json_schema"]["schema"]
+    evidence = _evidence_object(wire)
+    assert set(evidence["required"]) == {"quote", "start_char", "end_char"}
+    assert evidence["required"] == list(evidence["properties"])
+    for obj in _schema_objects(wire):
+        assert obj["additionalProperties"] is False
+        assert set(obj["required"]) == set(obj["properties"])
     encoded = json.dumps(kwargs)
     assert SECRET not in encoded
     assert "human_scope_class" not in encoded
@@ -172,6 +183,727 @@ def test_groq_request_uses_json_schema_and_hides_the_key(monkeypatch) -> None:
     assert response.requested_temperature == 0.0
     assert response.effective_temperature == GROQ_ZERO_TEMPERATURE
     assert response.latency_seconds is not None and response.latency_seconds >= 0
+
+
+def test_strict_schema_keeps_null_offsets_and_application_rules() -> None:
+    application = relevance_json_schema()
+    loose = _evidence_object(application)
+    assert loose["required"] == ["quote"]
+    wire = groq_strict_schema(application)
+    assert _evidence_object(application)["required"] == ["quote"]
+    evidence = _evidence_object(wire)
+    assert evidence["required"] == ["quote", "start_char", "end_char"]
+    for name in ("start_char", "end_char"):
+        encoded = json.dumps(evidence["properties"][name])
+        assert '"type": "null"' in encoded or '"null"' in encoded
+    for obj in _schema_objects(wire):
+        assert obj["additionalProperties"] is False
+        assert set(obj["required"]) == set(obj["properties"])
+    payload = RelevancePayload.model_validate(
+        {
+            "doc_id": "doc-1",
+            "scope_class": "core_incomplete_recall",
+            "reason_code": "known_item_query_unformulable",
+            "reason_summary": "The user could not turn the memory into a search.",
+            "confidence": 0.9,
+            "evidence": {"quote": "no idea what to even type"},
+        }
+    )
+    assert payload.evidence.start_char is None
+    assert payload.evidence.end_char is None
+    text = "I know the photo is somewhere but I have no idea what to even type."
+    from src.core.ids import raw_text_sha256, source_url_key
+    from src.normalize.derive import derive_document
+    from tests.synthetic import make_document
+
+    document = make_document(
+        doc_id="doc-1",
+        title="A public title",
+        raw_text=text,
+        raw_text_sha256=raw_text_sha256(text),
+        source_url="https://www.reddit.com/r/googlephotos/comments/doc-1/",
+        source_url_key=source_url_key("https://www.reddit.com/r/googlephotos/comments/doc-1"),
+        source_item_id="doc-1",
+        author_hash="cafebabecafebabe",
+    )
+    derived = derive_document(document, derived_at=PHASE_INSTANT)
+    outcome = classify_with_ladder(
+        payload,
+        audit=derived.raw_text_audit,
+        redactions=derived.redaction_spans,
+        content_hash=derived.content_hash,
+        model_name="openai/gpt-oss-120b",
+        prefilter=None,
+        confidence_review_below=0.7,
+        decided_at=PHASE_INSTANT,
+        expected_doc_id="doc-1",
+    )
+    assert outcome.decision.technical_state is DecisionTechnicalState.ok
+    assert outcome.decision.evidence[0].offset_state is OffsetState.repaired_unique
+    assert outcome.decision.evidence[0].repair_applied is True
+    assert outcome.decision.evidence[0].start_char is not None
+    without = cache_decoding_params(temperature=0.0, max_tokens=4096)
+    with_schema = cache_decoding_params(
+        temperature=0.0,
+        max_tokens=4096,
+        schema=application,
+    )
+    assert "transmitted_schema_sha256" not in without
+    assert with_schema["transmitted_schema_sha256"] == transmitted_schema_sha256(application)
+    shared = dict(
+        provider="groq",
+        model="openai/gpt-oss-120b",
+        prompt_id="relevance",
+        prompt_version="relevance/v1",
+        schema_version=SCHEMA_VERSION,
+        content_hash_value="abc",
+        ruleset_version=RULESET_VERSION,
+    )
+    assert cache_key(decoding_params=without, **shared) != cache_key(
+        decoding_params=with_schema,
+        **shared,
+    )
+
+
+def test_groq_prompt_matches_response_schema_and_leaves_old_cache(monkeypatch, tmp_path: Path) -> None:
+    from src.relevance.lock import build_prompt_lock, write_prompt_lock
+
+    application = relevance_json_schema()
+    loose = _evidence_object(application)
+    assert loose["required"] == ["quote"]
+    wire = groq_strict_schema(application)
+    assert groq_strict_schema(wire) == wire
+    evidence = _evidence_object(wire)
+    assert evidence["required"] == ["quote", "start_char", "end_char"]
+    for name in ("start_char", "end_char"):
+        encoded_field = json.dumps(evidence["properties"][name])
+        assert '"null"' in encoded_field
+    audit = "A public sentence with no private label."
+    prompt = render_relevance_prompt(doc_id="doc-1", raw_text_audit=audit, schema=wire)
+    embedded = json.loads(prompt.split("JSON schema:\n", 1)[1].split("\n\nUSER_POST\n", 1)[0])
+    assert embedded == wire
+    assert "set that key to null" in prompt
+    assert "Do not omit start_char or end_char" in prompt
+    assert "Do not invent indexes" in prompt
+    assert "are optional" not in prompt
+    assert "human_scope_class" not in prompt
+    assert "human_notes" not in prompt
+    assert prompt_version("relevance") == "relevance/v4"
+    assert "Prompt relevance/v4." in prompt
+
+    captured: dict[str, object] = {}
+
+    def create(**kwargs):
+        captured["kwargs"] = kwargs
+        return _completion("{}")
+
+    monkeypatch.setitem(sys.modules, "groq", _groq_module(create))
+    GroqProvider(SECRET).complete_structured(
+        prompt,
+        wire,
+        CompletionParams(
+            model="openai/gpt-oss-120b",
+            temperature=0.0,
+            max_tokens=32,
+            timeout_seconds=5,
+        ),
+    )
+    kwargs = captured["kwargs"]
+    assert isinstance(kwargs, dict)
+    sent = kwargs["response_format"]["json_schema"]["schema"]
+    assert sent == embedded
+    request_text = json.dumps(kwargs)
+    assert SECRET not in request_text
+    assert "human_scope_class" not in request_text
+    assert "human_notes" not in request_text
+
+    shared = dict(
+        provider="groq",
+        model="openai/gpt-oss-120b",
+        prompt_id="relevance",
+        schema_version=SCHEMA_VERSION,
+        content_hash_value="abc",
+        ruleset_version=RULESET_VERSION,
+        decoding_params=cache_decoding_params(temperature=0.0, max_tokens=32, schema=wire),
+    )
+    assert cache_key(prompt_version="relevance/v1", **shared) != cache_key(
+        prompt_version="relevance/v2",
+        **shared,
+    )
+    assert cache_key(prompt_version="relevance/v2", **shared) != cache_key(
+        prompt_version="relevance/v3",
+        **shared,
+    )
+    assert cache_key(prompt_version="relevance/v3", **shared) != cache_key(
+        prompt_version="relevance/v4",
+        **shared,
+    )
+    lock = build_prompt_lock(
+        provider="groq",
+        model="openai/gpt-oss-120b",
+        temperature=0.0,
+        max_tokens=32,
+        transmitted_schema_sha256=transmitted_schema_sha256(wire),
+    )
+    lock["prompt_version"] = "relevance/v1"
+    path = tmp_path / "old-lock.json"
+    write_prompt_lock(path, lock)
+    with pytest.raises(HoldoutLocked, match="prompt id and version"):
+        authorize_live_classification(
+            split_name="holdout",
+            holdout_unlocked=True,
+            lock_path=path,
+            provider="groq",
+            model="openai/gpt-oss-120b",
+            temperature=0.0,
+            max_tokens=32,
+            transmitted_schema_sha256=transmitted_schema_sha256(wire),
+        )
+
+
+def test_document_id_enum_is_per_request_and_a_wrong_id_still_fails(monkeypatch) -> None:
+    first_id = "app_store-5e60a403ce06"
+    second_id = "app_store-b42c080472ee"
+    application = relevance_json_schema()
+    assert "enum" not in application["properties"]["doc_id"]
+    first = groq_request_schema(application, doc_id=first_id)
+    second = groq_request_schema(application, doc_id=second_id)
+    assert first["properties"]["doc_id"] == {"type": "string", "enum": [first_id]}
+    assert second["properties"]["doc_id"] == {"type": "string", "enum": [second_id]}
+    audit = "I know the photo is somewhere but I have no idea what to even type."
+    prompt = render_relevance_prompt(doc_id=first_id, raw_text_audit=audit, schema=first)
+    embedded = json.loads(prompt.split("JSON schema:\n", 1)[1].split("\n\nUSER_POST\n", 1)[0])
+    assert embedded == first
+    assert f"doc_id must be exactly {first_id}" in prompt
+    assert second_id not in prompt
+
+    captured: dict[str, object] = {}
+
+    def create(**kwargs):
+        captured["kwargs"] = kwargs
+        return _completion("{}")
+
+    monkeypatch.setitem(sys.modules, "groq", _groq_module(create))
+    GroqProvider(SECRET).complete_structured(
+        prompt,
+        first,
+        CompletionParams(
+            model="openai/gpt-oss-120b",
+            temperature=0.0,
+            max_tokens=32,
+            timeout_seconds=5,
+        ),
+    )
+    kwargs = captured["kwargs"]
+    assert isinstance(kwargs, dict)
+    assert kwargs["response_format"]["json_schema"]["schema"] == embedded
+    assert "human_scope_class" not in json.dumps(kwargs)
+
+    quote = "no idea what to even type"
+    from src.core.ids import raw_text_sha256, source_url_key
+    from src.normalize.derive import derive_document
+    from tests.synthetic import make_document
+
+    document = make_document(
+        doc_id=first_id,
+        title="A public title",
+        raw_text=audit,
+        raw_text_sha256=raw_text_sha256(audit),
+        source_url=f"https://www.reddit.com/r/googlephotos/comments/{first_id}/",
+        source_url_key=source_url_key(f"https://www.reddit.com/r/googlephotos/comments/{first_id}"),
+        source_item_id=first_id,
+        author_hash="cafebabecafebabe",
+    )
+    derived = derive_document(document, derived_at=PHASE_INSTANT)
+    wrong = RelevancePayload.model_validate(
+        {
+            "doc_id": "doc1",
+            "scope_class": "core_incomplete_recall",
+            "reason_code": "known_item_query_unformulable",
+            "reason_summary": "The user could not turn the memory into a search.",
+            "confidence": 0.9,
+            "evidence": {"quote": quote, "start_char": None, "end_char": None},
+        }
+    )
+    rejected = classify_with_ladder(
+        wrong,
+        audit=derived.raw_text_audit,
+        redactions=derived.redaction_spans,
+        content_hash=derived.content_hash,
+        model_name="openai/gpt-oss-120b",
+        prefilter=None,
+        confidence_review_below=0.7,
+        decided_at=PHASE_INSTANT,
+        expected_doc_id=first_id,
+    )
+    assert rejected.decision.technical_state is DecisionTechnicalState.schema_validation_failed
+    assert rejected.decision.doc_id == first_id
+    assert rejected.decision.evidence == ()
+    assert "did not match" in rejected.failure_message
+    matched = wrong.model_copy(update={"doc_id": first_id})
+    repaired = classify_with_ladder(
+        matched,
+        audit=derived.raw_text_audit,
+        redactions=derived.redaction_spans,
+        content_hash=derived.content_hash,
+        model_name="openai/gpt-oss-120b",
+        prefilter=None,
+        confidence_review_below=0.7,
+        decided_at=PHASE_INSTANT,
+        expected_doc_id=first_id,
+    )
+    assert repaired.decision.technical_state is DecisionTechnicalState.ok
+    assert repaired.decision.evidence[0].offset_state is OffsetState.repaired_unique
+
+    shared = dict(
+        provider="groq",
+        model="openai/gpt-oss-120b",
+        prompt_id="relevance",
+        prompt_version="relevance/v3",
+        schema_version=SCHEMA_VERSION,
+        content_hash_value=derived.content_hash,
+        ruleset_version=RULESET_VERSION,
+    )
+    first_key = cache_key(
+        decoding_params=cache_decoding_params(temperature=0.0, max_tokens=32, schema=first),
+        **shared,
+    )
+    second_key = cache_key(
+        decoding_params=cache_decoding_params(temperature=0.0, max_tokens=32, schema=second),
+        **shared,
+    )
+    previous = cache_key(
+        decoding_params=cache_decoding_params(
+            temperature=0.0,
+            max_tokens=32,
+            schema=groq_strict_schema(application),
+        ),
+        **{**shared, "prompt_version": "relevance/v2"},
+    )
+    assert first_key != second_key
+    assert first_key != previous
+    template = transmitted_schema_sha256(application)
+    assert template != transmitted_schema_sha256(first)
+    from src.relevance.lock import build_prompt_lock as build_lock
+
+    lock = build_lock(
+        provider="groq",
+        model="openai/gpt-oss-120b",
+        temperature=0.0,
+        max_tokens=32,
+        transmitted_schema_sha256=template,
+    )
+    assert first_id not in json.dumps(lock)
+    assert lock["prompt_version"] == "relevance/v4"
+
+
+def test_groq_holdout_lock_records_the_transmitted_schema(tmp_path: Path) -> None:
+    from src.relevance.lock import build_prompt_lock, write_prompt_lock
+
+    digest = transmitted_schema_sha256(relevance_json_schema())
+    path = tmp_path / "lock.json"
+    write_prompt_lock(
+        path,
+        build_prompt_lock(
+            provider="groq",
+            model="openai/gpt-oss-120b",
+            temperature=0.0,
+            max_tokens=4096,
+            transmitted_schema_sha256=digest,
+        ),
+    )
+    assert authorize_live_classification(
+        split_name="holdout",
+        holdout_unlocked=True,
+        lock_path=path,
+        provider="groq",
+        model="openai/gpt-oss-120b",
+        temperature=0.0,
+        max_tokens=4096,
+        transmitted_schema_sha256=digest,
+    ) == "holdout"
+    with pytest.raises(HoldoutLocked, match="transmitted schema"):
+        authorize_live_classification(
+            split_name="holdout",
+            holdout_unlocked=True,
+            lock_path=path,
+            provider="groq",
+            model="openai/gpt-oss-120b",
+            temperature=0.0,
+            max_tokens=4096,
+            transmitted_schema_sha256="0" * 64,
+        )
+
+
+def test_diagnostic_runner_stops_after_one_provider_call(tmp_path: Path) -> None:
+    from src.core.ids import raw_text_sha256, source_url_key
+    from src.llm.cache import CacheEntry
+    from src.normalize.derive import derive_document
+    from src.pipeline.diagnostic_run import (
+        DIAGNOSTIC_CALL_BUDGET,
+        choose_diagnostic_document,
+        relevance_cache_key,
+        run_one_document,
+    )
+    from tests.synthetic import make_document
+
+    def pair(doc_id: str, text: str):
+        url = f"https://www.reddit.com/r/googlephotos/comments/{doc_id}/"
+        document = make_document(
+            doc_id=doc_id,
+            title="A public title",
+            raw_text=text,
+            raw_text_sha256=raw_text_sha256(text),
+            source_url=url,
+            source_url_key=source_url_key(url),
+            source_item_id=doc_id,
+            author_hash="cafebabecafebabe",
+        )
+        return document, derive_document(document, derived_at=PHASE_INSTANT)
+
+    first, first_derived = pair(
+        "doc-a",
+        "I know the photo is somewhere but I have no idea what to even type.",
+    )
+    second, second_derived = pair(
+        "doc-b",
+        "I searched the exact keyword beach and the photo still did not appear.",
+    )
+    assignments = (
+        SplitAssignment("doc-a", "development", "core_incomplete_recall"),
+        SplitAssignment("doc-b", "development", "adjacent_known_item_retrieval"),
+    )
+    schema = relevance_json_schema()
+    cache = ResponseCache(tmp_path / "cache")
+    key = relevance_cache_key(
+        model="openai/gpt-oss-120b",
+        temperature=0.0,
+        max_tokens=32,
+        content_hash=first_derived.content_hash,
+        schema=schema,
+    )
+    cache.write(
+        CacheEntry(
+            cache_key=key,
+            provider="groq",
+            model="openai/gpt-oss-120b",
+            prompt_id="relevance",
+            prompt_version="relevance/v1",
+            schema_version=SCHEMA_VERSION,
+            ruleset_version=RULESET_VERSION,
+            content_hash=first_derived.content_hash,
+            decoding_params={},
+            request_text="cached",
+            raw_response="{}",
+            input_tokens=0,
+            output_tokens=0,
+            cached_at="2026-09-30T00:00:00+00:00",
+        )
+    )
+    chosen = choose_diagnostic_document(
+        ("doc-a", "doc-b"),
+        [first, second],
+        [first_derived, second_derived],
+        [],
+        assignments,
+        cache_dir=tmp_path / "cache",
+        model="openai/gpt-oss-120b",
+        temperature=0.0,
+        max_tokens=32,
+    )
+    assert chosen == "doc-b"
+
+    class _Once:
+        provider_name = "groq"
+
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def complete_structured(self, prompt, schema, params):
+            self.calls += 1
+            raise rate_limited("the provider rate-limited the request")
+
+    provider = _Once()
+    historical = tmp_path / "historical"
+    historical.mkdir()
+    (historical / "relevance_decisions.jsonl").write_text("keep\n", encoding="utf-8")
+    (historical / "relevance_seed_review.csv").write_text("keep\n", encoding="utf-8")
+    before = (historical / "relevance_decisions.jsonl").read_bytes()
+    output_dir, result = run_one_document(
+        [second],
+        [second_derived],
+        [],
+        doc_id="doc-b",
+        output_parent=tmp_path / "diagnostic",
+        historical_dir=historical,
+        cache_dir=tmp_path / "cache",
+        provider="groq",
+        model="openai/gpt-oss-120b",
+        temperature=0.0,
+        max_tokens=32,
+        timeout_seconds=5,
+        api_key=None,
+        project_root=tmp_path,
+        input_usd_per_million=0.15,
+        output_usd_per_million=0.60,
+        cached_input_usd_per_million=0.075,
+        list_price_source="test",
+        list_price_retrieved_on="2026-09-30",
+        provider_instance=provider,
+    )
+    assert provider.calls == 1
+    assert result.provider_calls == DIAGNOSTIC_CALL_BUDGET
+    assert (historical / "relevance_decisions.jsonl").read_bytes() == before
+    assert (output_dir / "relevance_decisions.jsonl").is_file()
+
+
+def _schema_objects(node: object) -> list[dict[str, object]]:
+    found: list[dict[str, object]] = []
+
+    def walk(item: object) -> None:
+        if isinstance(item, list):
+            for child in item:
+                walk(child)
+            return
+        if not isinstance(item, dict):
+            return
+        properties = item.get("properties")
+        if isinstance(properties, dict):
+            found.append(item)
+        for child in item.values():
+            walk(child)
+
+    walk(node)
+    return found
+
+
+def _evidence_object(schema: dict[str, object]) -> dict[str, object]:
+    for obj in _schema_objects(schema):
+        properties = obj.get("properties")
+        if isinstance(properties, dict) and {"quote", "start_char", "end_char"} <= set(properties):
+            return obj
+    raise AssertionError("evidence object was not in the schema")
+
+
+def test_sdk_rate_limit_sends_one_http_request(monkeypatch) -> None:
+    """A 429 must not be retried inside the SDK. The gateway owns retries."""
+    pytest.importorskip("groq")
+    import httpx
+
+    from groq._base_client import SyncHttpxClientWrapper
+
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(
+            429,
+            headers={"retry-after": "2"},
+            json={"error": {"message": "rate limit reached", "type": "rate_limit_exceeded"}},
+        )
+
+    transport = httpx.MockTransport(handler)
+
+    class _OneShotClient(SyncHttpxClientWrapper):
+        def __init__(self, **kwargs: object) -> None:
+            kwargs["transport"] = transport
+            super().__init__(**kwargs)
+
+    monkeypatch.setattr("groq._base_client.SyncHttpxClientWrapper", _OneShotClient)
+    with pytest.raises(ProviderCallError, match="rate-limited") as raised:
+        GroqProvider("gsk-test-not-a-real-key").complete_structured(
+            "classify the post",
+            {"type": "object", "properties": {}},
+            CompletionParams(
+                model="openai/gpt-oss-120b",
+                temperature=0.0,
+                max_tokens=8,
+                timeout_seconds=1,
+            ),
+        )
+    assert len(requests) == 1
+    assert requests[0].method == "POST"
+    assert raised.value.retry_after_seconds == 2
+    assert "gsk-test-not-a-real-key" not in str(raised.value)
+    assert raised.value.__cause__ is None
+
+
+def test_status_diagnostic_is_kept_and_secrets_are_not(tmp_path: Path, monkeypatch) -> None:
+    from datetime import UTC, datetime
+
+    from src.llm.providers.base import ProviderDiagnostic, diagnostic_from_exception
+    from src.pipeline.stages import _relevance_event, _write_failures
+    from src.relevance.classifier import failure_outcome
+
+    class StatusRejected(Exception):
+        def __init__(self) -> None:
+            super().__init__(f"vendor said {SECRET}")
+            self.status_code = 400
+            self.body = {
+                "error": {
+                    "message": f"invalid schema {SECRET}",
+                    "type": "invalid_request_error",
+                }
+            }
+            self.response = SimpleNamespace(headers={"x-request-id": "req-1234abcd"})
+
+    diagnostic = diagnostic_from_exception(StatusRejected(), category="invalid_request")
+    assert diagnostic.category == "invalid_request"
+    assert diagnostic.sdk_exception_class == "StatusRejected"
+    assert diagnostic.http_status == 400
+    assert diagnostic.provider_error_type == "invalid_request_error"
+    assert diagnostic.request_id == "req-1234abcd"
+    encoded = json.dumps(diagnostic.as_dict())
+    assert SECRET not in encoded
+    assert "vendor said" not in encoded
+    assert diagnostic.error_message == "invalid schema [redacted]"
+
+    class _RawBody(Exception):
+        status_code = 500
+        body = f"<html>{SECRET}</html>"
+        response = SimpleNamespace(headers={"x-request-id": SECRET})
+
+    raw = diagnostic_from_exception(_RawBody(), category="server_error")
+    assert raw.http_status == 500
+    assert raw.provider_error_type is None
+    assert raw.request_id is None
+    assert SECRET not in json.dumps(raw.as_dict())
+
+    class _APIStatus(Exception):
+        def __init__(self) -> None:
+            super().__init__(SECRET)
+            self.status_code = 400
+            self.body = {"error": {"type": "invalid_request_error", "message": SECRET}}
+            self.response = SimpleNamespace(headers={"x-request-id": "req-abcdef12"})
+
+    def create(**_kwargs):
+        raise _APIStatus()
+
+    module = _groq_module(create)
+    module.APIStatusError = _APIStatus
+    monkeypatch.setitem(sys.modules, "groq", module)
+    with pytest.raises(ProviderCallError, match="returned an error") as raised:
+        GroqProvider(SECRET).complete_structured(
+            "classify",
+            {"type": "object"},
+            CompletionParams(
+                model="openai/gpt-oss-120b",
+                temperature=0.0,
+                max_tokens=8,
+                timeout_seconds=1,
+            ),
+        )
+    assert raised.value.diagnostic is not None
+    assert raised.value.diagnostic.category == "invalid_request"
+    assert raised.value.diagnostic.http_status == 400
+    assert SECRET not in str(raised.value)
+    assert SECRET not in json.dumps(raised.value.diagnostic.as_dict())
+    assert raised.value.__cause__ is None
+
+    outcome = failure_outcome(
+        doc_id="doc-1",
+        content_hash="hash",
+        model_name="openai/gpt-oss-120b",
+        state=DecisionTechnicalState.provider_error,
+        decided_at=datetime(2026, 9, 30, tzinfo=UTC),
+        message="provider_error",
+        diagnostic=ProviderDiagnostic(
+            category="invalid_request",
+            http_status=400,
+            provider_error_type=SECRET,
+            request_id="req-1234abcd",
+        ),
+    )
+    path = tmp_path / "relevance_failures.jsonl"
+    _write_failures(path, [outcome], (SECRET,))
+    stored = path.read_text(encoding="utf-8")
+    assert SECRET not in stored
+    row = json.loads(stored)
+    assert row["message"] == "provider_error"
+    assert row["provider_diagnostic"] is None
+    assert row["technical_state"] == "provider_error"
+
+    clean = failure_outcome(
+        doc_id="doc-1",
+        content_hash="hash",
+        model_name="openai/gpt-oss-120b",
+        state=DecisionTechnicalState.provider_error,
+        decided_at=datetime(2026, 9, 30, tzinfo=UTC),
+        message="provider_error",
+        diagnostic=diagnostic,
+    )
+    event = _relevance_event("run", clean)
+    assert event.detail["provider_diagnostic"]["http_status"] == 400
+    assert event.detail["provider_diagnostic"]["request_id"] == "req-1234abcd"
+    assert SECRET not in json.dumps(event.detail)
+
+
+def test_schema_explanation_survives_without_key_or_source_text(monkeypatch) -> None:
+    from src.llm.providers.base import diagnostic_from_exception
+
+    source = "I know the photo is somewhere but I have no idea what to even type."
+    explanation = (
+        "Invalid schema at /properties/evidence/start_char: "
+        "additionalProperties must be false"
+    )
+
+    class Explained(Exception):
+        def __init__(self) -> None:
+            super().__init__(f"vendor said {SECRET}")
+            self.status_code = 400
+            self.body = {
+                "error": {
+                    "message": (
+                        f"{explanation}. Authorization: Bearer {SECRET}. post={source}"
+                    ),
+                    "type": "invalid_request_error",
+                    "code": "json_validate_failed",
+                    "param": "response_format.json_schema.schema",
+                    "failed_generation": source,
+                }
+            }
+            self.response = SimpleNamespace(headers={"x-request-id": "req-1234abcd"})
+
+    diagnostic = diagnostic_from_exception(
+        Explained(),
+        category="invalid_request",
+        redact=(source, SECRET),
+    )
+    encoded = json.dumps(diagnostic.as_dict())
+    assert diagnostic.error_code == "json_validate_failed"
+    assert diagnostic.error_param == "response_format.json_schema.schema"
+    assert diagnostic.error_message is not None
+    assert "/properties/evidence/start_char" in diagnostic.error_message
+    assert "additionalProperties must be false" in diagnostic.error_message
+    assert SECRET not in encoded
+    assert source not in encoded
+    assert "failed_generation" not in encoded
+    assert "vendor said" not in encoded
+
+    def create(**_kwargs):
+        raise Explained()
+
+    module = _groq_module(create)
+    module.APIStatusError = Explained
+    monkeypatch.setitem(sys.modules, "groq", module)
+    prompt = f"Classify the fenced post.\nUSER_POST\n{source}\nUSER_POST\n"
+    with pytest.raises(ProviderCallError, match="returned an error") as raised:
+        GroqProvider(SECRET).complete_structured(
+            prompt,
+            {"type": "object", "properties": {}},
+            CompletionParams(
+                model="openai/gpt-oss-120b",
+                temperature=0.0,
+                max_tokens=8,
+                timeout_seconds=1,
+            ),
+        )
+    kept = raised.value.diagnostic
+    assert kept is not None and kept.error_message is not None
+    assert "/properties/evidence/start_char" in kept.error_message
+    assert SECRET not in json.dumps(kept.as_dict())
+    assert source not in json.dumps(kept.as_dict())
+    assert raised.value.__cause__ is None
 
 
 def test_rate_limit_maps_without_the_key_and_retries_count(monkeypatch, tmp_path: Path) -> None:

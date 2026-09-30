@@ -41,6 +41,7 @@ from src.relevance.classifier import (
     failure_outcome,
     pending_span,
 )
+from src.relevance.context import ParentContext
 from src.relevance.prompts import PROMPT_ID, relevance_json_schema, render_relevance_prompt
 from src.relevance.rules import PrefilterResult, prefilter_document
 from src.relevance.schema import RelevancePayload
@@ -134,6 +135,7 @@ def run_phase4(
     cache_dir: Path | None = None,
     provider_call_budget: int | None = None,
     model_call: dict | None = None,
+    parent_contexts: dict[str, ParentContext] | None = None,
 ) -> Phase4Result:
     """Run prefilter, relevance, or both. Dry-run writes nothing and calls no provider."""
     destination = Path(output_dir)
@@ -238,8 +240,11 @@ def run_phase4(
                     confidence_review_below=confidence_review_below,
                     denylist=denylist,
                     unattempted_documents=len(pending) - index - 1,
+                    parent_context=None
+                    if parent_contexts is None
+                    else parent_contexts.get(row.doc_id),
                 )
-            except ProviderFatalError:
+            except ProviderFatalError as exc:
                 outcome = failure_outcome(
                     doc_id=row.doc_id,
                     content_hash=derived_by_id[row.doc_id].content_hash,
@@ -247,6 +252,7 @@ def run_phase4(
                     state=DecisionTechnicalState.provider_error,
                     decided_at=PHASE_INSTANT,
                     message="the provider rejected the credentials",
+                    diagnostic=exc.diagnostic,
                 )
                 relevance_outcomes.append(outcome)
                 fresh.append(outcome.decision)
@@ -549,8 +555,19 @@ def _classify_one(
     confidence_review_below: float,
     denylist: tuple[str, ...],
     unattempted_documents: int = 0,
+    parent_context: ParentContext | None = None,
 ) -> ClassificationOutcome:
-    prompt = render_relevance_prompt(doc_id=document.doc_id, raw_text_audit=derived.raw_text_audit)
+    schema = relevance_json_schema()
+    if gateway.provider_name == "groq":
+        from src.llm.providers.groq import groq_request_schema
+
+        schema = groq_request_schema(schema, doc_id=document.doc_id)
+    prompt = render_relevance_prompt(
+        doc_id=document.doc_id,
+        raw_text_audit=derived.raw_text_audit,
+        schema=schema,
+        parent_context=parent_context,
+    )
     if any(secret and secret in prompt for secret in denylist):
         return failure_outcome(
             doc_id=document.doc_id,
@@ -562,7 +579,7 @@ def _classify_one(
         )
     completed = gateway.complete(
         prompt=prompt,
-        schema=relevance_json_schema(),
+        schema=schema,
         response_model=RelevancePayload,
         content_hash=derived.content_hash,
         prompt_id=PROMPT_ID,
@@ -570,6 +587,7 @@ def _classify_one(
         ruleset_version=RULESET_VERSION,
         discard_keys=("is_relevant",),
         unattempted_documents=unattempted_documents,
+        decoding=None if parent_context is None else parent_context.cache_fields(),
     )
     if completed.technical_state is not DecisionTechnicalState.ok or not isinstance(
         completed.validated, RelevancePayload
@@ -581,6 +599,7 @@ def _classify_one(
             state=completed.technical_state,
             decided_at=PHASE_INSTANT,
             message=completed.message or completed.technical_state.value,
+            diagnostic=completed.diagnostic,
         )
     return classify_with_ladder(
         completed.validated,
@@ -687,6 +706,13 @@ def _relevance_event(run_id: str, outcome: ClassificationOutcome) -> StageEvent:
     else:
         status = StageStatus.failed
         reason = outcome.decision.reason_code
+    detail = {
+        "technical_state": state.value,
+        "review_reasons": [code.value for code in outcome.review_reasons],
+    }
+    recorded = _diagnostic_record(outcome.diagnostic)
+    if recorded is not None:
+        detail["provider_diagnostic"] = recorded
     return StageEvent(
         event_id=event_id(
             run_id, Stage.relevance.value, outcome.decision.doc_id, 1, status.value
@@ -699,10 +725,7 @@ def _relevance_event(run_id: str, outcome: ClassificationOutcome) -> StageEvent:
         attempt=1,
         run_id=run_id,
         occurred_at=PHASE_INSTANT,
-        detail={
-            "technical_state": state.value,
-            "review_reasons": [code.value for code in outcome.review_reasons],
-        },
+        detail=detail,
     )
 
 
@@ -916,18 +939,33 @@ def _write_failures(
             message = "withheld"
         if message and any(secret and secret in message for secret in denylist):
             message = "withheld"
-        rows.append(
-            {
-                "doc_id": outcome.decision.doc_id,
-                "decision_id": outcome.decision.decision_id,
-                "technical_state": outcome.decision.technical_state.value,
-                "review_reasons": [code.value for code in outcome.review_reasons],
-                "message": message,
-                "retained_quote": quote,
-            }
-        )
+        row = {
+            "doc_id": outcome.decision.doc_id,
+            "decision_id": outcome.decision.decision_id,
+            "technical_state": outcome.decision.technical_state.value,
+            "review_reasons": [code.value for code in outcome.review_reasons],
+            "message": message,
+            "retained_quote": quote,
+        }
+        recorded = _diagnostic_record(outcome.diagnostic)
+        if recorded is not None:
+            encoded = json.dumps(recorded)
+            if any(secret and secret in encoded for secret in denylist):
+                recorded = None
+            row["provider_diagnostic"] = recorded
+        rows.append(row)
     rows.sort(key=lambda row: str(row["decision_id"]))
     _write_json(path, rows)
+
+
+def _diagnostic_record(diagnostic: object | None) -> dict[str, object] | None:
+    as_dict = getattr(diagnostic, "as_dict", None)
+    if not callable(as_dict):
+        return None
+    recorded = as_dict()
+    if not isinstance(recorded, dict):
+        return None
+    return recorded
 
 
 def _cache(cache_dir: Path):

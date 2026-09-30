@@ -51,9 +51,16 @@ def build_prompt_lock(
     model: str,
     temperature: float,
     max_tokens: int,
+    transmitted_schema_sha256: str | None = None,
 ) -> dict[str, object]:
-    """Configuration metadata for one frozen relevance prompt."""
-    return {
+    """Configuration metadata for one frozen relevance prompt.
+
+    ``transmitted_schema_sha256`` is the digest of the schema template this
+    provider sends. For Groq that is the strict conversion, without a
+    document-specific ``doc_id`` enum. The per-document digest belongs in the
+    request cache, not in a reusable holdout lock.
+    """
+    lock: dict[str, object] = {
         "lock_version": LOCK_VERSION,
         "frozen": True,
         "prompt_id": PROMPT_ID,
@@ -65,6 +72,9 @@ def build_prompt_lock(
         "temperature": temperature,
         "max_tokens": max_tokens,
     }
+    if transmitted_schema_sha256:
+        lock["transmitted_schema_sha256"] = transmitted_schema_sha256
+    return lock
 
 
 def write_prompt_lock(path: Path | str, lock: dict[str, object]) -> None:
@@ -94,6 +104,7 @@ def authorize_live_classification(
     model: str,
     temperature: float,
     max_tokens: int,
+    transmitted_schema_sha256: str | None = None,
 ) -> str:
     """Allow development as-is. Holdout and all require a matching lock."""
     if split_name not in {SPLIT_DEVELOPMENT, SPLIT_HOLDOUT, "all"}:
@@ -119,6 +130,14 @@ def authorize_live_classification(
         raise HoldoutLocked("prompt lock provider or model does not match this run")
     if lock.get("temperature") != temperature or lock.get("max_tokens") != max_tokens:
         raise HoldoutLocked("prompt lock decoding parameters do not match this run")
+    if provider == "groq":
+        stored_schema = lock.get("transmitted_schema_sha256")
+        if (
+            not isinstance(stored_schema, str)
+            or not stored_schema
+            or stored_schema != transmitted_schema_sha256
+        ):
+            raise HoldoutLocked("prompt lock transmitted schema does not match this run")
     return split_name
 
 

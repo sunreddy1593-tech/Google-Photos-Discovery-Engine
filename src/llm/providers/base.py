@@ -7,11 +7,178 @@ sees a vendor type.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Any, Mapping, Protocol
 
 from src.core.errors import ProviderError
 from src.models.enums import DecisionTechnicalState
+
+_CLASS_NAME = re.compile(r"^[A-Za-z][A-Za-z0-9]{0,63}$")
+_ERROR_TYPE = re.compile(r"^[A-Za-z0-9_.:-]{1,64}$")
+_ERROR_PARAM = re.compile(r"^[A-Za-z0-9_./\[\]-]{1,160}$")
+_REQUEST_ID = re.compile(r"^[A-Za-z0-9-]{8,128}$")
+_SECRET_PREFIXES = ("gsk-", "sk-")
+_BEARER = re.compile(
+    r"(?i)\b((?:authorization\s*:\s*)?bearer\s+)[A-Za-z0-9._\-]{8,}"
+)
+_KEY = re.compile(r"(?i)\b(?:gsk-|sk-)[A-Za-z0-9_\-]{4,}")
+_MESSAGE_LIMIT = 400
+_ERROR_FIELDS = ("message", "type", "code", "param")
+_REQUEST_HEADERS = ("x-request-id", "request-id", "x-groq-request-id")
+_DIAGNOSTIC_CATEGORIES = frozenset(
+    {
+        "authentication",
+        "permission_denied",
+        "not_found",
+        "invalid_request",
+        "unprocessable",
+        "conflict",
+        "rate_limited",
+        "timeout",
+        "connection",
+        "server_error",
+        "http_status",
+        "sdk_error",
+        "local_exception",
+    }
+)
+
+
+@dataclass(frozen=True)
+class ProviderDiagnostic:
+    """Allowlisted provider failure details. The message is sanitized and bounded."""
+
+    category: str
+    sdk_exception_class: str | None = None
+    http_status: int | None = None
+    provider_error_type: str | None = None
+    request_id: str | None = None
+    error_code: str | None = None
+    error_param: str | None = None
+    error_message: str | None = None
+
+    def as_dict(self) -> dict[str, object]:
+        return {
+            "category": self.category,
+            "sdk_exception_class": self.sdk_exception_class,
+            "http_status": self.http_status,
+            "provider_error_type": self.provider_error_type,
+            "request_id": self.request_id,
+            "error_code": self.error_code,
+            "error_param": self.error_param,
+            "error_message": self.error_message,
+        }
+
+
+def diagnostic_from_exception(
+    exc: BaseException,
+    *,
+    category: str,
+    redact: tuple[str, ...] = (),
+) -> ProviderDiagnostic:
+    """Keep status, type, code, param, and a sanitized message."""
+    status = _http_status(exc)
+    code, param, message = _error_details(getattr(exc, "body", None), redact)
+    return ProviderDiagnostic(
+        category=category if category in _DIAGNOSTIC_CATEGORIES else "sdk_error",
+        sdk_exception_class=_class_name(type(exc).__name__),
+        http_status=status,
+        provider_error_type=_error_type(getattr(exc, "body", None)),
+        request_id=_request_id(getattr(exc, "response", None)),
+        error_code=code,
+        error_param=param,
+        error_message=message,
+    )
+
+
+def _http_status(exc: BaseException) -> int | None:
+    raw = getattr(exc, "status_code", None)
+    if isinstance(raw, int) and 100 <= raw <= 599:
+        return raw
+    return None
+
+
+def _class_name(name: str) -> str | None:
+    if _CLASS_NAME.fullmatch(name):
+        return name
+    return None
+
+
+def _error_object(body: object) -> dict[str, object] | None:
+    if not isinstance(body, dict):
+        return None
+    error = body.get("error")
+    if not isinstance(error, dict):
+        return None
+    return error
+
+
+def _error_type(body: object) -> str | None:
+    error = _error_object(body)
+    if error is None:
+        return None
+    return _bounded_token(error.get("type"), _ERROR_TYPE)
+
+
+def _error_details(
+    body: object,
+    redact: tuple[str, ...],
+) -> tuple[str | None, str | None, str | None]:
+    """Read code, param, and message. Ignore generated-content fields."""
+    error = _error_object(body)
+    if error is None:
+        return None, None, None
+    generated = tuple(
+        value
+        for key, value in error.items()
+        if key not in _ERROR_FIELDS and isinstance(value, str)
+    )
+    return (
+        _bounded_token(error.get("code"), _ERROR_TYPE),
+        _bounded_token(error.get("param"), _ERROR_PARAM),
+        _sanitize_message(error.get("message"), redact + generated),
+    )
+
+
+def _bounded_token(raw: object, pattern: re.Pattern[str]) -> str | None:
+    if isinstance(raw, str) and pattern.fullmatch(raw) and not _looks_secret(raw):
+        return raw
+    return None
+
+
+def _sanitize_message(raw: object, redact: tuple[str, ...]) -> str | None:
+    if not isinstance(raw, str) or not raw.strip():
+        return None
+    text = _BEARER.sub(r"\1[redacted]", raw)
+    text = _KEY.sub("[redacted]", text)
+    for secret in redact:
+        if isinstance(secret, str) and len(secret) >= 8 and secret in text:
+            text = text.replace(secret, "[redacted]")
+    text = " ".join(text.split())
+    if len(text) > _MESSAGE_LIMIT:
+        text = text[:_MESSAGE_LIMIT].rstrip()
+    if _KEY.search(text) or re.search(r"(?i)\bbearer\s+[A-Za-z0-9]", text):
+        return None
+    if any(isinstance(secret, str) and len(secret) >= 8 and secret in text for secret in redact):
+        return None
+    return text or None
+
+
+def _request_id(response: object) -> str | None:
+    headers = getattr(response, "headers", None)
+    if headers is None or not hasattr(headers, "get"):
+        return None
+    for name in _REQUEST_HEADERS:
+        raw = headers.get(name)
+        if isinstance(raw, str) and _REQUEST_ID.fullmatch(raw) and not _looks_secret(raw):
+            return raw
+    return None
+
+
+def _looks_secret(value: str) -> bool:
+    lowered = value.lower()
+    return any(lowered.startswith(prefix) for prefix in _SECRET_PREFIXES)
 
 
 class ProviderCallError(ProviderError):
@@ -28,34 +195,54 @@ class ProviderCallError(ProviderError):
         *,
         retry_after_seconds: float | None = None,
         latency_seconds: float | None = None,
+        diagnostic: ProviderDiagnostic | None = None,
     ) -> None:
         super().__init__(message)
         self.state = state
         self.retry_after_seconds = retry_after_seconds
         self.latency_seconds = latency_seconds
+        self.diagnostic = diagnostic
 
 
-def unavailable(message: str, *, latency_seconds: float | None = None) -> ProviderCallError:
+def unavailable(
+    message: str,
+    *,
+    latency_seconds: float | None = None,
+    diagnostic: ProviderDiagnostic | None = None,
+) -> ProviderCallError:
     return ProviderCallError(
         message,
         DecisionTechnicalState.provider_unavailable,
         latency_seconds=latency_seconds,
+        diagnostic=diagnostic,
     )
 
 
-def provider_failed(message: str, *, latency_seconds: float | None = None) -> ProviderCallError:
+def provider_failed(
+    message: str,
+    *,
+    latency_seconds: float | None = None,
+    diagnostic: ProviderDiagnostic | None = None,
+) -> ProviderCallError:
     return ProviderCallError(
         message,
         DecisionTechnicalState.provider_error,
         latency_seconds=latency_seconds,
+        diagnostic=diagnostic,
     )
 
 
-def timed_out(message: str, *, latency_seconds: float | None = None) -> ProviderCallError:
+def timed_out(
+    message: str,
+    *,
+    latency_seconds: float | None = None,
+    diagnostic: ProviderDiagnostic | None = None,
+) -> ProviderCallError:
     return ProviderCallError(
         message,
         DecisionTechnicalState.timeout,
         latency_seconds=latency_seconds,
+        diagnostic=diagnostic,
     )
 
 
@@ -64,12 +251,14 @@ def rate_limited(
     *,
     retry_after_seconds: float | None = None,
     latency_seconds: float | None = None,
+    diagnostic: ProviderDiagnostic | None = None,
 ) -> ProviderCallError:
     return ProviderCallError(
         message,
         DecisionTechnicalState.rate_limited,
         retry_after_seconds=retry_after_seconds,
         latency_seconds=latency_seconds,
+        diagnostic=diagnostic,
     )
 
 
@@ -85,11 +274,13 @@ def authentication_failed(
     message: str,
     *,
     latency_seconds: float | None = None,
+    diagnostic: ProviderDiagnostic | None = None,
 ) -> ProviderFatalError:
     return ProviderFatalError(
         message,
         DecisionTechnicalState.provider_error,
         latency_seconds=latency_seconds,
+        diagnostic=diagnostic,
     )
 
 

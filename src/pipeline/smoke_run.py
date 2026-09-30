@@ -18,6 +18,13 @@ from src.models.duplicate_link import DuplicateLink
 from src.models.collected_document import CollectedDocument
 from src.pipeline.stages import phase4_run_id, run_phase4
 from src.llm.providers.groq import effective_temperature
+from src.relevance.context import (
+    CONTEXT_INCLUDED,
+    DocumentLink,
+    cross_split_families,
+    guarded_parent_contexts,
+)
+from src.relevance.interpretation import context_comparability, interpretation_flags
 from src.relevance.prompts import PROMPT_ID
 from src.relevance.smoke import SMOKE_CALL_BUDGET, SmokeSelectionError, assert_development_smoke
 from src.relevance.split import SplitAssignment
@@ -146,6 +153,7 @@ def run_smoke(
     chosen_derived = [row for row in derived if row.doc_id in allowed]
     if {document.doc_id for document in chosen_documents} != allowed:
         raise SmokeSelectionError("smoke documents do not match the development manifest")
+    parent_contexts = _parent_contexts(documents, derived, assignments, plan.doc_ids)
     requested, effective = _decoding(provider, temperature)
     model_call = {
         "provider": provider,
@@ -165,7 +173,9 @@ def run_smoke(
             max_tokens=max_tokens,
             prompt_id=plan.prompt_id,
             prompt_version=plan.prompt_version,
+            transmitted_schema_sha256=_transmitted_schema_sha256(provider),
         ),
+        "transmitted_schema_sha256": _transmitted_schema_sha256(provider),
         "call_budget": plan.call_budget,
         "list_price_usd_per_million": {
             "input": input_usd_per_million,
@@ -202,12 +212,30 @@ def run_smoke(
         input_usd_per_million=input_usd_per_million,
         output_usd_per_million=output_usd_per_million,
         cached_input_usd_per_million=cached_input_usd_per_million,
+        parent_contexts=parent_contexts,
     )
     if result.provider_calls > SMOKE_CALL_BUDGET:
         raise SmokeRunError(
             f"smoke made {result.provider_calls} provider calls; the budget is {SMOKE_CALL_BUDGET}"
         )
-    _write_smoke_record(plan, result.provider_calls, result.cache_hits, result.cache_misses)
+    _write_smoke_record(
+        plan,
+        result.provider_calls,
+        result.cache_hits,
+        result.cache_misses,
+        parent_contexts=parent_contexts,
+        cross_split=cross_split_families(
+            tuple(
+                DocumentLink(
+                    document.doc_id,
+                    document.source_item_id,
+                    document.parent_thread_id,
+                )
+                for document in documents
+            ),
+            {assignment.doc_id: assignment.split for assignment in assignments},
+        ),
+    )
     if before is not None and historical_decisions.read_bytes() != before:
         raise SmokeRunError("smoke run changed the historical decisions")
     return SmokePlan(
@@ -237,6 +265,15 @@ def _refuse_historical(destination: Path, historical_dir: Path) -> None:
         raise SmokeRunError("smoke output already has decisions; refusing to merge")
 
 
+def _transmitted_schema_sha256(provider: str) -> str | None:
+    if provider != "groq":
+        return None
+    from src.llm.providers.groq import transmitted_schema_sha256
+    from src.relevance.prompts import relevance_json_schema
+
+    return transmitted_schema_sha256(relevance_json_schema())
+
+
 def _decoding(provider: str, temperature: float) -> tuple[float, float]:
     requested = float(temperature)
     if provider == "groq":
@@ -249,7 +286,35 @@ def _model_config_hash(**fields: object) -> str:
     return sha256_hex(blob)
 
 
-def _write_smoke_record(plan: SmokePlan, provider_calls: int, cache_hits: int, cache_misses: int) -> None:
+def _parent_contexts(documents, derived, assignments, doc_ids):
+    """Development parent text only. Holdout parents stay incomplete and unread."""
+    links = tuple(
+        DocumentLink(document.doc_id, document.source_item_id, document.parent_thread_id)
+        for document in documents
+    )
+    splits = {assignment.doc_id: assignment.split for assignment in assignments}
+    documents_by_id = {document.doc_id: document for document in documents}
+    derived_by_id = {row.doc_id: row for row in derived}
+
+    return guarded_parent_contexts(
+        doc_ids,
+        links,
+        splits,
+        lambda doc_id: documents_by_id[doc_id].title,
+        lambda doc_id: derived_by_id[doc_id].raw_text_audit,
+        lambda doc_id: derived_by_id[doc_id].content_hash,
+    )
+
+
+def _write_smoke_record(
+    plan: SmokePlan,
+    provider_calls: int,
+    cache_hits: int,
+    cache_misses: int,
+    *,
+    parent_contexts=None,
+    cross_split=(),
+) -> None:
     manifest_path = plan.output_dir / "run_manifest.json"
     model_call = {}
     if manifest_path.is_file():
@@ -270,6 +335,35 @@ def _write_smoke_record(plan: SmokePlan, provider_calls: int, cache_hits: int, c
         "provider_calls": provider_calls,
         "call_budget": plan.call_budget,
         "model_call": model_call,
+        "context_status": {
+            doc_id: context.status
+            for doc_id, context in (parent_contexts or {}).items()
+        },
+        "context_identity": {
+            doc_id: {
+                "parent_doc_id": context.parent_doc_id,
+                "content_hash": context.content_hash if context.status == CONTEXT_INCLUDED else None,
+            }
+            for doc_id, context in (parent_contexts or {}).items()
+            if context.status != "none"
+        },
+        "interpretation_flags": {
+            doc_id: list(
+                interpretation_flags(doc_id, context_status=context.status)
+            )
+            for doc_id, context in (parent_contexts or {}).items()
+            if interpretation_flags(doc_id, context_status=context.status)
+        },
+        "context_comparability": {
+            doc_id: context_comparability(doc_id, model_context=context.status)
+            for doc_id, context in (parent_contexts or {}).items()
+        },
+        "cross_split_families": list(cross_split),
+        "evaluation_limitation": (
+            "Some parent and reply documents sit on different sides of the "
+            "development/holdout split. That limit is recorded here. The split "
+            "was not changed."
+        ),
     }
     path = plan.output_dir / "smoke_run.json"
     path.write_text(

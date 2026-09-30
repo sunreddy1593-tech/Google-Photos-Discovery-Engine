@@ -414,6 +414,7 @@ def _run_phase4(args: argparse.Namespace, stages: list[str]) -> int:
 
         manifest_path = Path("data/interim/phase4/relevance_split_manifest.csv")
         try:
+            split_assignments = load_split_manifest(manifest_path)
             split_name = authorize_live_classification(
                 split_name=args.split,
                 holdout_unlocked=bool(args.holdout_unlock),
@@ -422,8 +423,9 @@ def _run_phase4(args: argparse.Namespace, stages: list[str]) -> int:
                 model=model_name,
                 temperature=settings.models.temperature,
                 max_tokens=settings.models.max_tokens,
+                transmitted_schema_sha256=_transmitted_schema_sha256(provider_name),
             )
-            allowed = set(doc_ids_for_split(load_split_manifest(manifest_path), split_name))
+            allowed = set(doc_ids_for_split(split_assignments, split_name))
         except (HoldoutLocked, SplitError) as exc:
             print(f"Holdout locked: {exc}", file=sys.stderr)
             return 1
@@ -435,6 +437,27 @@ def _run_phase4(args: argparse.Namespace, stages: list[str]) -> int:
         if not api_key:
             print(f"{env_name} is not set.", file=sys.stderr)
             return 1
+        from src.relevance.context import DocumentLink, guarded_parent_contexts
+
+        documents_by_id = {document.doc_id: document for document in documents}
+        derived_by_id = {row.doc_id: row for row in derived}
+        parent_contexts = guarded_parent_contexts(
+            [document.doc_id for document in documents],
+            tuple(
+                DocumentLink(
+                    document.doc_id,
+                    document.source_item_id,
+                    document.parent_thread_id,
+                )
+                for document in documents
+            ),
+            {assignment.doc_id: assignment.split for assignment in split_assignments},
+            lambda doc_id: documents_by_id[doc_id].title,
+            lambda doc_id: derived_by_id[doc_id].raw_text_audit,
+            lambda doc_id: derived_by_id[doc_id].content_hash,
+        )
+    else:
+        parent_contexts = None
     result = run_phase4(
         documents,
         derived,
@@ -459,6 +482,7 @@ def _run_phase4(args: argparse.Namespace, stages: list[str]) -> int:
         confidence_review_below=settings.analysis.relevance.confidence_review_below,
         config_hash=settings.config_hash(),
         project_root=settings.project_root,
+        parent_contexts=parent_contexts,
     )
     print(format_phase4_summary(result), end="")
     return 0
@@ -579,6 +603,16 @@ def _relevance_runtime(settings, override: str | None) -> tuple[str, str, str, s
     """Provider, model, environment-variable name, and key. The key may be absent."""
     provider, model, env_name = settings.models.relevance_choice(override)
     return provider, model, env_name, getattr(settings.secrets, env_name.lower(), None)
+
+
+def _transmitted_schema_sha256(provider: str) -> str | None:
+    """Digest of the schema this provider sends. Anthropic does not rewrite it."""
+    if provider != "groq":
+        return None
+    from src.llm.providers.groq import transmitted_schema_sha256
+    from src.relevance.prompts import relevance_json_schema
+
+    return transmitted_schema_sha256(relevance_json_schema())
 
 
 def _effective_temperature(provider: str, requested: float) -> float:

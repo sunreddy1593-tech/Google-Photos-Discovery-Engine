@@ -69,6 +69,7 @@ class ClassificationOutcome:
     review_reasons: tuple[ReasonCode, ...]
     retained_quote: str | None = None
     failure_message: str = ""
+    diagnostic: object | None = None
 
 
 def parse_payload(data: dict[str, object]) -> RelevancePayload:
@@ -225,6 +226,7 @@ def failure_outcome(
     state: DecisionTechnicalState,
     decided_at: datetime,
     message: str,
+    diagnostic: object | None = None,
 ) -> ClassificationOutcome:
     """A technical failure with no scope class and no evidence."""
     fingerprint = decision_fingerprint(
@@ -247,6 +249,7 @@ def failure_outcome(
         ),
         review_reasons=(reason,),
         failure_message=message,
+        diagnostic=diagnostic,
     )
 
 

@@ -22,6 +22,7 @@ from src.llm.pricing import estimate_list_price_usd
 from src.llm.providers.base import (
     CompletionParams,
     ProviderCallError,
+    ProviderDiagnostic,
     ProviderFatalError,
     StructuredProvider,
 )
@@ -56,6 +57,7 @@ class GatewayResult:
     estimated_cost_usd: float = 0.0
     repair_applied: bool = False
     message: str = ""
+    diagnostic: ProviderDiagnostic | None = None
 
 
 @dataclass
@@ -144,6 +146,7 @@ class ModelGateway:
             self.provider_name,
             temperature=self.temperature,
             max_tokens=self.max_tokens,
+            schema=schema,
         )
         if decoding:
             params_map.update(dict(decoding))
@@ -189,7 +192,15 @@ class ModelGateway:
             max_tokens=self.max_tokens,
             timeout_seconds=self.timeout_seconds,
         )
-        response_text, calls, input_tokens, cached_input_tokens, output_tokens, failure = self._call(
+        (
+            response_text,
+            calls,
+            input_tokens,
+            cached_input_tokens,
+            output_tokens,
+            failure,
+            diagnostic,
+        ) = self._call(
             prompt,
             schema,
             params,
@@ -204,12 +215,15 @@ class ModelGateway:
                     "prompt_id": prompt_id,
                     "technical_state": failure.value,
                     "provider_calls": calls,
+                    "diagnostic_category": None if diagnostic is None else diagnostic.category,
+                    "http_status": None if diagnostic is None else diagnostic.http_status,
                 },
             )
             return GatewayResult(
                 technical_state=failure,
                 provider_calls=calls,
                 message=failure.value,
+                diagnostic=diagnostic,
             )
 
         assert response_text is not None
@@ -276,9 +290,18 @@ class ModelGateway:
         params: CompletionParams,
         *,
         unattempted_documents: int,
-    ) -> tuple[str | None, int, int, int | None, int, DecisionTechnicalState | None]:
+    ) -> tuple[
+        str | None,
+        int,
+        int,
+        int | None,
+        int,
+        DecisionTechnicalState | None,
+        ProviderDiagnostic | None,
+    ]:
         calls = 0
         last_state: DecisionTechnicalState | None = None
+        last_diagnostic: ProviderDiagnostic | None = None
         for attempt in range(self.max_retries):
             if (
                 self.call_budget is not None
@@ -298,13 +321,14 @@ class ModelGateway:
             except ProviderCallError as exc:
                 # The null provider is not a billable call and cannot succeed on retry.
                 if self.provider_name == "null":
-                    return None, 0, 0, None, 0, exc.state
+                    return None, 0, 0, None, 0, exc.state, exc.diagnostic
                 last_state = exc.state
+                last_diagnostic = exc.diagnostic
                 self._remember_latency(exc.latency_seconds)
                 if not self._should_retry(exc, attempt, calls, unattempted_documents):
                     if self._should_delay_next_document(exc, calls, unattempted_documents):
                         self._sleeper(_retry_wait(exc, attempt))
-                    return None, calls, 0, None, 0, exc.state
+                    return None, calls, 0, None, 0, exc.state, exc.diagnostic
                 self._sleeper(_retry_wait(exc, attempt))
                 continue
             self._remember_latency(response.latency_seconds)
@@ -315,8 +339,17 @@ class ModelGateway:
                 response.cached_input_tokens,
                 response.output_tokens,
                 None,
+                None,
             )
-        return None, calls, 0, None, 0, last_state or DecisionTechnicalState.provider_error
+        return (
+            None,
+            calls,
+            0,
+            None,
+            0,
+            last_state or DecisionTechnicalState.provider_error,
+            last_diagnostic,
+        )
 
     def _should_retry(
         self,
@@ -429,12 +462,22 @@ class ModelGateway:
         )
 
 
-def _decoding_params(provider_name: str, *, temperature: float, max_tokens: int) -> dict[str, Any]:
-    """Cache identity. Groq records the fixed floor it sends for temperature 0."""
+def _decoding_params(
+    provider_name: str,
+    *,
+    temperature: float,
+    max_tokens: int,
+    schema: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Cache identity. Groq records the temperature floor and the transmitted schema."""
     if provider_name == "groq":
         from src.llm.providers.groq import cache_decoding_params
 
-        return cache_decoding_params(temperature=temperature, max_tokens=max_tokens)
+        return cache_decoding_params(
+            temperature=temperature,
+            max_tokens=max_tokens,
+            schema=schema,
+        )
     return {"temperature": temperature, "max_tokens": max_tokens}
 
 

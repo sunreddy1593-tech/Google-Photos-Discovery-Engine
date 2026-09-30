@@ -445,7 +445,7 @@ def test_smoke_decisions_are_written_beside_the_historical_run(tmp_path: Path) -
     assert "old-null" not in written.read_text(encoding="utf-8")
     record = json.loads((finished.output_dir / "smoke_run.json").read_text(encoding="utf-8"))
     assert record["prompt_id"] == "relevance"
-    assert record["prompt_version"] == "relevance/v1"
+    assert record["prompt_version"] == "relevance/v4"
     assert record["call_budget"] == 6
     assert record["provider_calls"] == 6
     assert "human_notes" not in json.dumps(record)

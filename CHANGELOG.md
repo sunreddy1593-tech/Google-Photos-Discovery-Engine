@@ -22,6 +22,52 @@ published price, is USD 0.15 input, USD 0.075 cached input, and USD 0.60
 output per million tokens. Actual billed cost stays unknown unless the
 provider reports it. Free-tier usage is not assumed.
 
+The Groq client is constructed with `max_retries=0`. The completion request
+has no retry override, so the gateway remains the only retry controller.
+The declared dependency stays `groq>=0.13,<1`. That bound resolves to
+0.37.1. The previously installed 1.7.0 was outside the bound and was
+replaced with 0.37.1. A mocked HTTP 429 produces one SDK request.
+
+One live smoke, `data/interim/phase4/smoke/29e62a353084`, made six external
+attempts and zero cache hits. Every document is `provider_error` with a
+null scope. No holdout document was classified. That run did not keep an
+HTTP status, exception class, or request id. Later failures can store an
+allowlisted diagnostic: category, SDK class name, HTTP status, provider
+error type, and request id. The public message stays generic. USD 0.00 on
+that run means no token counts were recorded, not that billing was verified.
+
+The Groq adapter now copies the application schema into the strict wire
+schema. `EvidencePayload` on that wire schema requires `quote`, `start_char`,
+and `end_char`, and the offsets stay nullable. Application validation is
+unchanged. The transmitted-schema digest is part of the Groq cache key and
+of a Groq prompt lock. Older cache files stay in place and are not reused.
+One development document, `app_store-5e60a403ce06`, was then classified
+once. The provider returned HTTP 400 `invalid_request_error`. The run was
+not repeated. A second single-document attempt kept the sanitized
+`error.message`: the generated object omitted `start_char` and `end_char`.
+That attempt was not repeated. The relevance prompt was then `relevance/v3`. Groq requests embed the same
+strict schema they send. That schema requires both offset keys, with null
+when an offset is unknown, and limits `doc_id` to the document being
+classified. One diagnostic of `app_store-5e60a403ce06` validated as
+`out_of_scope`. The six-document development smoke then ran once at
+`data/interim/phase4/smoke/c89938c1af59`. It made 5 external attempts and
+1 cache hit. All six decisions are valid. Scope agreed with the approved
+labels on 4 records and reason codes on 2. The prompt was not tuned
+afterward, and the holdout was not unlocked.
+
+`relevance/v4` then added general scope rules and, for a development parent
+only, separated parent context. One development smoke ran at
+`data/interim/phase4/smoke/10aa3135aaea`: 6 external attempts, 0 cache hits,
+6 valid decisions. Scope agreed on 6 of 6 and reason codes on 3 of 6,
+against the same approved labels. Input tokens were 16309, output tokens
+5236, and the estimated list price was USD 0.005588. Actual billed cost is
+unknown. The parent of `google_support-3d15a7ae4cd0` is development document
+`google_support-808ba579f266` and was sent as separate context. Threads
+`1px47il` and `xl693t` cross the development/holdout boundary. That limit
+was recorded and the split was not changed. Holdout text was not sent.
+This comparison is development feedback, not an unbiased performance
+estimate. Phase 5 has not started.
+
 ---
 
 ## 2026-09-29 — Phase 4 holdout protection and smoke preparation

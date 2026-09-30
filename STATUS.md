@@ -6,7 +6,7 @@
 |---|---|
 | **Completed phase** | Phase 3 — normalization and deduplication (2026-09-27) |
 | **Current phase** | Phase 4 — in progress. Offline relevance infrastructure only. Not complete. |
-| **Tests** | 728 passing, 5 skipped, 0 failing. `tests/test_groq_provider.py`, `tests/test_llm_gateway.py`, `tests/test_relevance_governance.py`, and `tests/test_pipeline_runner.py`: 45 passing. |
+| **Tests** | 738 passing, 5 skipped, 0 failing. Groq SDK retries are disabled in the adapter (`max_retries=0`). Installed `groq` is 0.37.1, the resolution of `groq>=0.13,<1`. |
 | **Coverage** | 100% of `src/models/`. Phase 4 covered by `tests/test_relevance.py`, `tests/test_relevance_evaluation.py`, `tests/test_relevance_governance.py`, `tests/test_llm_gateway.py`, `tests/test_pipeline_runner.py`, and `tests/test_groq_provider.py` |
 | **Last verified** | 2026-09-30 |
 | **Blockers** | Recalibrate the ADR-11 band on the scaled corpus. The pilot had no positive or in-band pairs, so duplicate recall is not estimated. |
@@ -380,8 +380,38 @@ scope class and no human labels. A valid file is preserved.
 
 Groq is a provisional Phase 4 relevance provider (ADR-31), configured as
 `openai/gpt-oss-120b`. Anthropic remains implemented. This is not a claim
-that Groq is better, and it is not a production default. No live Groq call
-has been made. A requested temperature of 0 is sent as `1e-8`. The six-call
+that Groq is better, and it is not a production default. One live smoke
+ran on 2026-09-30: `data/interim/phase4/smoke/29e62a353084`. All six
+development documents returned `provider_error` with a null scope. That is
+not `out_of_scope` and not a model score. The holdout was not unlocked.
+The outgoing Groq schema now requires the nullable evidence offsets. One
+follow-up request, `data/interim/phase4/diagnostic/66cfe1d67820`, classified
+`app_store-5e60a403ce06` and stopped after one call. The provider returned
+HTTP 400, `invalid_request_error`. No request id was retained. A second
+single-document attempt, `data/interim/phase4/diagnostic/66cfe1d67820-2`,
+kept Groq's explanation: the generated evidence object omitted `start_char`
+and `end_char`. It was not repeated. The relevance prompt was then `relevance/v3`. A fourth single-document
+attempt, `data/interim/phase4/diagnostic/9a51269a90ed`, validated
+`app_store-5e60a403ce06` as `out_of_scope`. It was not repeated.
+The six-document development smoke then ran once at
+`data/interim/phase4/smoke/c89938c1af59`: 5 external attempts, 1 cache hit,
+6 valid decisions, 0 failures. Scope agreed on 4 of 6 records. Reason codes
+agreed on 2 of 6. The holdout was not unlocked. A revised development smoke
+then ran once at `data/interim/phase4/smoke/10aa3135aaea` with prompt
+`relevance/v4`, the same Groq model, SDK retries disabled, and the existing
+cache. It made 6 external attempts and 0 cache hits. All six decisions are
+valid. Scope agreed on 6 of 6 records. Reason codes agreed on 3 of 6. Those
+counts are development feedback, not an unbiased performance estimate.
+Input tokens were 16309 and output tokens 5236. The estimated list price is
+USD 0.005588. Actual billed cost is unknown. The parent of
+`google_support-3d15a7ae4cd0` is the development document
+`google_support-808ba579f266`; its title, text, and content hash were
+supplied as separate context and included in the cache identity. Evidence
+offsets stay on the reply. Two other thread families cross the
+development/holdout boundary (`1px47il` and `xl693t`). That limit is
+recorded. The split was not changed, and holdout text was not read for
+context. Approved labels were not changed.
+A requested temperature of 0 is sent as `1e-8`. The six-call
 budget reserves one attempt for each of the six documents. A retry is allowed
 only when calls remain after that reservation. Invalid credentials stop the
 run. List price, retrieved 2026-09-30 from Groq's published price for this
@@ -497,6 +527,8 @@ pytest -q
 
 On 2026-09-29 the Phase 4 pytest command passed 36, and the full suite
 passed 710, with 4 skipped. `tests/test_relevance_governance.py` passed 8.
+On 2026-09-30, after the `relevance/v4` context and prompt changes, the full
+suite passed 748, with 5 skipped.
 The smoke dry-run made 0 provider calls. The 3/6 duplicate thresholds stay
 provisional until the scaled corpus is calibrated.
 
