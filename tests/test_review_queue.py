@@ -127,8 +127,15 @@ def test_cli_prints_counts_and_hides_secrets(
     assert (output / "duplicate_review.csv").is_file()
 
 
-def test_cli_rejects_a_later_stage(capsys) -> None:
+def test_cli_refuses_live_extraction(capsys) -> None:
     code = main.main(["run", "--stages", "extract"])
     captured = capsys.readouterr()
     assert code == 1
-    assert "prefilter" in captured.err
+    assert "not authorized" in captured.err
+
+
+def test_cli_rejects_a_later_stage(capsys) -> None:
+    code = main.main(["run", "--stages", "analyze"])
+    captured = capsys.readouterr()
+    assert code == 1
+    assert "extract" in captured.err

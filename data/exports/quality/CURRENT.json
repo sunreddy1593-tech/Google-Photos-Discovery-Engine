@@ -1,0 +1,147 @@
+{
+  "all_numeric_thresholds_passed": true,
+  "assessment": "data/exports/quality/holdout-frozen-v3-2026-10-04-01/ASSESSMENT.json",
+  "development_matched_cases": 4,
+  "development_quality_gate_status": "development_only",
+  "development_reference_cases": 6,
+  "development_relevance_precision": 0.8571428571428571,
+  "development_relevance_precision_passed": true,
+  "development_configuration": "relevance/v6 + extract/v4",
+  "development_report": "data/exports/quality/dev-v6-2026-10-04-01/report.json",
+  "failure_categories": "data/exports/quality/dev-v6-failure-ledger-2026-10-04-01/failure_categories.json",
+  "failure_categories_status": "documented_on_development_split",
+  "holdout_documents": 25,
+  "holdout_report": "data/exports/quality/holdout-frozen-v3-2026-10-04-01/report.json",
+  "limitations": [
+    "Gold holdout was reserved from 35 previously processed Phase 4 development documents. Prior development exposure limits independence; this is not an untouched external test set. The original 15 Phase 4 holdout seats are separate.",
+    "Case coverage is 5/15; numeric gate passage is not extraction semantic approval.",
+    "AI-assisted labels approved by one human. Official gold is final at 35 documents and 21 cases. The former 75-100 labelling volume is closed.",
+    "Schema/span rates are for accepted records; five failed extraction attempts remain excluded. This does not establish that every processed provider output passed validation."
+  ],
+  "m1_status": "complete",
+  "matched_cases": 5,
+  "model_outputs_semantically_approved": false,
+  "semantically_approved_cases": [
+    {"case_id": "reddit-0d477b54fb9b#c01", "run_id": "d7581cf180be", "reviewer": "Sunayana"},
+    {"case_id": "reddit-bde62ddef9b5#c01", "run_id": "d7581cf180be", "reviewer": "Sunayana"},
+    {"case_id": "google_support-2a080da4b930#c01", "run_id": "d7581cf180be", "reviewer": "Sunayana"},
+    {"case_id": "google_support-5b2ec98df32b#c01", "run_id": "d7581cf180be", "reviewer": "Sunayana"},
+    {"case_id": "reddit-87311c2633df#c01", "run_id": "d7581cf180be", "reviewer": "Sunayana"}
+  ],
+  "numeric_gate_status": "numeric_thresholds_passed",
+  "reference_cases": 15,
+  "splits": [
+    {
+      "documents": 10,
+      "excluded_technical_failures": 1,
+      "matched_cases": 2,
+      "prefilter_recall": 1.0,
+      "quality_gate_status": "development_only",
+      "reference_cases": 6,
+      "relevance_precision": 0.8333333333333334,
+      "relevance_recall": 1.0,
+      "schema_validation_rate": 1.0,
+      "span_validation_rate": 1.0,
+      "split": "development",
+      "configuration": "relevance/v5 + extract/v3"
+    },
+    {
+      "documents": 25,
+      "excluded_technical_failures": 0,
+      "matched_cases": 5,
+      "prefilter_recall": 1.0,
+      "quality_gate_status": "numeric_thresholds_passed",
+      "reference_cases": 15,
+      "relevance_precision": 0.9285714285714286,
+      "relevance_recall": 0.9285714285714286,
+      "schema_validation_rate": 1.0,
+      "span_validation_rate": 1.0,
+      "split": "holdout",
+      "configuration": "relevance/v5 + extract/v3"
+    },
+    {
+      "split": "development",
+      "configuration": "relevance/v5 + extract/v4 (separate experiment)",
+      "documents": 10,
+      "matched_cases": 4,
+      "reference_cases": 6,
+      "accepted_model_cases": 5,
+      "schema_validation_rate": 1.0,
+      "span_validation_rate": 1.0,
+      "prefilter_recall": 1.0,
+      "relevance_precision": 0.8333333333333334,
+      "relevance_recall": 1.0,
+      "delivered_relevance_recall": 0.8333333333333334,
+      "quality_gate_status": "development_only",
+      "excluded_technical_failures": 1,
+      "provider_calls": 6,
+      "input_tokens": 76079,
+      "output_tokens": 25338,
+      "estimated_cost_usd": 0.026115
+    },
+    {
+      "split": "development",
+      "configuration": "relevance/v6 + extract/v4",
+      "documents": 10,
+      "matched_cases": 4,
+      "reference_cases": 6,
+      "accepted_model_cases": 5,
+      "schema_validation_rate": 1.0,
+      "span_validation_rate": 1.0,
+      "prefilter_recall": 1.0,
+      "relevance_precision": 0.8571428571428571,
+      "relevance_recall": 1.0,
+      "quality_gate_status": "development_only",
+      "excluded_technical_failures": 0,
+      "provider_calls": 12
+    },
+    {
+      "split": "holdout",
+      "configuration": "relevance/v6 + extract/v4 successor",
+      "documents": 25,
+      "matched_cases": 7,
+      "reference_cases": 15,
+      "schema_validation_rate": 1.0,
+      "span_validation_rate": 1.0,
+      "prefilter_recall": 1.0,
+      "relevance_precision": 0.9285714285714286,
+      "relevance_recall": 1.0,
+      "quality_gate_status": "numeric_thresholds_passed",
+      "excluded_technical_failures": 1,
+      "provider_calls": 39
+    }
+  ],
+  "accepted_limitations": [
+    {
+      "split": "development",
+      "text": "The earlier extract/v3 measurement remains at data/exports/quality/dev-v3-2026-10-04-01: 2 of 6 cases and precision 0.8333. It was not rewritten."
+    },
+    {
+      "split": "development",
+      "text": "relevance/v6 + extract/v4 recovered 4 of 6 reference cases. YouTube is now out of scope. Precision is 6/7 (0.8571) and passes 0.85. The threshold was not lowered. Sunayana later approved the five stored cases. The approved poodle case still does not overlap its reference, and the cat summary quote stays rejected."
+    },
+    {
+      "split": "holdout",
+      "text": "The consumed relevance/v5 + extract/v3 measurement remains 5 of 15 and was not rewritten. A separate successor run with relevance/v6 + extract/v4 recovered 7 of 15 on the same previously exposed seats. Its five numeric thresholds passed. It does not replace the consumed measurement."
+    },
+    {
+      "split": "both",
+      "text": "Sunayana approved the five stored development cases from run d7581cf180be after the disclosed disagreements were shown. The cat summary-quote rejection, the schema failure, and the out-of-scope extraction skips were accepted and were not repaired. model_outputs_semantically_approved stays false. Agreement is null. Official gold is final at 35 documents and 21 cases."
+    },
+    {
+      "split": "development",
+      "text": "Separate extract/v4 experiment matches 4/6, with five accepted cases. Poodle evidence remains in the illustrative setup; cat is blocked by cached relevance evidence. Trigger, date, subject and summary interpretations still require semantic decisions. No model case is approved."
+    },
+    {
+      "split": "submission",
+      "text": "A development-only reviewed-reference export, field comparisons and Cloud package are prepared. Six approved reference cases are not model extraction results. Public deployment and the new n8n Cloud workflow connection remain pending; no new taxonomy or opportunity score is claimed."
+    }
+  ],
+  "status": "measured",
+  "candidate_development_report": "data/exports/quality/dev-v4-2026-10-04-01/report.json",
+  "candidate_development_prompt": "extract/v4",
+  "candidate_development_matched_cases": 4,
+  "candidate_development_reference_cases": 6,
+  "candidate_development_provider_calls": 6,
+  "candidate_development_authorization_consumed": true
+}

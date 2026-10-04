@@ -25,6 +25,7 @@ from src.llm.providers.base import (
     ProviderDiagnostic,
     ProviderFatalError,
     StructuredProvider,
+    safe_finish_reason,
 )
 from src.llm.repair import parse_json_document
 from src.models.enums import DecisionTechnicalState
@@ -58,13 +59,15 @@ class GatewayResult:
     repair_applied: bool = False
     message: str = ""
     diagnostic: ProviderDiagnostic | None = None
+    finish_reason: str | None = None
 
 
 @dataclass
 class UsageTotals:
-    """Billable usage. Cache hits add nothing here."""
+    """Reported provider usage, not actual billing. Cache hits add nothing here."""
 
     provider_calls: int = 0
+    provider_calls_without_recorded_usage: int = 0
     cache_hits: int = 0
     cache_misses: int = 0
     input_tokens: int = 0
@@ -178,6 +181,7 @@ class ModelGateway:
                 discard_keys,
                 from_cache=True,
             )
+            result.finish_reason = safe_finish_reason(cached.finish_reason)
             self.usage.add_state(result.technical_state)
             self._log.info(
                 "cache hit",
@@ -191,6 +195,7 @@ class ModelGateway:
             temperature=self.temperature,
             max_tokens=self.max_tokens,
             timeout_seconds=self.timeout_seconds,
+            diagnostic_model=response_model,
         )
         (
             response_text,
@@ -200,6 +205,7 @@ class ModelGateway:
             output_tokens,
             failure,
             diagnostic,
+            finish_reason,
         ) = self._call(
             prompt,
             schema,
@@ -227,6 +233,12 @@ class ModelGateway:
             )
 
         assert response_text is not None
+        # Reported numeric usage remains available even when content is withheld.
+        cost = self._cost(input_tokens, output_tokens, cached_input_tokens)
+        self.usage.input_tokens += input_tokens
+        self.usage.output_tokens += output_tokens
+        self._remember_cached_input(cached_input_tokens)
+        self.usage.estimated_cost_usd += cost
         if self._contains_secret(prompt) or self._contains_secret(response_text):
             self.usage.add_state(DecisionTechnicalState.provider_error)
             self._log.info(
@@ -237,12 +249,8 @@ class ModelGateway:
                 technical_state=DecisionTechnicalState.provider_error,
                 provider_calls=calls,
                 message="response withheld",
+                finish_reason=finish_reason,
             )
-        cost = self._cost(input_tokens, output_tokens, cached_input_tokens)
-        self.usage.input_tokens += input_tokens
-        self.usage.output_tokens += output_tokens
-        self._remember_cached_input(cached_input_tokens)
-        self.usage.estimated_cost_usd += cost
         try:
             self.cache.write(
                 CacheEntry(
@@ -260,6 +268,7 @@ class ModelGateway:
                     input_tokens=input_tokens,
                     output_tokens=output_tokens,
                     cached_at=self._clock().isoformat(),
+                    finish_reason=finish_reason,
                 ),
                 denylist=self.denylist,
             )
@@ -280,6 +289,7 @@ class ModelGateway:
         result.input_tokens = input_tokens
         result.output_tokens = output_tokens
         result.estimated_cost_usd = cost
+        result.finish_reason = finish_reason
         self.usage.add_state(result.technical_state)
         return result
 
@@ -298,6 +308,7 @@ class ModelGateway:
         int,
         DecisionTechnicalState | None,
         ProviderDiagnostic | None,
+        str | None,
     ]:
         calls = 0
         last_state: DecisionTechnicalState | None = None
@@ -315,23 +326,27 @@ class ModelGateway:
             try:
                 response = self.provider.complete_structured(prompt, schema, params)
             except ProviderFatalError as exc:
+                self.usage.provider_calls_without_recorded_usage += 1
                 self._remember_latency(exc.latency_seconds)
                 self.usage.provider_calls += calls
                 raise
             except ProviderCallError as exc:
                 # The null provider is not a billable call and cannot succeed on retry.
                 if self.provider_name == "null":
-                    return None, 0, 0, None, 0, exc.state, exc.diagnostic
+                    return None, 0, 0, None, 0, exc.state, exc.diagnostic, None
+                self.usage.provider_calls_without_recorded_usage += 1
                 last_state = exc.state
                 last_diagnostic = exc.diagnostic
                 self._remember_latency(exc.latency_seconds)
                 if not self._should_retry(exc, attempt, calls, unattempted_documents):
                     if self._should_delay_next_document(exc, calls, unattempted_documents):
                         self._sleeper(_retry_wait(exc, attempt))
-                    return None, calls, 0, None, 0, exc.state, exc.diagnostic
+                    return None, calls, 0, None, 0, exc.state, exc.diagnostic, None
                 self._sleeper(_retry_wait(exc, attempt))
                 continue
             self._remember_latency(response.latency_seconds)
+            if not response.usage_reported:
+                self.usage.provider_calls_without_recorded_usage += 1
             return (
                 response.text,
                 calls,
@@ -340,6 +355,7 @@ class ModelGateway:
                 response.output_tokens,
                 None,
                 None,
+                safe_finish_reason(response.finish_reason),
             )
         return (
             None,
@@ -349,6 +365,7 @@ class ModelGateway:
             0,
             last_state or DecisionTechnicalState.provider_error,
             last_diagnostic,
+            None,
         )
 
     def _should_retry(

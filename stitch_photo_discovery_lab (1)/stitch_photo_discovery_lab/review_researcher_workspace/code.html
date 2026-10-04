@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"tertiary-container":"#6063ee","on-tertiary-fixed-variant":"#2f2ebe","on-tertiary-container":"#fffbff","on-surface-variant":"#3d4947","tertiary-fixed-dim":"#c0c1ff","on-primary-container":"#f4fffc","surface-bright":"#faf9f5","primary-container":"#008378","surface-container":"#efeeea","secondary-container":"#d5e0f8","outline":"#6d7a77","on-surface":"#1b1c1a","primary-fixed":"#89f5e7","inverse-on-surface":"#f2f1ed","primary":"#00685f","on-background":"#1b1c1a","on-primary":"#ffffff","surface-tint":"#006a61","tertiary-fixed":"#e1e0ff","on-error":"#ffffff","on-secondary-container":"#586377","secondary-fixed":"#d8e3fb","surface-container-highest":"#e3e2df","surface-dim":"#dbdad6","on-tertiary":"#ffffff","secondary-fixed-dim":"#bcc7de","on-primary-fixed-variant":"#005049","inverse-surface":"#30312e","on-primary-fixed":"#00201d","on-secondary-fixed-variant":"#3c475a","background":"#faf9f5","on-error-container":"#93000a","surface-container-high":"#e9e8e4","surface-variant":"#e3e2df","tertiary":"#4648d4","inverse-primary":"#6bd8cb","surface":"#faf9f5","error":"#ba1a1a","surface-container-lowest":"#ffffff","surface-container-low":"#f5f4f0","primary-fixed-dim":"#6bd8cb","on-secondary":"#ffffff","secondary":"#545f73","error-container":"#ffdad6","on-secondary-fixed":"#111c2d","outline-variant":"#bcc9c6","on-tertiary-fixed":"#07006c"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"margin":"2rem","space-md":"1rem","space-xs":"0.25rem","gutter":"1.5rem","space-sm":"0.5rem","space-lg":"1.5rem","gutter-sm":"1rem","space-xl":"2.5rem","margin-sm":"1rem"},"fontFamily":{"body-md":["Inter"],"headline-xl":["Plus Jakarta Sans"],"label-caps":["Inter"],"body-sm":["Inter"],"code-badge":["JetBrains Mono"],"headline-sm":["Plus Jakarta Sans"],"body-lg":["Inter"],"metric-stat":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"]},"fontSize":{"body-md":["0.875rem",{"lineHeight":"1.375rem","fontWeight":"400"}],"headline-xl":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.025em","fontWeight":"700"}],"label-caps":["0.6875rem",{"lineHeight":"1rem","letterSpacing":"0.05em","fontWeight":"600"}],"body-sm":["0.75rem",{"lineHeight":"1.125rem","fontWeight":"400"}],"code-badge":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.02em","fontWeight":"500"}],"headline-sm":["1.125rem",{"lineHeight":"1.625rem","letterSpacing":"-0.01em","fontWeight":"600"}],"body-lg":["1rem",{"lineHeight":"1.625rem","fontWeight":"400"}],"metric-stat":["1.875rem",{"lineHeight":"2.25rem","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-lg":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.02em","fontWeight":"600"}]}}}};</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-72 bg-surface-container-low border-r border-outline-variant/40 z-40 flex flex-col justify-between overflow-y-auto"><div class="p-space-md flex flex-col gap-space-md"><div class="flex items-center gap-space-sm pb-space-sm border-b border-outline-variant/30"><img alt="Photo Discovery Lab Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UUpymzH6tVuSad_d6FYYZmYpGhTN7CEfxDHYEpUjcAGOix56OOdE23BH4BeE5evQnEmqYmlcHx6fg0UkEx0pxvWYCTTPPavLCxEdAqc7bCLmDvZ6Z9G4GBztO1_p5zInDa-8D_WBd3Cc30kgi69wGI_zLsHqGOG54l-nVCBI4c6_6fGCofRlsJOw9g0TeooD6TS0KW3tLHqX6ZZ8mhJ7VnxHdP76wTjbysUk3wOzhm7yEXyMZGJ0AaJMI"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight leading-tight">Photo Discovery Lab</span><span class="font-label-caps text-label-caps uppercase text-secondary tracking-wider">Research Engine</span></div></div><div class="bg-surface-container p-space-sm rounded-lg flex flex-col gap-space-xs"><div class="flex items-center justify-between"><span class="font-label-caps text-label-caps uppercase text-secondary font-semibold">Perspective</span><span class="material-symbols-outlined text-[14px] text-secondary cursor-help" title="Public Evaluator view hides raw ingestion credentials and private rubric notes.">help_outline</span></div><div class="grid grid-cols-2 bg-surface-container-high p-0.5 rounded-DEFAULT gap-0.5"><button class="bg-surface-container-lowest text-primary shadow-sm font-label-caps text-label-caps py-1 px-2 rounded-DEFAULT font-semibold text-center" type="button">Public</button><button class="text-secondary hover:text-on-surface font-label-caps text-label-caps py-1 px-2 rounded-DEFAULT text-center transition-colors" type="button">Researcher</button></div></div><div class="flex flex-col gap-space-xs"><span class="font-label-caps text-label-caps uppercase text-secondary px-2 pt-1 font-semibold">Navigation</span><nav class="flex flex-col gap-1" data-active-classes="bg-surface-container-lowest text-primary font-semibold shadow-sm border-l-2 border-primary"><a class="flex items-center justify-between px-3 py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="overview" href="#"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>Overview</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="explore-evidence" href="#"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">travel_explore</span><span>Explore Evidence</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="compare-problems" href="#"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">balance</span><span>Compare Problems</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="collection" href="#"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">database</span><span>Collection</span></div><span class="material-symbols-outlined text-[15px] text-outline" title="Requires Researcher Access">lock</span></a><a aria-current="page" class="flex items-center justify-between px-3 py-2 rounded-DEFAULT transition-colors bg-surface-container-lowest text-primary font-semibold shadow-sm border-l-2 border-primary" data-path="review" href="#"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">rate_review</span><span>Review</span></div><span class="material-symbols-outlined text-[15px] text-outline" title="Requires Researcher Access">lock</span></a><a class="flex items-center justify-between px-3 py-2 rounded-DEFAULT text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="methodology-quality" href="#"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">verified</span><span>Methodology &amp; Quality</span></div></a></nav></div></div><div class="p-space-md border-t border-outline-variant/30 flex flex-col gap-space-sm bg-surface-container/40"><div class="flex flex-col gap-1"><span class="font-label-caps text-label-caps uppercase text-secondary font-semibold">Corpus Snapshot</span><span class="font-code-badge text-code-badge text-on-surface">1,420 docs (Jan 2023 - Feb 2025)</span><span class="font-body-sm text-body-sm text-outline">Public community &amp; store verbatims</span></div><div class="flex items-center justify-between pt-1 border-t border-outline-variant/20"><span class="inline-flex items-center gap-1 font-code-badge text-code-badge px-1.5 py-0.5 rounded-DEFAULT bg-surface-container-high text-on-surface-variant"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span>v1.4-eval</span><span class="font-label-caps text-label-caps text-secondary font-semibold uppercase">Google Photos</span></div></div></aside><div class="pl-72 flex flex-col min-h-screen"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/95 backdrop-blur-md border-b border-outline-variant/40 z-30 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-2 text-body-sm"><span class="font-code-badge text-code-badge text-secondary font-medium">lab://feedback-discovery</span><span class="text-outline-variant">/</span><span class="font-label-caps text-label-caps uppercase text-primary font-semibold tracking-wider">Evaluator View</span></div><div class="hidden xl:flex items-center gap-2 px-space-sm py-1 rounded-DEFAULT bg-surface-container border border-outline-variant/30"><span class="material-symbols-outlined text-[16px] text-secondary">info</span><span class="font-body-sm text-body-sm text-on-surface-variant">Illustrative research synthesis (Google Community, Reddit, YouTube, App Stores).</span></div></div><div class="flex items-center gap-space-md"><nav class="hidden sm:flex items-center gap-space-md" data-active-classes="text-primary font-semibold"><a class="font-label-caps text-label-caps uppercase text-on-surface-variant hover:text-on-surface transition-colors" data-path="methodology-quality" href="#">Methodology Doc</a><a class="font-label-caps text-label-caps uppercase text-on-surface-variant hover:text-on-surface transition-colors" data-path="overview" href="#">Summary</a></nav><div class="flex items-center gap-space-sm pl-space-sm border-l border-outline-variant/30"><span class="inline-flex items-center font-label-caps text-label-caps uppercase px-2 py-0.5 rounded-full bg-primary-container/15 text-primary border border-primary/20 font-semibold">Public Mode</span><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 flex-1 bg-surface-bright"><div class="w-full px-space-lg py-space-md"><div class="mb-space-md p-space-sm bg-surface-container rounded-DEFAULT border border-outline-variant/30 flex items-start gap-3"><span class="material-symbols-outlined text-primary text-[20px] mt-0.5">dataset</span><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Photo Retrieval &amp; Discovery Analysis Engine</span><p class="font-body-sm text-body-sm text-on-surface-variant">Synthesizing qualitative user pain points and query breakdowns when retrieving remembered media in Google Photos. Grounded in 1,420 evaluated verbatims.</p></div></div><div class="flex flex-col w-full">
+<!-- Queue Metagroup & Status Bar -->
+<section class="flex flex-col gap-space-sm mb-space-lg">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md p-space-md bg-surface-container-low rounded-xl shadow-sm">
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-code-badge text-code-badge px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container uppercase font-semibold">Strict Protocol v3.2</span>
+<span class="font-label-caps text-label-caps uppercase text-secondary">Researcher Clearance Level 2</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Case Verification &amp; Semantic Review Queue</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Guarding semantic fidelity, exact quote alignment, and preventing inferred causal severity.</p>
+</div>
+<!-- Queue Progress Metrics -->
+<div class="flex items-center gap-space-sm bg-surface-container-lowest p-2 rounded-lg shadow-sm">
+<div class="flex flex-col px-3 py-1">
+<span class="font-label-caps text-label-caps uppercase text-secondary">Awaiting Review</span>
+<div class="flex items-baseline gap-1.5">
+<span class="font-metric-stat text-metric-stat text-on-surface">48</span>
+<span class="font-code-badge text-code-badge text-tertiary">case #14/62</span>
+</div>
+</div>
+<div class="w-1 h-8 bg-surface-container-high rounded-full"></div>
+<div class="flex flex-col px-3 py-1">
+<span class="font-label-caps text-label-caps uppercase text-secondary">Approved</span>
+<span class="font-metric-stat text-metric-stat text-primary">214</span>
+</div>
+<div class="w-1 h-8 bg-surface-container-high rounded-full"></div>
+<div class="flex flex-col px-3 py-1">
+<span class="font-label-caps text-label-caps uppercase text-secondary">Rejected / Edited</span>
+<span class="font-metric-stat text-metric-stat text-error">50</span>
+</div>
+</div>
+</div>
+<!-- Guideline Callout -->
+<div class="p-space-sm bg-surface-container rounded-lg flex items-center justify-between gap-3 shadow-sm">
+<div class="flex items-center gap-3">
+<div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary text-[16px]">verified_user</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">
+<strong class="font-semibold text-primary">Guideline Enforced:</strong> Avoid bulk approval. Validate every claim against verbatim text. Clearly distinguish automatic syntactic validation from human semantic signoff.
+        </p>
+</div>
+<span class="font-code-badge text-code-badge text-secondary shrink-0 hidden md:inline">RFC-089 Semantic Fidelity Standard</span>
+</div>
+</section>
+<!-- Side-by-Side Verification Workbench -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start mb-space-lg">
+<!-- Left Column: Source Context & Grounding Evidence -->
+<div class="lg:col-span-6 flex flex-col gap-space-md">
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">anchor</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Source Evidence Grounding</span>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-container text-secondary font-code-badge text-code-badge">
+<span class="w-2 h-2 rounded-full bg-primary"></span> Live Token Reference
+          </span>
+</div>
+<!-- Source Meta Pills -->
+<div class="flex flex-wrap items-center gap-2 text-body-sm">
+<span class="px-2 py-1 bg-surface-container-low text-on-surface rounded font-code-badge text-code-badge font-semibold">Reddit r/googlephotos</span>
+<span class="px-2 py-1 bg-surface-container text-secondary rounded font-code-badge text-code-badge">Thread #rd-9402</span>
+<span class="text-secondary font-body-sm">Posted Dec 12, 2024 · 09:14 UTC</span>
+</div>
+<!-- Verbatim Quote Block with Active Highlight Spans -->
+<div class="bg-surface-container-low p-space-md rounded-lg flex flex-col gap-space-xs relative">
+<span class="font-label-caps text-label-caps uppercase text-secondary">Original Post Verbatim (Immutable Record)</span>
+<p class="font-body-lg text-body-lg text-on-surface leading-relaxed">
+            “I <span class="bg-error-container/60 text-on-error-container px-1 rounded font-semibold cursor-help" title="Model over-extended this text into 'loss of professional work time'">spent all morning</span> trying to find videos of my kid's <span class="bg-primary-container/20 text-on-primary-fixed-variant px-1 rounded font-medium">kindergarten graduation</span> from <span class="bg-primary-container/20 text-on-primary-fixed-variant px-1 rounded font-medium">May 2022</span>. I searched <span class="bg-secondary-container text-on-secondary-container px-1 rounded font-code-badge text-code-badge">'graduation'</span>, <span class="bg-secondary-container text-on-secondary-container px-1 rounded font-code-badge text-code-badge">'kindergarten'</span>, and <span class="bg-secondary-container text-on-secondary-container px-1 rounded font-code-badge text-code-badge">'school stage'</span>. It brought up high school graduation photos from 2015 and graduation caps, but completely skipped the 2022 <span class="bg-tertiary-fixed text-on-tertiary-fixed-variant px-1 rounded font-medium">iPhone video clips</span>. I ended up scrolling back month-by-month for <span class="bg-secondary-container text-on-secondary-container px-1 rounded font-semibold">35 minutes</span> until I found them in an unlabeled backup folder.”
+          </p>
+<div class="flex items-center justify-between text-body-sm pt-2">
+<span class="font-code-badge text-code-badge text-secondary">SHA256: 8fa73c...98ef</span>
+<span class="font-label-caps text-label-caps uppercase text-secondary font-semibold">Corpus Source: Unmodified Extract</span>
+</div>
+</div>
+<!-- Automatic Extraction Diagnostics Panel -->
+<div class="bg-surface-container-high/60 p-space-sm rounded-lg flex flex-col gap-2">
+<span class="font-label-caps text-label-caps uppercase text-secondary">Automated Pipeline Diagnostics</span>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+<div class="bg-surface-container-lowest p-2 rounded flex flex-col">
+<span class="font-label-caps text-label-caps text-secondary uppercase">Splicing Check</span>
+<span class="font-code-badge text-code-badge text-primary font-semibold flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> 100% Substring
+              </span>
+</div>
+<div class="bg-surface-container-lowest p-2 rounded flex flex-col">
+<span class="font-label-caps text-label-caps text-secondary uppercase">Entity Detection</span>
+<span class="font-code-badge text-code-badge text-on-surface truncate mt-0.5">3 Validated Slots</span>
+</div>
+<div class="bg-surface-container-lowest p-2 rounded flex flex-col">
+<span class="font-label-caps text-label-caps text-secondary uppercase">Syntactic Pass</span>
+<span class="font-code-badge text-code-badge text-primary-container font-semibold mt-0.5">Rule-Check OK</span>
+</div>
+</div>
+<div class="flex flex-wrap gap-1.5 pt-1">
+<span class="font-code-badge text-code-badge px-2 py-0.5 bg-surface-container-lowest text-secondary rounded">Entity: Kindergarten graduation</span>
+<span class="font-code-badge text-code-badge px-2 py-0.5 bg-surface-container-lowest text-secondary rounded">Temporal: May 2022</span>
+<span class="font-code-badge text-code-badge px-2 py-0.5 bg-surface-container-lowest text-secondary rounded">Modality: iPhone Video (.mov)</span>
+</div>
+</div>
+<!-- Contextual Audio/Media Ingestion Reference Card -->
+<div class="p-space-sm bg-surface-container rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">feed</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">User Context Topology</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Parent retrieving multi-year milestone archival material on iOS client.</span>
+</div>
+</div>
+<span class="font-code-badge text-code-badge px-2 py-1 rounded bg-surface-container-highest text-on-surface-variant font-medium">Platform: iOS 17.1</span>
+</div>
+</div>
+</div>
+<!-- Right Column: Model Interpretation & Semantic Review Form -->
+<div class="lg:col-span-6 flex flex-col gap-space-md">
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-[20px]">psychology</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Proposed Interpretation Form</span>
+</div>
+<span class="inline-flex items-center gap-1 font-label-caps text-label-caps uppercase bg-tertiary-fixed text-on-tertiary-fixed-variant px-2 py-0.5 rounded font-semibold">
+            Draft v2 for Signoff
+          </span>
+</div>
+<!-- Interactive Fields Container -->
+<div class="flex flex-col gap-space-sm">
+<!-- Field 1: Retrieval Trigger / Goal -->
+<div class="p-space-sm bg-surface-container-low rounded-lg flex flex-col gap-1 transition-all hover:bg-surface-container">
+<div class="flex items-center justify-between">
+<label class="font-label-caps text-label-caps uppercase text-secondary font-semibold">Field 1 · Retrieval Trigger / Goal</label>
+<span class="inline-flex items-center gap-1 font-code-badge text-code-badge text-primary bg-primary-container/10 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[13px]">check</span> Supported by text
+              </span>
+</div>
+<div class="font-body-md text-body-md text-on-surface font-medium">
+              “Locate kindergarten graduation videos from May 2022.”
+            </div>
+</div>
+<!-- Field 2: Remembered Clues -->
+<div class="p-space-sm bg-surface-container-low rounded-lg flex flex-col gap-1 transition-all hover:bg-surface-container">
+<div class="flex items-center justify-between">
+<label class="font-label-caps text-label-caps uppercase text-secondary font-semibold">Field 2 · Remembered Clues</label>
+<span class="inline-flex items-center gap-1 font-code-badge text-code-badge text-primary bg-primary-container/10 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[13px]">check</span> Supported by text
+              </span>
+</div>
+<div class="font-body-md text-body-md text-on-surface font-medium">
+              “Life event ('kindergarten graduation'), month/year ('May 2022'), visual content ('school stage').”
+            </div>
+</div>
+<!-- Field 3: Search Strategy -->
+<div class="p-space-sm bg-surface-container-low rounded-lg flex flex-col gap-1 transition-all hover:bg-surface-container">
+<div class="flex items-center justify-between">
+<label class="font-label-caps text-label-caps uppercase text-secondary font-semibold">Field 3 · Search Strategy &amp; Syntax</label>
+<span class="inline-flex items-center gap-1 font-code-badge text-code-badge text-primary bg-primary-container/10 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[13px]">check</span> Exact Query Tokens
+              </span>
+</div>
+<div class="font-body-md text-body-md text-on-surface font-medium">
+              Keyword sequential queries: <code class="font-code-badge text-code-badge bg-surface-container px-1 py-0.5 rounded text-on-surface-variant">'graduation'</code>, <code class="font-code-badge text-code-badge bg-surface-container px-1 py-0.5 rounded text-on-surface-variant">'kindergarten'</code>, <code class="font-code-badge text-code-badge bg-surface-container px-1 py-0.5 rounded text-on-surface-variant">'school stage'</code>.
+            </div>
+</div>
+<!-- Field 4: Failure Mode & Outcome -->
+<div class="p-space-sm bg-surface-container-low rounded-lg flex flex-col gap-1 transition-all hover:bg-surface-container">
+<div class="flex items-center justify-between">
+<label class="font-label-caps text-label-caps uppercase text-secondary font-semibold">Field 4 · Retrieval Failure Mode &amp; Outcome</label>
+<span class="inline-flex items-center gap-1 font-code-badge text-code-badge text-primary bg-primary-container/10 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[13px]">check</span> Grounded in verbatim
+              </span>
+</div>
+<div class="font-body-md text-body-md text-on-surface font-medium">
+              “Semantic mismatch: Returned older photos from 2015; video clips skipped. Workaround: 35-minute manual month-by-month scroll.”
+            </div>
+</div>
+<!-- Field 5: Stated Impact (FLAGGED) -->
+<div class="p-space-sm bg-error-container/20 rounded-lg flex flex-col gap-2 relative">
+<div class="flex items-center justify-between">
+<label class="font-label-caps text-label-caps uppercase text-error font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">warning</span> Field 5 · Stated User Impact (Flagged Anomaly)
+              </label>
+<span class="font-code-badge text-code-badge px-2 py-0.5 rounded bg-error text-on-error font-semibold">Severity Hallucination Risk</span>
+</div>
+<!-- Strikethrough Proposed Text -->
+<div class="font-body-md text-body-md text-on-surface bg-surface-container-lowest p-2 rounded shadow-sm">
+<span class="line-through text-outline">User spent 35 minutes scrolling; lost morning work time.</span>
+<div class="mt-1 flex items-center gap-1.5 text-primary font-medium text-body-sm">
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+<span class="font-semibold">Corrected Interpretation:</span> “User spent 35 minutes manual scrolling until files were recovered in backup.”
+              </div>
+</div>
+<!-- Caution Callout Inside Field -->
+<div class="p-space-xs bg-error-container/40 rounded flex items-start gap-2 text-body-sm text-on-error-container">
+<span class="material-symbols-outlined text-[18px] text-error shrink-0 mt-0.5">report_problem</span>
+<p>
+<strong>Semantic Violation Warning:</strong> Source text states 'spent all morning trying to find videos', but does not explicitly state lost professional work hours. Model generated unsubstantiated employment context. Propose striking ungrounded claim.
+              </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Flagged Review Checks & Rule Enforcer -->
+<section class="bg-surface-container-low p-space-md rounded-xl mb-space-lg shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">fact_check</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Required Rubric Checklist (Anti-Hallucination Guard)</h3>
+</div>
+<span class="font-label-caps text-label-caps uppercase text-secondary">All 4 conditions must be verified prior to signoff</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-sm">
+<!-- Check 1 -->
+<div class="bg-surface-container-lowest p-space-sm rounded-lg flex items-start gap-2 shadow-sm">
+<div class="w-5 h-5 rounded bg-primary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-on-primary text-[14px]">check</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">No Concept Confusion</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Search syntax separated from goal.</span>
+</div>
+</div>
+<!-- Check 2 (Flagged) -->
+<div class="bg-error-container/30 p-space-sm rounded-lg flex items-start gap-2 shadow-sm">
+<div class="w-5 h-5 rounded bg-error flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-on-error text-[14px]">priority_high</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-body-sm text-body-sm font-semibold text-error">Impact Exaggeration</span>
+<span class="font-body-sm text-body-sm text-on-error-container truncate">Removed 'lost work time' claim.</span>
+</div>
+</div>
+<!-- Check 3 -->
+<div class="bg-surface-container-lowest p-space-sm rounded-lg flex items-start gap-2 shadow-sm">
+<div class="w-5 h-5 rounded bg-primary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-on-primary text-[14px]">check</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Quote Integrity</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Verbatim quotes match 100%.</span>
+</div>
+</div>
+<!-- Check 4 -->
+<div class="bg-surface-container-lowest p-space-sm rounded-lg flex items-start gap-2 shadow-sm">
+<div class="w-5 h-5 rounded bg-primary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-on-primary text-[14px]">check</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Episode Completeness</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Single retrieval attempt captured.</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Review Action Bar (Streamlit Paradigm Actions) -->
+<section class="bg-surface-container p-space-md rounded-xl mb-space-xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">gavel</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Active Session: Dr. Vance (Lead Evaluator)</span>
+<span class="font-body-sm text-body-sm text-secondary">Decision will write directly to verified research ledger #DB-QUAL-2025.</span>
+</div>
+</div>
+<!-- Button Cluster -->
+<div class="flex flex-wrap items-center gap-space-sm w-full md:w-auto justify-end">
+<!-- Leave unresolved -->
+<button class="px-3 py-2 rounded font-body-sm text-body-sm font-medium bg-surface-container-lowest text-secondary hover:bg-surface-container-high transition-colors shadow-sm" type="button">
+        Flag for Second Review
+      </button>
+<!-- Reject Case -->
+<button class="px-3 py-2 rounded font-body-sm text-body-sm font-medium bg-error-container text-on-error-container hover:bg-error hover:text-on-error transition-colors shadow-sm flex items-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]">cancel</span>
+        Reject Case
+      </button>
+<!-- Propose Correction Diff -->
+<button class="px-3 py-2 rounded font-body-sm text-body-sm font-medium bg-surface-container-lowest text-on-surface hover:bg-surface-container-high transition-colors shadow-sm flex items-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]">difference</span>
+        Edit Diff
+      </button>
+<!-- Approve with Edits Applied -->
+<button class="px-4 py-2 rounded font-body-sm text-body-sm font-semibold bg-primary text-on-primary hover:bg-primary-container transition-colors shadow-sm flex items-center gap-2" id="approve-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+        Approve with Correction Applied
+      </button>
+</div>
+</section>
+<!-- Proposed Corrections & Review History Audit Log -->
+<section class="flex flex-col gap-space-sm mb-space-lg">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">history_edu</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Recent Human Review Log (Audit Trail)</h3>
+</div>
+<span class="font-code-badge text-code-badge text-secondary">Last 5 commits in stream</span>
+</div>
+<!-- History Table Container -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[760px]">
+<thead>
+<tr class="bg-surface-container-low text-secondary font-label-caps text-label-caps uppercase">
+<th class="py-2.5 px-4">Case ID</th>
+<th class="py-2.5 px-4">Reviewer</th>
+<th class="py-2.5 px-4">Model Output vs Human Correction</th>
+<th class="py-2.5 px-4">Decision</th>
+<th class="py-2.5 px-4 text-right">Timestamp</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 text-body-sm">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-4 font-code-badge text-code-badge text-secondary font-semibold">#rd-9399</td>
+<td class="py-3 px-4 font-body-sm text-body-sm text-on-surface font-medium">A. Rivera (PhD)</td>
+<td class="py-3 px-4 max-w-md">
+<span class="text-error line-through text-body-sm">Inferred face recognition crash</span> → 
+              <span class="text-primary font-medium text-body-sm">Cluster grouping latency (&gt;4s)</span>
+</td>
+<td class="py-3 px-4">
+<span class="px-2 py-0.5 rounded-full font-code-badge text-code-badge bg-primary-container/15 text-primary font-semibold">Approved (Edited)</span>
+</td>
+<td class="py-3 px-4 text-right font-code-badge text-code-badge text-secondary">10m ago</td>
+</tr>
+<!-- Row 2 -->
+<tr class="bg-surface-bright hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-4 font-code-badge text-code-badge text-secondary font-semibold">#yt-1082</td>
+<td class="py-3 px-4 font-body-sm text-body-sm text-on-surface font-medium">K. Chen</td>
+<td class="py-3 px-4 max-w-md">
+<span class="text-on-surface text-body-sm">Exact token match on date filtering ‘June 2019’ verified against spoken transcript</span>
+</td>
+<td class="py-3 px-4">
+<span class="px-2 py-0.5 rounded-full font-code-badge text-code-badge bg-primary-container/15 text-primary font-semibold">Approved (Direct)</span>
+</td>
+<td class="py-3 px-4 text-right font-code-badge text-code-badge text-secondary">28m ago</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-4 font-code-badge text-code-badge text-secondary font-semibold">#as-4421</td>
+<td class="py-3 px-4 font-body-sm text-body-sm text-on-surface font-medium">Dr. Vance</td>
+<td class="py-3 px-4 max-w-md">
+<span class="text-error line-through text-body-sm">User claimed permanent loss</span> → 
+              <span class="text-on-error-container font-medium text-body-sm">User was looking in archived tab</span>
+</td>
+<td class="py-3 px-4">
+<span class="px-2 py-0.5 rounded-full font-code-badge text-code-badge bg-error-container text-on-error-container font-semibold">Rejected (Untruthful)</span>
+</td>
+<td class="py-3 px-4 text-right font-code-badge text-code-badge text-secondary">1h 14m ago</td>
+</tr>
+<!-- Row 4 -->
+<tr class="bg-surface-bright hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-4 font-code-badge text-code-badge text-secondary font-semibold">#rd-9381</td>
+<td class="py-3 px-4 font-body-sm text-body-sm text-on-surface font-medium">M. Sorensen</td>
+<td class="py-3 px-4 max-w-md">
+<span class="text-on-surface text-body-sm">OCR receipt search query ‘Target detergent’ correctly mapped as non-visual entity</span>
+</td>
+<td class="py-3 px-4">
+<span class="px-2 py-0.5 rounded-full font-code-badge text-code-badge bg-primary-container/15 text-primary font-semibold">Approved (Direct)</span>
+</td>
+<td class="py-3 px-4 text-right font-code-badge text-code-badge text-secondary">2h 05m ago</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-4 font-code-badge text-code-badge text-secondary font-semibold">#gc-5590</td>
+<td class="py-3 px-4 font-body-sm text-body-sm text-on-surface font-medium">A. Rivera (PhD)</td>
+<td class="py-3 px-4 max-w-md">
+<span class="text-secondary line-through text-body-sm">Model synthesized 3 unrelated forum posts into one failure</span> → Split into atomic units
+            </td>
+<td class="py-3 px-4">
+<span class="px-2 py-0.5 rounded-full font-code-badge text-code-badge bg-tertiary-fixed text-on-tertiary-fixed-variant font-semibold">De-spliced &amp; Split</span>
+</td>
+<td class="py-3 px-4 text-right font-code-badge text-code-badge text-secondary">3h 40m ago</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Interactive Workbench Feedback Toast Simulator -->
+<div class="hidden fixed bottom-6 right-6 bg-inverse-surface text-inverse-on-surface px-4 py-3 rounded-lg shadow-xl flex items-center gap-3 z-50 transition-opacity duration-300" id="status-toast">
+<span class="material-symbols-outlined text-primary-fixed text-[20px]">task_alt</span>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-semibold text-inverse-on-surface">Case #rd-9402 Successfully Committed</span>
+<span class="font-body-sm text-body-sm text-surface-dim">Removed ungrounded workplace inference. Advance to next pending case.</span>
+</div>
+</div>
+<script>
+    const approveBtn = document.getElementById('approve-btn');
+    const toast = document.getElementById('status-toast');
+    if (approveBtn && toast) {
+      approveBtn.addEventListener('click', () => {
+        toast.classList.remove('hidden');
+        approveBtn.textContent = 'Saved to Ledger';
+        approveBtn.classList.remove('bg-primary');
+        approveBtn.classList.add('bg-primary-container', 'opacity-80', 'cursor-not-allowed');
+        approveBtn.disabled = true;
+        setTimeout(() => {
+          toast.classList.add('opacity-0');
+          setTimeout(() => toast.classList.add('hidden'), 300);
+        }, 4000);
+      });
+    }
+  </script>
+</div></div></main><footer class="w-full bg-surface-container-low border-t border-outline-variant/30 py-space-md px-space-lg flex flex-col sm:flex-row items-center justify-between text-secondary gap-2"><div class="flex items-center gap-space-sm"><span class="font-label-caps text-label-caps uppercase font-semibold text-on-surface">Photo Discovery Lab</span><span class="text-outline-variant">•</span><span class="font-body-sm text-body-sm">Qualitative Feedback Workbench</span></div><div class="flex items-center gap-space-md"><span class="font-code-badge text-code-badge">Status: Nominal</span><span class="font-body-sm text-body-sm text-outline">© 2025 Research Operations</span></div></footer></div></body></html>

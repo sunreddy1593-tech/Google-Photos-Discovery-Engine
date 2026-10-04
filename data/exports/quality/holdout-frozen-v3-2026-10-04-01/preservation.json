@@ -1,0 +1,14 @@
+{
+  "authorized_official_gold_publication": [
+    "data/gold/cases.jsonl",
+    "data/gold/documents.jsonl"
+  ],
+  "holdout_directory_files": [
+    "ASSESSMENT.json",
+    "report.json"
+  ],
+  "holdout_error_analysis_csv": false,
+  "original_empty_gold_backups_verified": true,
+  "prior_files_checked": 660,
+  "prior_runs_cache_labels_reviews_split_preserved": true
+}

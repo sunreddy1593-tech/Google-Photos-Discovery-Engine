@@ -1,0 +1,493 @@
+{
+  "agreement": {
+    "cohen_kappa": null,
+    "pairs": 0,
+    "raw_agreement": null
+  },
+  "case_coverage": {
+    "accepted_model_cases": 5,
+    "field_metrics_basis": "matched cases only; unmatched gold cases and technical failures are not silently scored as field matches",
+    "gold_case_coverage": 0.3333333333333333,
+    "gold_cases": 15,
+    "matched_cases": 5,
+    "unmatched_gold_cases": 10,
+    "unmatched_model_cases": 0
+  },
+  "confusion": {
+    "adjacent_known_item_retrieval": {
+      "adjacent_known_item_retrieval": 6,
+      "core_incomplete_recall": 4,
+      "out_of_scope": 1
+    },
+    "core_incomplete_recall": {
+      "core_incomplete_recall": 3
+    },
+    "out_of_scope": {
+      "core_incomplete_recall": 1,
+      "out_of_scope": 10
+    }
+  },
+  "documents": 25,
+  "duplicate_rate": null,
+  "evaluation_version": "gold-evaluation/v2",
+  "excluded_technical_failures": 0,
+  "failure_rate": 0.35714285714285715,
+  "freeze": {
+    "created_at": "2026-10-04T06:50:24.857394+00:00",
+    "development_report": "data/exports/quality/dev-v3-2026-10-04-01/report.json",
+    "development_report_sha256": "eb08eef7bdc1d82b3ce28de86ca52023bf62d244a2fb93a6e850b3d72d6da5da",
+    "extraction_max_tokens": 8192,
+    "extraction_prompt": "extract/v3",
+    "freeze_version": "quality-freeze/v1",
+    "frozen": true,
+    "gateway_attempts": 1,
+    "input_sha256": {
+      "config/analysis.yaml": "5ca9b0a27cd723cc9c6a95dff80c87d35240c4880d763951af7092bfe64b5338",
+      "config/models.yaml": "8b147ef7492d55f5cbc179dd671369beb8ef2469435e382fda6bda93088f769f",
+      "config/sources.yaml": "442348b3ffaf640d0dc869b62876a5c421b95899d5d74288bda67c851e53660b",
+      "config/taxonomy.yaml": "d871100642079a893079c0fe2ecef99f140da0b840772ccc828152607b56f524",
+      "data/annotation/dev-starter-2026-10-03/manifest.json": "313626cf8128aee5cc0029e89f68c8d1b7ec6d6d66e591897a692b1e34051f1e",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/development-reference-02/cases.jsonl": "b4c0acff98a613cda53e0be3d42e1da6abebe9a51c3cd86abd857083371f2557",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/development-reference-02/documents.jsonl": "80af2af00b83b03cc360dc1ba89b586be47793ea2a791ce8c9965fee3648d508",
+      "data/interim/phase3/documents_derived.jsonl": "f67fd9eb69af0e71c787b928e7327cb83538fc5072e4370fbf2bce0c8876df0e",
+      "data/interim/phase3/duplicate_links.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "data/interim/phase4/relevance_seed_review.csv": "fe4f68698819c5aeef70841278e27e9aa325940d58047de53b2a1cafd7e6ac00",
+      "data/interim/phase4/relevance_split_manifest.csv": "8ab49cdbe4bea8ae330610e8c7424f3851f724dda77170a34a7e67ce0001db97",
+      "data/processed/pilot-import/collected_documents.jsonl": "e0fa2bb949247c1437c6c03eeff7783817ec0c054d78daade1bdb9fece3beaa4",
+      "scripts/__init__.py": "99016a6714ca829e5b368b1d04fd49d92096f0b250734085d7b9dfc72280c63e",
+      "scripts/approve_quality_holdout.py": "b77fe6745fa093b5f5e55f09acac2ed7ac6795154540b06bae889909f34cdddf",
+      "scripts/audit_m1.py": "7d901c5bcc0df9babebe6d38435e1a1bcd51f7496616d7e09dd335b66f61a15e",
+      "scripts/evaluate.py": "a934875b3e653b11aaed8b31a569994a059d4f37117713f9f4b81d4b4930e279",
+      "scripts/prepare_annotation_pack.py": "ff9778b30dcfa157df47bac39ca4fba0cb80732a16213644974079c15c11430e",
+      "scripts/prepare_quality_holdout.py": "eb63e585b0efb65840e0d73b71020f73afb40cd5d54fe04bafe8dcb9eafeb4c5",
+      "scripts/quality_run.py": "8f7e412d488ee97da3bfee14cdf9668de285df506e632503b2f66bf856f13f33",
+      "scripts/validate_annotations.py": "ae379788e7afae03f5cbcbdba69eb3ea1e9e578ccb52dabe070d6e02a18e4146",
+      "src/__init__.py": "0aa5fa10aad55548e68c6bc8c0174e2fb71ba0fc21dfd7282172a1496685f776",
+      "src/browse/__init__.py": "69e6e882b013322814d0aa6ba893add091ed23183322881ee5e37b07c9c01407",
+      "src/browse/findings.py": "ac5806a9325ed35d32dee31c114e11e269d4ce808c76d211ed397e729a13979d",
+      "src/browse/page.py": "4e686c0ffae7ca21fd2bf63cbfe216037311001c5fc039671e62ba4c1c555d85",
+      "src/browse/serve.py": "7db89a666f788c46655468579bfc6a86d86a95fa578cdb11e6d214bb3858c7e3",
+      "src/browse/snapshot.py": "f08d4c918dd6871f060c91647e804da75b8f934be0dba7e5552c42fc158d1c76",
+      "src/collect/__init__.py": "eb582d009eb3c57c128f206c8a03d8c4aa9ec2fed9f53811a82658f97783613e",
+      "src/collect/cli.py": "7f5ab1e467d93082ec3450bef9903338a74cf95f8154d40c6226c9c3a0ab647f",
+      "src/collect/store_access.py": "462360343e508d8b4a5f9e64212e156b304217e4290ce3bddf8ca682d6bdc573",
+      "src/collect/store_pages.py": "56248946d852eb9e294d139a48f6585d537ade1592fced39ce0d7e040e1f4a3b",
+      "src/collect/workbook.py": "d0aa832a4d96e075bc7fa20326382add522b8215d8e96b9fd24bddffd8472404",
+      "src/collect/youtube.py": "aeefbbf142d55717898c8529a5436d3c7274ca975b99b9a2a058735dd858dac6",
+      "src/core/__init__.py": "9a605870319fdfe237561c2a9548988d0e06db8461f4ccefb62c971b0bfae391",
+      "src/core/config.py": "895fc96c6fec613347dac7f66a55119ceecdaf3aace6372883252aa57c26ce02",
+      "src/core/errors.py": "75c34c551eadf236a452a10cf26ec765a421f45fd307755d1d2e93d4c0ee1f70",
+      "src/core/hashing.py": "f9986c143df123a182641cbaaed0e1b4ace0e911edfa9ae605a357c5cb1865e9",
+      "src/core/ids.py": "b9ba906ac1c237d32cbccddc5b685c5ac6077b5d404d7f1b3636a529c1636722",
+      "src/core/logging.py": "c81516d574dbe63e34292758cd3b3cc8bda615201666afc81e9b4ea83a07f2ae",
+      "src/core/versions.py": "12c33d2af55e0997d93dddf9c1cc7354be5ad8f343837d9c2ef2a9425def1c76",
+      "src/dedupe/__init__.py": "402dc1100c29e5a9085dc92bf6a6378a3c7cd4df945bcf184dfcf78ade5b6ecf",
+      "src/dedupe/detect.py": "ecb7ea6a66a07dbed19b59e127a71b768c34b62aab174a345a1f8d225e9157fe",
+      "src/dedupe/safety.py": "69aeb2dd4affe70e6d487e8837562bec24d3b97bb189ac92670a84e976d80e39",
+      "src/dedupe/simhash.py": "aea490a6758e6fbe9f516e43d8cd235f9dec3f2dc9e7a22343d5f0932a8331e3",
+      "src/export/__init__.py": "6069d3f67b3770aa5a51e3b988824c7e24f47be9ddb54308d15711ddbeb32e82",
+      "src/export/build.py": "9ba12d3a6162947700cd54afdf9902845d9bd5b4cfc01a360af11cd56617e17b",
+      "src/export/compare.py": "69feb31930f08adfbf6108b0c1036ad382c8d1d35deb705320ec9702583eba89",
+      "src/export/load.py": "8d74b46c51aecf23e3bd7c3e42196bd1c7f2b2c155784c394a296d1ea8fb6b94",
+      "src/export/present.py": "8dd68032356bc14d9248524a76437ed07c031458a4097560c1f50ebce06e99cf",
+      "src/export/privacy.py": "09ddd52d439c0ac5ea26d349653747f4fdf80d600c0d60a115d4ddbcb029affa",
+      "src/extract/__init__.py": "fb245c5a8d4f2d84faaebdc4a7280270fc93863bb2f7425c48ae27a50ecace67",
+      "src/extract/extractor.py": "c5e5376f9a222cb706d2e751e7523847aa2d4e7ada43d3c1376055ffcc7787e2",
+      "src/extract/prompts.py": "c0f386de48d7ff85bc3152acadeead58ee4b4568d6224097addc9a2038cbdf5f",
+      "src/extract/schema.py": "1828d336caaab8762615c4440a1ae6660ff116ee408571d8f6e4283549eeac29",
+      "src/extract/validator.py": "01c096e8a762b343fd4bea6d7cdbfe3856edebd21997866dd951e9eb033be27a",
+      "src/gold/__init__.py": "de8768e2528872ce053271c9f9891dbe72cb9860b7ecfbed331699a74f9e6fc8",
+      "src/gold/annotate.py": "3df89e89e79ca1bb04f32b0aae89380990bb985809a71deef14ff274ee0b81f0",
+      "src/gold/evaluate.py": "80345aad913f69eabf69895c6d7c934bc21f405360893a3b9c26be2e4e96a107",
+      "src/gold/load.py": "d96005c042a4bfe43b045759f986b388bcd39af731a4b5206056a6a5492cef4a",
+      "src/gold/match.py": "086b62ecc79d008513fbf8360ca081dece3c07612eac21ccfaa281b24fccdc80",
+      "src/gold/metrics.py": "096f6d07174888213bf6e770617e7f30a1bc3301eb7ad15090795aaa0ac637f1",
+      "src/gold/saved_run.py": "9f249c5db93f889385587cecd48bc03601ffcb5b0955a0d533d26738f9afb293",
+      "src/gold/split.py": "50e03634c678b9619ba86e7bf5646e993d6bc29bbf4d467f42f7f83a6b52e130",
+      "src/llm/__init__.py": "cd765e69e3ec44df375a5ff676ad6c5ab209cc62588bd163bf3a4e54005ae5e9",
+      "src/llm/cache.py": "b8568f8a3e80e26354f87958441af19c3203e46b520a6117b66c8cfd456d22d3",
+      "src/llm/gateway.py": "d3bcc879003d1dbc3b33205ed4b605f6434eb0126b45264a5d7a59487fc8b38a",
+      "src/llm/pricing.py": "2a35723add1d1741fdfa1d16160d196c1ff2b1a6e6921265d2100a316fabb7a2",
+      "src/llm/providers/__init__.py": "d7483eca1346197ab81275ec15e764bc381bf35312055b9fb23d6d2003d62ed9",
+      "src/llm/providers/anthropic.py": "6cb68c9e137c56b6df356b8e206327f9007dfa32d89cd58ff31763ebf5020c4d",
+      "src/llm/providers/base.py": "02bed4fdb2eb3f8f767b90bfbf05b1ce49b44ec9104cc07777d1c5ca1012e93b",
+      "src/llm/providers/groq.py": "b1ce160da6463df77489816ac445090845dca6d72478a33af66c212ef7dee5c1",
+      "src/llm/providers/null.py": "209d54dacfdfc88c580180da2be4de748bca77d72d5d032adad4b01374c051cf",
+      "src/llm/repair.py": "3cd71cc589762170b268863149c4bf6d5e859cf3cffd0ed174959c7e98ff58ca",
+      "src/llm/select.py": "345e0d28eaf5b628dc1cad04e54012f05d5165b7f25e9b0521a40b639cc83ce9",
+      "src/models/__init__.py": "d5d214785f9e7e1b9d77b7491fa37cee5923b6db89b580f5413205758226df6f",
+      "src/models/base.py": "0b54a1ef26b6a42501ed13590aecfa801b50b955e7d2baef16da9c2127e2e283",
+      "src/models/cluster_assignment.py": "8ded1c91df11607c43c3bbeb8cbc2e13ff42004ed362fb330e0247b7109e6c75",
+      "src/models/collected_document.py": "534a4c0fa56a20eb4e3cfeb8f7df14ac436ead89413e9a62564fde4f108e8aba",
+      "src/models/document_derived.py": "5dd0095aa7551a38830669c9eb137fbb026bbe6c133205dff5d898a4ac3ea77d",
+      "src/models/duplicate_link.py": "bd5049eb9f09d31620dd45b6495fcfae0d79cfef189ad3ba4fb42a4246e72de1",
+      "src/models/enums.py": "bb38bd31ab0e5ef6f9f0fdfb1c811e08f733ed494d38b8f30d17fffe594e46bf",
+      "src/models/evidence.py": "df080b9bb6a3769dfc8ab341c54e78efec5f980c9a3f1b235a356fc52a362820",
+      "src/models/evidence_map.py": "91199a06eefe9a0443162af3185df59056c8c2f812ea05e806cee39489116950",
+      "src/models/export.py": "bcc4241f6b23b3ea41b87d19586a98b6dd87b6a4e3047e8fac3b2ff0403dc484",
+      "src/models/gold.py": "1e75a6d5ae4ec968bc0acaea9c6fdf773c5610cdb4a66b46d0b5c6550963e7d5",
+      "src/models/relevance.py": "e2f9e20edd6b6afb232dbb2fa455cbfab120efb47c8852112f10610acbe0bddf",
+      "src/models/retrieval_case.py": "3a47dd72b6ecd09fa15d2cde51eadb08b39e8d488feb16c9c2017f4e49bd212b",
+      "src/models/stage_event.py": "deaa9452463b5abe5ea929643645a4c72e3d2c9ea4d1840434e2c66827a4952b",
+      "src/normalize/__init__.py": "cebd8981631a083875fe1fc28088eee8dfa552fad8b21a46f405d911c4bbfd52",
+      "src/normalize/canonicalize.py": "0b34c0c68ea2dcfe931ecd601dda1fbdf363604cce8367ed60a92955f22f11f5",
+      "src/normalize/derive.py": "ad83fada61e52e32bc98ad174b65bd2d3593e44796b51ab7be67d3d42bc56352",
+      "src/normalize/privacy.py": "0d95cbffe6f9d24c2f1718d7c78b8e50b4f186b5a77fa2022ade7bc0adad480e",
+      "src/normalize/simhash.py": "26738fa7035a7f7425c77a38583f17ad3e9efbd96c1ed2d26d96a365f72864a3",
+      "src/normalize/text.py": "18d885f356ac89730c922454e01bde39a0b95298eeeb01ea21d0dc681bdd280f",
+      "src/normalize/tokens.py": "b55f05a0bb8a6d3b45e69c32618b129d391cb2fd315ad682fad20c1255972b8d",
+      "src/pipeline/__init__.py": "ddad3f34a951837f470366d6e21028f6219ab97fd50226e73cd276d278369ff6",
+      "src/pipeline/calibration.py": "d482fed26afbb174c0ccb4eae1913ecb0ce652c5114fadc11292c13e465162eb",
+      "src/pipeline/diagnostic_run.py": "e0792d4a8545d49ed26d95b9ca13eaedd90f56ee8f986ce933fb51bfe3f53a36",
+      "src/pipeline/extraction.py": "2557885e69ed302581e0924842aa7dc0faaad69e5a9bd5a88434980b417a89c0",
+      "src/pipeline/extraction_development.py": "400eb3d1d5548caaa6ab443728691282a33e88a4d6db1280f705b8cfc89e8c3e",
+      "src/pipeline/extraction_diagnostic.py": "1286ac209dc28059927fb837bfb9a926ea78b83233c6361e97fc147decf15d06",
+      "src/pipeline/extraction_pilot.py": "13985e9ffcd0d584e46a9be4355c0becf4af762109c75ff3bbe0e1a9874441ad",
+      "src/pipeline/human_cases.py": "4f35bd43e94ce656e55890056365b764a20a027f93c047b102acb2afcdb6a768",
+      "src/pipeline/human_relevance.py": "17fdda60734910cfed2b92c9edc10d5fbf85290f4669dac7a671c13a8118234f",
+      "src/pipeline/manifest.py": "e42674d6e64280915bd9c6a52208cad673cca3d3c04ebe368c6a2210a693f68e",
+      "src/pipeline/quality.py": "fe0b97e3505241cfddf19dd2dd21e52c062ef667d1cb9a81cfdca49d70a4f2b1",
+      "src/pipeline/research_batch.py": "40dfe603890ac9837a5bf6fa84725229abd2bc73e168f8c542c04a4d504152f5",
+      "src/pipeline/runner.py": "44c9c4bed1d9cb782632b966ce6a80aad8775061858dbbf37fd687c114f4f875",
+      "src/pipeline/smoke_run.py": "0b3774dd38d9b0e3459b99beca0d69d9afc31a26820878efbe2563a5450ee4c2",
+      "src/pipeline/stages.py": "98c88526be480dafe67f46e03fbbd34748052f2dea08b44f58e12df383df23ad",
+      "src/relevance/__init__.py": "81a1e127606324e8a720c0ae50bdc445cae2ffb49c53c7359752e9c7f5216ade",
+      "src/relevance/classifier.py": "f7599b7397a16992ab209f450563a8dd736afa579e15bb8ea9d1280131b5e44a",
+      "src/relevance/context.py": "0fadbd2ce3240f92f0c0058a8d3d0eb4f7cbee98becdc26127a573d8a24ca2b0",
+      "src/relevance/evaluate.py": "45262cc9262e4a5fb1ffcaeebcf92ef910ce83dcda2dda1adf8774b9241c862c",
+      "src/relevance/interpretation.py": "b23821ccf1f5752b055551d99c0b606ed5f24136948ef2874b8e5b5f864726b0",
+      "src/relevance/lock.py": "e51867ff540ab4928ed62675e9ca17003c072cf251cd00d4b2f2ebc574c4daf9",
+      "src/relevance/prompts.py": "57a439ed02e0175fc369fc9a3c751a126f8351d15b004b3564182b74de3dffb0",
+      "src/relevance/rules.py": "d6dcb670437fb4ba942e8a358b89af27b555e1c116ebbb879f0a1ae25f0a2f28",
+      "src/relevance/schema.py": "3f84130067a2a397748f22fd88f9acc626042b430a444de907431df51f715670",
+      "src/relevance/seed.py": "ca8bd8c5e5a985ff983feb77dbb60dd6a66847e2af01780556ee8f03fb3012cd",
+      "src/relevance/smoke.py": "e7aafd638973db0b6e22070e052316c99132ee0d4579cdbd22ea18ba27a182a2",
+      "src/relevance/split.py": "332d6bbd43ed187dc6f37d6e73b80234549a77789daa4c7ece7b351ebd4fab0d",
+      "src/review/__init__.py": "74684dd6de09009765e212cacfa9df7743c35d396da76ba33b7163ad42cc00da",
+      "src/review/overrides.py": "51acff8026fe295d64f0d25ea8eaada8ca3e7c0959d1160b458da38cd8a8605d",
+      "src/review/queue.py": "978ce04f18b6614b6835d90634d53aa1aaa2a51ffa7d7035f3b0cfa68a485da4"
+    },
+    "limitations": [
+      "Gold holdout was reserved from 35 previously processed Phase 4 development documents. Prior development exposure limits independence; this is not an untouched external test set. The original 15 Phase 4 holdout seats are separate."
+    ],
+    "model": "openai/gpt-oss-120b",
+    "provider": "groq",
+    "relevance_lock": {
+      "frozen": true,
+      "lock_version": "relevance-prompt-lock/v1",
+      "max_tokens": 4096,
+      "model": "openai/gpt-oss-120b",
+      "prompt_hash": "ff19ac683d4e1a9c1e5f3f46d7f39655bfe822936fcf1f472e67ce19d1a09b95",
+      "prompt_id": "relevance",
+      "prompt_version": "relevance/v5",
+      "provider": "groq",
+      "schema_version": "1.0.0",
+      "temperature": 0.0,
+      "transmitted_schema_sha256": "4c54033218aa72ccf1106e35ebe6be36e714a89694527b69f098fac4df3ffb30"
+    },
+    "relevance_max_tokens": 4096,
+    "requested_temperature": 0.0,
+    "sdk_retries": 0,
+    "seats": {
+      "dev": [
+        "google_support-2a080da4b930",
+        "google_support-4f34e2312ca6",
+        "google_support-5b2ec98df32b",
+        "google_support-8c6ab430fbee",
+        "play_store-fb8c41525287",
+        "reddit-0d477b54fb9b",
+        "reddit-87311c2633df",
+        "reddit-bde62ddef9b5",
+        "reddit-c2c00b25a88b",
+        "youtube-17fd27447275"
+      ],
+      "holdout": [
+        "app_store-5e60a403ce06",
+        "app_store-b42c080472ee",
+        "google_support-3d15a7ae4cd0",
+        "google_support-6087d1606587",
+        "google_support-6e0c9880d0be",
+        "google_support-808ba579f266",
+        "google_support-95f0f4a503cd",
+        "google_support-b14e652a35b2",
+        "google_support-d7f386f347b7",
+        "google_support-e1e5277da7e8",
+        "google_support-eb83c5e6d607",
+        "play_store-321631e15c3f",
+        "play_store-67e5929b847a",
+        "play_store-9b3244ad1dc4",
+        "reddit-21ac300ee872",
+        "reddit-23be97c93709",
+        "reddit-56c5da916186",
+        "reddit-5d2319de9083",
+        "reddit-62cf55f96c5d",
+        "reddit-c49086caf891",
+        "reddit-e9c3986acf79",
+        "reddit-fdeac02973d1",
+        "youtube-4158afc62e53",
+        "youtube-47f8e3664c6e",
+        "youtube-d1590d87dedb"
+      ]
+    },
+    "versions": {
+      "normalizer_version": "1.0.0",
+      "prompt_versions": {
+        "extract": "extract/v3",
+        "relevance": "relevance/v5"
+      },
+      "ruleset_version": "prefilter/v1",
+      "schema_version": "1.0.0",
+      "taxonomy_version": "0-unassigned"
+    }
+  },
+  "gates": {
+    "prefilter_recall": {
+      "pass": true,
+      "threshold": 0.9,
+      "value": 1.0
+    },
+    "relevance_precision": {
+      "pass": true,
+      "threshold": 0.85,
+      "value": 0.9285714285714286
+    },
+    "relevance_recall": {
+      "pass": true,
+      "threshold": 0.8,
+      "value": 0.9285714285714286
+    },
+    "schema_validation_rate": {
+      "pass": true,
+      "threshold": 1.0,
+      "value": 1.0
+    },
+    "span_validation_rate": {
+      "pass": true,
+      "threshold": 1.0,
+      "value": 1.0
+    }
+  },
+  "gold_cases": 15,
+  "gold_quote_failures": 0,
+  "human_approval": {
+    "approval_sha256": "10291421d45dee8cafc95285bc19f30225e11875590f0fdfb378f2ba28bdc000",
+    "reviewer": "Sunayana"
+  },
+  "limitations": [
+    "AI-assisted labels approved by one human; no independent double-coding or agreement estimate.",
+    "Field accuracy is conditional on matched retained cases; inspect case coverage and extraction failures separately.",
+    "Unsupported-inference rates combine missing/invalid spans and disagreement with available reference values; a verbatim quote alone does not prove semantic support.",
+    "problem_summary has no reference summary value in the existing gold contract; its semantic support needs manual review, even when its attached span is valid.",
+    "Gold scope exceptions remain disclosed in the reference export; no label was changed to match the model.",
+    "Gold holdout was reserved from 35 previously processed Phase 4 development documents. Prior development exposure limits independence; this is not an untouched external test set. The original 15 Phase 4 holdout seats are separate."
+  ],
+  "match_version": "evidence-overlap/v1",
+  "multilabel": {
+    "forgotten_information": {
+      "macro": {
+        "f1": null,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "micro": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      }
+    },
+    "impact_signals": {
+      "macro": {
+        "f1": null,
+        "precision": null,
+        "recall": null
+      },
+      "micro": {
+        "f1": null,
+        "precision": null,
+        "recall": null
+      }
+    },
+    "query_strategies": {
+      "macro": {
+        "f1": 1.0,
+        "precision": 0.3333333333333333,
+        "recall": 0.3333333333333333
+      },
+      "micro": {
+        "f1": 0.28571428571428575,
+        "precision": 0.3333333333333333,
+        "recall": 0.25
+      }
+    },
+    "remembered_cues": {
+      "macro": {
+        "f1": 0.8333333333333333,
+        "precision": 0.5,
+        "recall": 0.5
+      },
+      "micro": {
+        "f1": 0.6666666666666666,
+        "precision": 0.6666666666666666,
+        "recall": 0.6666666666666666
+      }
+    },
+    "system_responses": {
+      "macro": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "micro": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      }
+    },
+    "target_subjects": {
+      "macro": {
+        "f1": 0.8888888888888888,
+        "precision": 0.8333333333333334,
+        "recall": 0.75
+      },
+      "micro": {
+        "f1": 0.75,
+        "precision": 0.75,
+        "recall": 0.75
+      }
+    },
+    "workarounds": {
+      "macro": {
+        "f1": null,
+        "precision": null,
+        "recall": null
+      },
+      "micro": {
+        "f1": null,
+        "precision": null,
+        "recall": null
+      }
+    }
+  },
+  "prediction_coverage": {
+    "documents_with_predictions": 25,
+    "documents_without_predictions": 0
+  },
+  "prefilter_recall": 1.0,
+  "quality_gate_status": "numeric_thresholds_passed",
+  "relevance": {
+    "f1": 0.9285714285714286,
+    "precision": 0.9285714285714286,
+    "recall": 0.9285714285714286
+  },
+  "review_method": {
+    "agreement_estimate": null,
+    "approval_sha256": "10291421d45dee8cafc95285bc19f30225e11875590f0fdfb378f2ba28bdc000",
+    "approved_at": "2026-10-04T07:05:22.460702+00:00",
+    "draft_policy_sha256": "90ee296be1d72f2f2ccfcf4a925b9a3bebd84e7529eb8155b9238822033ab0d4",
+    "freeze_sha256": "cbfc7b67493f69520b5186b9e35b5a0293d2517c38203bd3c1b3f48012154e68",
+    "human_approved": true,
+    "independent_double_coding": false,
+    "method": "AI-assisted source-first draft followed by single-human review",
+    "model_output_semantic_approval": false,
+    "reviewer": "Sunayana"
+  },
+  "review_rate": 0.0,
+  "saved_inputs": {
+    "accepted_empty_documents": 4,
+    "approval_sha256": "10291421d45dee8cafc95285bc19f30225e11875590f0fdfb378f2ba28bdc000",
+    "eligible_documents": 14,
+    "failed_extraction_documents": 5,
+    "freeze_sha256": "cbfc7b67493f69520b5186b9e35b5a0293d2517c38203bd3c1b3f48012154e68",
+    "holdout_source_text_loaded": true,
+    "input_sha256": {
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/manifest.json": "dc9720d6ebcd564c7b579772a6d585e94a9919d2a81c9641bc6eabccce809266",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/app_store-5e60a403ce06.json": "2835f4a60041f634d6dbdd95ad492623662492ea39fa5fca155261d9d61a23bb",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/app_store-b42c080472ee.json": "24285a1926a1070f1fc697d267b37471a2156d60d108991df730a16b54a7d550",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-3d15a7ae4cd0.json": "3f30038175c995657a39a3f7bb95e46f7ab439d709fe8a6accd9848b79ab9995",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-6087d1606587.json": "d3aae59268c10fd4217966f390b472989df2ca5aa992d7292e61ddaa235603e5",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-6e0c9880d0be.json": "3f6c46fbde8372c07aca5d14ec513457c415e25352ac8a0caacaef4b96c1516e",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-808ba579f266.json": "3fec2f6e3c8931ba31492eb816782f60b35f9bccf0c47f6d9cadcec597796aab",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-95f0f4a503cd.json": "1bebc6b81e8ca60d8ee401ead7c3f1561eba68f6a33312dbfa5426796afe21c2",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-b14e652a35b2.json": "4e28b9ea09cf522834773ca1a371dfc51a987ca74b2d2915743ab5c3833b2cde",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-d7f386f347b7.json": "d65ec6f9c147a6dba3ef664468d1e6b7dea9d50afe475704f7c131e326b88aa9",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-e1e5277da7e8.json": "a588160733405a0fc68b70ba4a87904706c4d7553d1f5ac3471180b003fa44ef",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-eb83c5e6d607.json": "7658a1a23055851e3e8fda7012a7289592cb407195ab4e8f90bbc5190b2a4f74",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/play_store-321631e15c3f.json": "6a4c84f93b8d06b0e8a7f8004327626e81d7ea881e7d04f30848ef2a325e03fb",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/play_store-67e5929b847a.json": "7e67b65575456def6f1ba18ae4ec5f12da39215e8580dee6145146aa96aa86b3",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/play_store-9b3244ad1dc4.json": "83f80ca4e5902869ac8829ac83b49100def45ae73a5054873964ecf8436ce801",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-21ac300ee872.json": "54655f328cda46453bfacc1ed5682f861ab6f8c76de744b8330853205997d012",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-23be97c93709.json": "eb8acb71bf06de71c4c086a2dcab9da021b2184bece117f9ad480e9356315d38",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-56c5da916186.json": "2a998d28e37280994d0b55b94855141e6d898b97b97f57f4f5d6d65648e14ae3",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-5d2319de9083.json": "7b34b31e8a80649cff48b5e5fa1bb53a1fa07e6393032d26954af0b0650c00cc",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-62cf55f96c5d.json": "20edbc1f50602e71a0b4c621271f835258d77d63890a62b7e18f5a4d12d1583f",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-c49086caf891.json": "c2ee61c988859481b9f45af45396503115716ffde12965dd17afa4db78d77797",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-e9c3986acf79.json": "2ce4e4d4e3ad96301f82346325cd8969f93a71efc2fd5e33bc2c3bba5fa50eb6",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-fdeac02973d1.json": "0f79def4feb2e39b7cb236c239e433533490f08435656bca4ad81127e578c791",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/youtube-4158afc62e53.json": "c720369e3a6288a6b63475fb19b9b10153d9aa61e98c6938e3851aed7f625355",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/youtube-47f8e3664c6e.json": "2a75adeb2ffe2221b2659bfa38b6e14f07efbed4dca01c848bb40459cdc7c4c0",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/youtube-d1590d87dedb.json": "97f295ac1837bb4deefaae061b08e8774552c2d6eaf7c676f5c76c20c5e6592d",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/review_policy.json": "2a3cb8e13ea595003627f7dec5dddab5087db57c77ece0da6988e42a5a24e9e4",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/gold/quality-freeze-2026-10-04-01/cases.jsonl": "9316d5c8038fda42465a2ff3fe846b9812ca8690caf50fd90e278f025eb5ef2c",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/gold/quality-freeze-2026-10-04-01/documents.jsonl": "b81a5fd5a419cc7a1a95e431746bd98ba3a737979b100f1e1131b465418c40cf",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/interim/phase6/quality-holdout-v3-2026-10-04-01/extraction/34d4a0c91984/evidence_spans.jsonl": "ce22bd06f5a875738a151858b27976a2bd4d02f0103ec2318c41ef3ccb7dfa23",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/interim/phase6/quality-holdout-v3-2026-10-04-01/extraction/34d4a0c91984/extraction_inputs.jsonl": "3990891ea9681c306c1568448195e7e04fe5a08aed35054410e54e546b6ea9a3",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/interim/phase6/quality-holdout-v3-2026-10-04-01/extraction/34d4a0c91984/retrieval_cases.jsonl": "0439923e72bdc9ade4e3df0b4851a3eb6aab228a337be2149f7e8bc80ab316eb",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/interim/phase6/quality-holdout-v3-2026-10-04-01/extraction/34d4a0c91984/run_manifest.json": "0c7d5e2f2465b4c2bd6eaaff501ebb816e0bbdcc0d62e50b762f0791b39231ac",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/interim/phase6/quality-holdout-v3-2026-10-04-01/extraction/34d4a0c91984/stage_events.jsonl": "ab5b33ae4e660cb0b0daf74f0ad58f1036990064d03213e27da0403025c07c1b",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/interim/phase6/quality-holdout-v3-2026-10-04-01/relevance/relevance_decisions.jsonl": "aaa16d4888a8c8f70e5ee59558700db7834d3b4513c786bc3930d99845b5e1ff",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/interim/phase6/quality-holdout-v3-2026-10-04-01/relevance/stage_events.jsonl": "51a60722aac893ff4d43ce58512c54d11185074e7a82735d17088335cea3b143",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/scripts/evaluate.py": "a934875b3e653b11aaed8b31a569994a059d4f37117713f9f4b81d4b4930e279",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/src/gold/evaluate.py": "80345aad913f69eabf69895c6d7c934bc21f405360893a3b9c26be2e4e96a107",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/src/gold/metrics.py": "096f6d07174888213bf6e770617e7f30a1bc3301eb7ad15090795aaa0ac637f1",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/src/gold/saved_run.py": "9f249c5db93f889385587cecd48bc03601ffcb5b0955a0d533d26738f9afb293"
+    },
+    "non_ok_relevance_documents": 0,
+    "provider_calls": 0,
+    "role": "frozen_holdout_measurement_with_prior_development_exposure",
+    "run_id": "34d4a0c91984",
+    "schema_denominator": "ok model relevance decisions plus stored accepted extraction cases; technical failures are excluded and reported",
+    "skipped_documents": 11,
+    "versions": {
+      "normalizer_version": "1.0.0",
+      "prompt_versions": {
+        "extract": "extract/v3",
+        "relevance": "relevance/v5"
+      },
+      "ruleset_version": "prefilter/v1",
+      "schema_version": "1.0.0",
+      "taxonomy_version": "0-unassigned"
+    }
+  },
+  "scalar_accuracy": {
+    "known_item_status": 0.6,
+    "known_item_status_observation": 0.8,
+    "outcome": 1.0,
+    "outcome_observation": 1.0,
+    "reformulation_count": 1.0,
+    "reformulation_count_observation": 1.0,
+    "scope_class": 0.76,
+    "severity": 1.0,
+    "severity_observation": 1.0,
+    "target_asset_type": 0.6,
+    "target_asset_type_observation": 0.6
+  },
+  "schema_validation_rate": 1.0,
+  "span_validation_rate": 1.0,
+  "split": "holdout",
+  "split_rule": "gold-split/v1",
+  "split_seed": "gold-split/v1",
+  "status": "measured",
+  "unsupported_inference": {
+    "forgotten_information": 1.0,
+    "known_item_status": 0.25,
+    "outcome": 0.0,
+    "overall": 0.41379310344827586,
+    "problem_summary": null,
+    "query_strategies": 0.6666666666666666,
+    "remembered_cues": 0.4,
+    "retrieval_trigger": 0.75,
+    "system_responses": 1.0,
+    "target_asset_type": 0.0,
+    "target_subjects": 0.25
+  }
+}

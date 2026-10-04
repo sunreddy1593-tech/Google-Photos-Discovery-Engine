@@ -1,0 +1,31 @@
+{
+  "scope": "development_only",
+  "date": "2026-10-04",
+  "provider_calls": 0,
+  "holdout_source_text_loaded": false,
+  "protected_checks": [
+    {
+      "name": "m1_inputs",
+      "mismatches": [],
+      "checked": 21
+    },
+    {
+      "name": "protected_annotation",
+      "mismatches": [],
+      "checked": 98
+    },
+    {
+      "name": "evaluation_inputs_and_code",
+      "mismatches": [],
+      "checked": 26
+    }
+  ],
+  "full_suite": {
+    "skipped": 5,
+    "errors": 0,
+    "passed": 1100,
+    "failures": 0,
+    "junit": "data/interim/verification/quality-development-2026-10-04/final-full-suite.xml"
+  },
+  "focused_tests": 33
+}

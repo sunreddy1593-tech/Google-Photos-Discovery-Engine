@@ -1,0 +1,15 @@
+{
+  "implementation": "bounded original-post collection bridge and corrected parser verified on one Cloud thread",
+  "live_connection": "corrected verification: one authenticated POST returned HTTP 200 and execution 15; no retry; invalid-key rejection not separately tested",
+  "source_access": "one source fetch attested in execution 15; one exact original plain post imported; first failure from execution 14 preserved; no broader source-access or permission conclusion",
+  "replies": "not fetched; completeness false",
+  "last_import_documents": 1,
+  "offline_parser_documents_validated": 1,
+  "cloud_parser_update": "owner reports published; corrected source_text_path observed in execution 15; verified on one thread",
+  "offline_fix_requests": 0,
+  "offline_fix_collection_records_written": 0,
+  "last_verification_execution_id": "15",
+  "last_verification_failures": 0,
+  "last_verification_model_calls_attested": 0,
+  "last_verification_scope": "collection only; original post, replies unfetched, no classification or extraction"
+}

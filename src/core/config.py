@@ -64,6 +64,8 @@ class Secrets(BaseSettings):
     reddit_client_secret: str | None = None
     reddit_user_agent: str | None = None
     youtube_api_key: str | None = None
+    n8n_collection_webhook_url: str | None = None
+    n8n_webhook_key: str | None = None
 
     def require(self, field: str, *, needed_for: str) -> str:
         """Return a secret's value, or raise ``ConfigError`` explaining the need.

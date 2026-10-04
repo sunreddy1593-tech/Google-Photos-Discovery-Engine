@@ -1,0 +1,257 @@
+{
+  "agreement": {
+    "cohen_kappa": null,
+    "pairs": 0,
+    "raw_agreement": null
+  },
+  "case_coverage": {
+    "accepted_model_cases": 7,
+    "field_metrics_basis": "matched cases only; unmatched gold cases and technical failures are not silently scored as field matches",
+    "gold_case_coverage": 0.4666666666666667,
+    "gold_cases": 15,
+    "matched_cases": 7,
+    "unmatched_gold_cases": 8,
+    "unmatched_model_cases": 0
+  },
+  "confusion": {
+    "adjacent_known_item_retrieval": {
+      "adjacent_known_item_retrieval": 6,
+      "core_incomplete_recall": 4
+    },
+    "core_incomplete_recall": {
+      "core_incomplete_recall": 3
+    },
+    "out_of_scope": {
+      "core_incomplete_recall": 1,
+      "out_of_scope": 10
+    }
+  },
+  "documents": 25,
+  "duplicate_rate": null,
+  "evaluation_version": "gold-evaluation/v2",
+  "excluded_technical_failures": 1,
+  "failure_rate": 0.2857142857142857,
+  "gates": {
+    "prefilter_recall": {
+      "pass": true,
+      "threshold": 0.9,
+      "value": 1.0
+    },
+    "relevance_precision": {
+      "pass": true,
+      "threshold": 0.85,
+      "value": 0.9285714285714286
+    },
+    "relevance_recall": {
+      "pass": true,
+      "threshold": 0.8,
+      "value": 1.0
+    },
+    "schema_validation_rate": {
+      "pass": true,
+      "threshold": 1.0,
+      "value": 1.0
+    },
+    "span_validation_rate": {
+      "pass": true,
+      "threshold": 1.0,
+      "value": 1.0
+    }
+  },
+  "gold_cases": 15,
+  "gold_quote_failures": 0,
+  "match_version": "evidence-overlap/v1",
+  "multilabel": {
+    "forgotten_information": {
+      "macro": {
+        "f1": null,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "micro": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      }
+    },
+    "impact_signals": {
+      "macro": {
+        "f1": 0.6666666666666666,
+        "precision": 1.0,
+        "recall": 0.5
+      },
+      "micro": {
+        "f1": 0.6666666666666666,
+        "precision": 1.0,
+        "recall": 0.5
+      }
+    },
+    "query_strategies": {
+      "macro": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "micro": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      }
+    },
+    "remembered_cues": {
+      "macro": {
+        "f1": 0.9,
+        "precision": 0.8333333333333333,
+        "recall": 0.6666666666666666
+      },
+      "micro": {
+        "f1": 0.75,
+        "precision": 0.75,
+        "recall": 0.75
+      }
+    },
+    "system_responses": {
+      "macro": {
+        "f1": 0.6666666666666666,
+        "precision": 1.0,
+        "recall": 0.5
+      },
+      "micro": {
+        "f1": 0.6666666666666666,
+        "precision": 1.0,
+        "recall": 0.5
+      }
+    },
+    "target_subjects": {
+      "macro": {
+        "f1": 1.0,
+        "precision": 0.6666666666666666,
+        "recall": 0.6666666666666666
+      },
+      "micro": {
+        "f1": 0.6666666666666666,
+        "precision": 0.6666666666666666,
+        "recall": 0.6666666666666666
+      }
+    },
+    "workarounds": {
+      "macro": {
+        "f1": null,
+        "precision": null,
+        "recall": null
+      },
+      "micro": {
+        "f1": null,
+        "precision": null,
+        "recall": null
+      }
+    }
+  },
+  "prediction_coverage": {
+    "documents_with_predictions": 25,
+    "documents_without_predictions": 0
+  },
+  "prefilter_recall": 1.0,
+  "quality_gate_status": "numeric_thresholds_passed",
+  "relevance": {
+    "f1": 0.962962962962963,
+    "precision": 0.9285714285714286,
+    "recall": 1.0
+  },
+  "review_rate": 0.0,
+  "saved_inputs": {
+    "accepted_empty_documents": 3,
+    "eligible_documents": 14,
+    "failed_extraction_documents": 4,
+    "holdout_source_text_loaded": false,
+    "input_sha256": {
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/manifest.json": "dc9720d6ebcd564c7b579772a6d585e94a9919d2a81c9641bc6eabccce809266",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/app_store-5e60a403ce06.json": "2835f4a60041f634d6dbdd95ad492623662492ea39fa5fca155261d9d61a23bb",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/app_store-b42c080472ee.json": "24285a1926a1070f1fc697d267b37471a2156d60d108991df730a16b54a7d550",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-3d15a7ae4cd0.json": "3f30038175c995657a39a3f7bb95e46f7ab439d709fe8a6accd9848b79ab9995",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-6087d1606587.json": "d3aae59268c10fd4217966f390b472989df2ca5aa992d7292e61ddaa235603e5",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-6e0c9880d0be.json": "3f6c46fbde8372c07aca5d14ec513457c415e25352ac8a0caacaef4b96c1516e",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-808ba579f266.json": "3fec2f6e3c8931ba31492eb816782f60b35f9bccf0c47f6d9cadcec597796aab",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-95f0f4a503cd.json": "1bebc6b81e8ca60d8ee401ead7c3f1561eba68f6a33312dbfa5426796afe21c2",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-b14e652a35b2.json": "4e28b9ea09cf522834773ca1a371dfc51a987ca74b2d2915743ab5c3833b2cde",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-d7f386f347b7.json": "d65ec6f9c147a6dba3ef664468d1e6b7dea9d50afe475704f7c131e326b88aa9",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-e1e5277da7e8.json": "a588160733405a0fc68b70ba4a87904706c4d7553d1f5ac3471180b003fa44ef",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/google_support-eb83c5e6d607.json": "7658a1a23055851e3e8fda7012a7289592cb407195ab4e8f90bbc5190b2a4f74",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/play_store-321631e15c3f.json": "6a4c84f93b8d06b0e8a7f8004327626e81d7ea881e7d04f30848ef2a325e03fb",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/play_store-67e5929b847a.json": "7e67b65575456def6f1ba18ae4ec5f12da39215e8580dee6145146aa96aa86b3",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/play_store-9b3244ad1dc4.json": "83f80ca4e5902869ac8829ac83b49100def45ae73a5054873964ecf8436ce801",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-21ac300ee872.json": "54655f328cda46453bfacc1ed5682f861ab6f8c76de744b8330853205997d012",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-23be97c93709.json": "eb8acb71bf06de71c4c086a2dcab9da021b2184bece117f9ad480e9356315d38",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-56c5da916186.json": "2a998d28e37280994d0b55b94855141e6d898b97b97f57f4f5d6d65648e14ae3",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-5d2319de9083.json": "7b34b31e8a80649cff48b5e5fa1bb53a1fa07e6393032d26954af0b0650c00cc",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-62cf55f96c5d.json": "20edbc1f50602e71a0b4c621271f835258d77d63890a62b7e18f5a4d12d1583f",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-c49086caf891.json": "c2ee61c988859481b9f45af45396503115716ffde12965dd17afa4db78d77797",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-e9c3986acf79.json": "2ce4e4d4e3ad96301f82346325cd8969f93a71efc2fd5e33bc2c3bba5fa50eb6",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/reddit-fdeac02973d1.json": "0f79def4feb2e39b7cb236c239e433533490f08435656bca4ad81127e578c791",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/youtube-4158afc62e53.json": "c720369e3a6288a6b63475fb19b9b10153d9aa61e98c6938e3851aed7f625355",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/youtube-47f8e3664c6e.json": "2a75adeb2ffe2221b2659bfa38b6e14f07efbed4dca01c848bb40459cdc7c4c0",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/annotation/holdout-review-2026-10-04-01/packets/youtube-d1590d87dedb.json": "97f295ac1837bb4deefaae061b08e8774552c2d6eaf7c676f5c76c20c5e6592d",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/interim/phase6/quality-holdout-v6-2026-10-04-01/extraction/e5753967dd42/evidence_spans.jsonl": "4a661e8c79f58d23a1890932486aa92e1d2660d966ef7176a696e2a92b69ea72",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/interim/phase6/quality-holdout-v6-2026-10-04-01/extraction/e5753967dd42/extraction_inputs.jsonl": "704b67030ab0d27a3a6dcb1b786f97fe8df99be0f0a9f7f46e57443d0495362f",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/interim/phase6/quality-holdout-v6-2026-10-04-01/extraction/e5753967dd42/retrieval_cases.jsonl": "75fe57a1e4d3502bdc1e0f187b7efe5aa7bcf16ac489810534dc77fc8289809b",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/interim/phase6/quality-holdout-v6-2026-10-04-01/extraction/e5753967dd42/run_manifest.json": "bbeadc6f4dc41d98633a4adc62327f8ee5ed0b6b24a7cc91788112d02ea17a86",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/interim/phase6/quality-holdout-v6-2026-10-04-01/extraction/e5753967dd42/stage_events.jsonl": "816f62aa08bcf285deb98c330c5510d712274b46c40751d10416649ba0739c25",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/interim/phase6/quality-holdout-v6-2026-10-04-01/relevance/relevance_decisions.jsonl": "7e38c415a73d72915814655262bc64fb89787523a8b09296e91df693b841b19d",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/data/interim/phase6/quality-holdout-v6-2026-10-04-01/relevance/stage_events.jsonl": "c3627b8e29c6a4e302b8d051ed44551c4723f484590f0921d894a10d69477af8"
+    },
+    "non_ok_relevance_documents": 1,
+    "provider_calls": 0,
+    "role": "development_diagnostic_not_final_quality_certification",
+    "run_id": "e5753967dd42",
+    "schema_denominator": "ok model relevance decisions plus stored accepted extraction cases; technical failures are excluded and reported",
+    "skipped_documents": 11,
+    "versions": {
+      "normalizer_version": "1.0.0",
+      "prompt_versions": {
+        "extract": "extract/v4",
+        "relevance": "relevance/v5"
+      },
+      "ruleset_version": "prefilter/v1",
+      "schema_version": "1.0.0",
+      "taxonomy_version": "0-unassigned"
+    }
+  },
+  "scalar_accuracy": {
+    "known_item_status": 0.7142857142857143,
+    "known_item_status_observation": 0.8571428571428571,
+    "outcome": 0.5714285714285714,
+    "outcome_observation": 0.5714285714285714,
+    "reformulation_count": 1.0,
+    "reformulation_count_observation": 1.0,
+    "scope_class": 0.7916666666666666,
+    "severity": 0.8571428571428571,
+    "severity_observation": 0.8571428571428571,
+    "target_asset_type": 1.0,
+    "target_asset_type_observation": 1.0
+  },
+  "schema_validation_rate": 1.0,
+  "span_validation_rate": 1.0,
+  "split": "holdout",
+  "split_rule": "gold-split/v1",
+  "split_seed": "gold-split/v1",
+  "status": "measured",
+  "successor": {
+    "approval_sha256": "10291421d45dee8cafc95285bc19f30225e11875590f0fdfb378f2ba28bdc000",
+    "prompts": "relevance/v6 + extract/v4",
+    "replaces_consumed_measurement": false
+  },
+  "unsupported_inference": {
+    "forgotten_information": 1.0,
+    "impact_signals": 0.0,
+    "known_item_status": 0.16666666666666666,
+    "outcome": 0.5,
+    "overall": 0.4117647058823529,
+    "problem_summary": null,
+    "query_strategies": 1.0,
+    "remembered_cues": 0.25,
+    "retrieval_trigger": 1.0,
+    "system_responses": 0.0,
+    "target_asset_type": 0.0,
+    "target_subjects": 0.3333333333333333
+  }
+}

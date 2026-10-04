@@ -35,18 +35,164 @@ Status legend: **Accepted** · **Accepted (default, calibration pending)** · **
 | 19 | `taxonomy_version` scoped to taxonomy stages | Accepted |
 | 20 | Identifiers derivable at their own stage; lowest-`doc_id` canonical | Accepted |
 | 21 | Deduplication safety conditions | Accepted (defaults, calibration pending Phase 3) |
-| 22 | Source feasibility tiers and documentation-linked verification | Accepted |
+| 22 | Source feasibility tiers and documentation-linked verification | Accepted; corpus-size consequence amended by ADR-32 |
 | 23 | Public-export excerpt profile | Accepted (redistribution terms pending Phase 10) |
 | 24 | Review queue built in Phase 3 | Accepted |
 | 25 | Gold-set redesign: splits, separated labels, metric families | Accepted, clarified by ADR-30 |
 | 26 | Rebuild equality is canonical content hashes | Accepted |
-| 27 | MVP versus stretch scope | Accepted |
-| 28 | First prompt is Phase 0 only; every phase has a prompt | Accepted |
+| 27 | MVP versus stretch scope | Accepted; sequencing amended by ADR-32 |
+| 28 | First prompt is Phase 0 only; every phase has a prompt | Accepted; one-phase rule amended by ADR-32 |
 | 29 | M1 reports the case count rather than targeting it | Accepted |
 | 30 | Phase 4 seed split is not the Phase 6 gold split | Accepted |
 | 31 | Groq is a provisional Phase 4 relevance provider | Accepted |
+| 32 | October 2026 demonstration schedule | Accepted; amends ADR-22 consequence 1, ADR-27 sequencing, and ADR-28's one-phase rule for three tracks |
+| 33 | Individual submission uses one human reviewer with disclosed AI assistance | Accepted; amends internal double-coding requirements, without changing evidence or quality thresholds |
+| 34 | M1 verified offline; full field-evidence accounting and separate quality gate | Accepted; supersedes historical incomplete status, without waiving checks |
+| 35 | One bounded frozen gold verification; prior development exposure disclosed | Accepted; numeric thresholds measured, broader research remains incomplete; gold-set volume amended by ADR-37 |
+| 36 | Parallel submission integration and a separate reference demonstration | Accepted |
+| 37 | Approved 35-document gold set is final; 75–100 labelling volume is closed | Accepted |
 
 ---
+
+## Implementation note — 2026-10-04: development diagnosis does not replace the freeze
+
+The saved `extract/v3` development run was diagnosed offline. Accepted-empty
+responses and one spliced relevance quote explain the four missing reference
+cases. Two matched cases retain semantic disagreements. No saved model row,
+approved label, split, or historical freeze hash was changed. Original bytes of
+the freeze-bound files edited afterward are stored in
+`data/interim/phase6/pre-correction-snapshot-2026-10-04-01/` and were verified
+against `quality-freeze-2026-10-04-01/freeze.json` before editing.
+`extract/v4` is an inactive candidate. It is not the measured correction and
+has not been run. The consumed holdout measurement remains the numeric result
+in ADR-35, with the same disclosed limits.
+
+## Approved revision note — 2026-10-04: cat impact and development review
+
+Sunayana explicitly approved a new reference version with cat impact unstated
+and severity 3 retained, and approved the rest of the source review. Applied the
+impact-only semantic reference correction in `sunayana-reviewed-02/`, preserving
+all original files and the original seating manifest. The new reference export
+has ten documents, six cases and 38 field quote attachments; removed only the
+obsolete impact attachment. Severity evidence and all other case values remain.
+No broader meaning for repeat_effort is substituted; the written definition
+stays intact. The earlier pending-reference decision is resolved by this later
+authorization. Remaining review findings/proposed model corrections are approved
+in a separate run/hash-bound ledger, without changing model output or guards.
+Offline reevaluation still recovers 2/6 cases; this correction is not extraction
+recovery or quality certification. Development is not frozen, holdout stays
+locked, and the final quality gate remains pending. Earlier notes are historical.
+
+## Review note — 2026-10-04: development correction proposals are not applied decisions
+
+The source-grounded development review at
+`data/interim/phase6/development-review-2026-10-04-01/REVIEW.md` distinguishes
+confirmed evidence instruction violations, semantic findings, omissions,
+coding ambiguity and unresolved model behavior. It does not change original
+cases, approved labels, numeric reports, review decisions, prompts or schemas.
+The cat model's shorter social-sharing trigger is supported despite exact-string
+disagreement. Conversely, the approved reference's repeat_effort value conflicts
+with Section 16.6's requirement for separate sittings, absent from this source.
+A separate reference revision is recommended for owner review; none is applied,
+no broader definition is silently substituted, and severity 3 remains supported.
+Development is not frozen; holdout remains locked and final certification pending.
+
+## Implementation note — 2026-10-04: development-first quality evaluation
+
+The owner explicitly chose "Keep holdout locked; finish development first".
+The existing evaluator now receives actual saved development predictions through
+an optional adapter; no provider, collection or cache operation is required.
+Current production contracts/field gates and approved gold-dev source packets
+are reused. The adapter refuses holdout seats before packet reads, incomplete
+stage coverage and occupied output. Missing predictions remain pending rather
+than being presented as a measured result.
+
+Confirmed implementation defects were corrected: the CLI did not supply saved
+predictions; structured gold multi-label entries were compared as whole objects;
+omitted expected labels were miscounted as unsupported predicted labels. Current
+reports disclose matched-case coverage, failures, unassessed reference fields,
+single-reviewer AI assistance and the existing family-album scope exception.
+The ten-document diagnostic meets five numeric thresholds but recovers only
+2/6 reference cases. It is `development_only`, not final quality certification.
+No threshold, prompt, schema, source label, scope definition or split was changed.
+
+The corrected report is `data/exports/quality/development-approved-2026-10-04-03/`.
+Earlier in-task reports remain immutable and have separate supersession notes.
+Full suite: 1100 passed, 5 skipped. Official gold/reports and owner approvals
+remain preserved; no finding is cleared by numeric agreement. Corrective
+development review and a documented freeze precede any separately authorized
+holdout step. Holdout stays locked and the final quality gate stays pending.
+
+## Implementation note — 2026-10-04: direct owner approval of saved M1 cases
+
+The owner explicitly approved the saved M1 model cases. Ten decisions name
+Sunayana and bind run `3dc346ec030a` and immutable case hashes in
+`data/interim/phase5/semantic-approval-2026-10-04-01/corrections.jsonl`.
+This records the human decision without attributing an independent source
+review to Codex. Two cases retain five semantic field objections; three retain
+an existing document-level historical provider finding. Those findings stay
+open and existing conclusion guards remain in force. The historical diagnostic
+is not newly asserted to prove semantic error in the three current cases.
+The ledger is scoped to the M1 run and is not connected to the older case-id-only
+browser corrections path. A future UI integration must check the run binding,
+retain findings, and preserve the gold-holdout source restriction. Original
+cases, references, official gold and prior decisions remain unchanged. Owner
+approval is not a measured Phase 6 quality-gate pass.
+
+## ADR-34 — M1 verification and full field-evidence accounting
+
+- **Date:** 2026-10-04.
+- **Authorization:** Owner requested completion of M1. Existing Section 28
+  requirements and ADR-29's observed case count remain in force.
+- **Decision:** Record M1 complete against its five pipeline checks using the
+  saved development-corpus run and a fresh offline verification report. This
+  reconciles the older completed Phase 5 checklist with later incomplete notes.
+  No gate, validation rule or quality threshold is waived. ADR-33's annotation
+  method alone did not complete M1; this separate verification does.
+- **Confirmed defect:** Reporting counted the case's serialized inline-only
+  `all_evidence_spans` property, omitting external scalar-field evidence. Reuse
+  `validate_record`'s authoritative union. Ten cases have 61 spans: 24 inline
+  plus 37 external. The historical 24-span artifact is preserved.
+- **Evidence:** All ten cases pass current contracts and field gates; all 61
+  spans match successful retained source-validation verdicts. Twenty spans are
+  freshly checked against approved gold-dev packets. The five stages each cover
+  all 35 development documents. Full offline suite: 1087 passed, 5 skipped.
+  Audit report: `data/exports/milestones/m1-2026-10-04/report.json`.
+- **Limits:** Retained verdicts provide historical substring-validation evidence
+  for sources now reserved as gold holdout; their source text is not reopened.
+  Source availability is not re-fetched. Six failed and seven accepted-empty
+  extraction documents remain diagnostic results. Automatic validity does not
+  establish semantic support for every interpretation. Approved human reference
+  labels are separate and do not approve the saved model cases.
+- **Rejected:** Re-running paid extraction to reconcile documentation, silently
+  repairing historical model output, counting valid failed-attempt spans as
+  analysis, treating M1 as a Phase 6 quality pass, or relaxing requirements to
+  close the milestone. No provider request or holdout scoring was performed.
+- **Preservation:** Runs, caches, approved reviews, original splits, prompts,
+  schemas and official gold remain unchanged. The new report is a separate
+  artifact, not an amendment to the saved run or a semantic-review decision.
+
+## ADR-33 — Single human reviewer with disclosed AI assistance
+
+- **Date:** 2026-10-04
+- **Status:** Accepted by direct owner instruction.
+- **Authorization:** The owner approved the current drafts and said there is no
+  second reviewer for this individual project; files should name her as reviewer.
+- **Decision:** Sunayana is the sole human reviewer of the ten approved starter
+  annotations. AI assistance is disclosed in notes and pack provenance. No second
+  coder is invented and no blinded coding, adjudication or inter-reviewer agreement
+  is claimed. Raw agreement and Cohen's kappa are unavailable, not zero or one.
+- **Implementation:** `sunayana-reviewed-01/labels/Sunayana/` holds ten approved
+  records and six cases. The original seating manifest is retained byte-for-byte;
+  a new review manifest explicitly waives procedural double-code flags under the
+  owner's authorization. IDs and all split assignments are identical. Existing
+  validator/emitter behavior is reused without changing its guards.
+- **Limits:** One-person AI-assisted review provides no independent inter-coder
+  validation. Ten development documents do not establish general quality. The
+  family-album core scope exception remains disclosed; no evidence is invented
+  to support it. Gold/reference export is separate from saved model cases.
+- **Unchanged:** Evidence gates, evaluation thresholds, source privacy, approved
+  seed labels, holdout restrictions and earlier decisions. M1 remains incomplete.
 
 ## ADR-1 — Append-only JSONL is the source of truth; SQLite is a rebuildable projection
 
@@ -517,6 +663,28 @@ every change below is a specification change rather than a refactor.
 
 ## ADR-22 — Source feasibility tiers; no verification claim without primary documentation
 
+### Amendment — route-specific reassessment, 2026-10-01
+
+The owner authorized reassessing the blanket closure conclusions while retaining
+robots, terms, and access restrictions. The [source audit](SOURCE-COLLECTION-AUDIT-2026-10-01.md)
+supersedes the three source rows and consequences 2–4 below wherever they claim
+permanent closure, universally empty Apple feeds, or an unconditional Google
+terms ban. Those passages remain a historical record, not current instructions.
+The same correction applies to the rationale and rejected-options wording below.
+
+Current findings: Google Photos community is **technically available but access
+requirements unresolved**; Google Play and Apple review collection are **blocked
+for the inspected routes**. Publisher APIs require access this project does not
+have. The inspected Play RPC and Apple RSS paths are robots-disallowed. Supplied
+community thread URLs are not robots-disallowed, while native search/internal
+API paths are; fetching permission and discovery must be evaluated separately.
+No source data probe was made: zero data requests and zero records per source.
+No adapter is verified or enabled. A future documented permitted route may be
+reassessed; unofficial library availability alone is not permission or collection.
+Primary endpoint, policy, and collector-code evidence is linked in the audit.
+
+### Original decision record — 2026-09-21
+
 - **Date:** 2026-09-21
 - **Status:** Accepted
 - **Supersedes:** ADR-13
@@ -528,15 +696,16 @@ every change below is a specification change rather than a refactor.
 | Source | Tier | Verification status | Primary documentation |
 |---|---|---|---|
 | Manual CSV / JSONL | **guaranteed baseline** | n/a — built in this repository | — |
-| YouTube comments | **supported automated** | permitted, documented, **unexercised** | [`commentThreads.list`](https://developers.google.com/youtube/v3/docs/commentThreads/list) · [`comments.list`](https://developers.google.com/youtube/v3/docs/comments/list) · [quota costs](https://developers.google.com/youtube/v3/determine_quota_cost) |
-| Reddit posts and comments | **optional, credential-dependent** | permitted, documented, **unexercised**; free tier is **non-commercial only** | [Accessing Reddit Data](https://support.reddithelp.com/hc/en-us/articles/14945211791892-Developer-Platform-Accessing-Reddit-Data) · [API reference](https://www.reddit.com/dev/api/) · [Data API Terms](https://redditinc.com/policies/data-api-terms) |
+| YouTube comments | **supported automated** | permitted, documented, and **exercised** on 2026-10-04 | [`commentThreads.list`](https://developers.google.com/youtube/v3/docs/commentThreads/list) · [`comments.list`](https://developers.google.com/youtube/v3/docs/comments/list) · [quota costs](https://developers.google.com/youtube/v3/determine_quota_cost) |
+| Reddit posts and comments | **optional, credential-dependent** | permitted, documented, **unexercised**; **skipped 2026-10-04** — self-service keys are no longer issued, and this project will not request access | [Accessing Reddit Data](https://support.reddithelp.com/hc/en-us/articles/14945211791892-Developer-Platform-Accessing-Reddit-Data) · [API reference](https://www.reddit.com/dev/api/) · [Data API Terms](https://redditinc.com/policies/data-api-terms) |
 | Google Play Store reviews | **experimental** | **closed for apps we do not publish** | [Play Developer API `reviews`](https://developers.google.com/android-publisher/api-ref/rest/v3/reviews) · [`reviews.list`](https://developers.google.com/android-publisher/api-ref/rest/v3/reviews/list) · [Reply to Reviews](https://developers.google.com/android-publisher/reply-to-reviews) — "your app" · [`play.google.com/robots.txt`](https://play.google.com/robots.txt) · [Google ToS](https://policies.google.com/terms) |
 | Apple App Store reviews | **experimental** | **closed for apps we do not publish**; legacy RSS feed **returns zero reviews** | [App Store Connect `GET /v1/apps/{id}/customerReviews`](https://developer.apple.com/documentation/appstoreconnectapi/get-v1-apps-_id_-customerreviews) · [rate limits](https://developer.apple.com/documentation/appstoreconnectapi/identifying-rate-limits) · [Apple Terms of Use](https://www.apple.com/legal/internet-services/terms/site.html) |
 | Google Photos Help Community | **manual import by default** | **no documented API**; URL form live but undocumented; ToS bars scraping others' content | [`support.google.com/robots.txt`](https://support.google.com/robots.txt) · [Google ToS](https://policies.google.com/terms) |
 
 - **Consequences:**
-  1. Manual import is the guaranteed baseline. The 300-document target must be reachable through
-     manual import plus YouTube alone.
+  1. Manual import is the guaranteed baseline. The internal 300-document ambition must remain
+     reachable through manual import plus YouTube alone. ADR-32 removes it as an assignment
+     completion rule and reports the actual corpus instead.
   2. **Both app stores are structurally closed, not merely undocumented.** Each vendor's only
      official review API is gated by *publisher authentication* — Google Play's `reviews` resource
      requires the `androidpublisher` scope plus a "Reply to reviews" grant inside the caller's own
@@ -563,9 +732,15 @@ every change below is a specification change rather than a refactor.
      "scraping content that doesn't belong to you" — a clause that robots.txt compliance does not
      satisfy, and forum posts belong to their authors. Note also that thread *search* is
      robots-disallowed while the thread index is not, which constrains discovery independently.
-  5. **Permitted is not exercised.** YouTube and Reddit are marked `permitted, documented,
-     unexercised`: documentation is linked and read, and no request has been issued from this
-     repository. Phase 7 updates each to `exercised` only after a real run.
+  5. **Permitted is not exercised.** Reddit stays `permitted, documented, unexercised`.
+     On 2026-10-04 the owner directed the project to skip it: Reddit no longer issues
+     self-service API keys, new access requires approval, and new public-API requests
+     stop being accepted after 2026-10-31. This project will not file that request.
+     The collector remains and skips while credentials are absent. The 17 Reddit
+     documents already in the corpus are manual imports. YouTube was exercised on
+     2026-10-04: 40 `commentThreads.list` / `comments.list` requests wrote 266 new
+     comments. Seed choice used `channels.list`, `playlistItems.list`, and one
+     `videos.list` call. `search.list` was not called. `youtube.enabled` stays false.
   6. Collector design constraints confirmed for Phase 7: YouTube's `id` filter is documented as
      Google+-only on both method pages, so replies must be traversed by `parentId`, and the reply
      tree is **one level deep** ("YouTube currently supports replies only for top-level
@@ -578,8 +753,11 @@ every change below is a specification change rather than a refactor.
      on 2026-09-21, so the 100 queries/minute figure and the rolling-10-minute averaging window come
      from search-indexed copies of that page rather than from a fetch of the page itself. The
      figures agree across the indexed wiki text and Reddit's own r/redditdev announcement, and the
-     OAuth requirement *was* confirmed from a page that loaded. Phase 7 must re-read the wiki from a
-     browser and confirm the numbers before the collector relies on them. Related trap: the
+     OAuth requirement *was* confirmed from a page that loaded. Re-read on 2026-10-04 from the
+     official Reddit Data API Wiki: free-tier access is 100 queries per minute per OAuth client
+     id, averaged over a 10-minute window, and clients must honor `X-Ratelimit-Used`,
+     `X-Ratelimit-Remaining`, and `X-Ratelimit-Reset`. The collector relies on those headers.
+     Related trap: the
      archived `reddit-archive` GitHub wiki still states 60 requests/minute. That page is stale and
      must not be cited.
 - **Rationale:** ADR-13 said "verified against current documentation" and cited nothing, so the
@@ -696,7 +874,7 @@ every change below is a specification change rather than a refactor.
 ## ADR-27 — MVP versus stretch scope
 
 - **Date:** 2026-09-21
-- **Status:** Accepted
+- **Status:** Accepted; sequencing amended by ADR-32 for the October 2026 demonstration
 - **Amends:** ADR-14 (the OpenAI adapter moves to stretch)
 - **Spec sections:** §24.0
 - **Decision:** **MVP:** manual import, schemas, evidence validator, normalization, dedupe,
@@ -714,7 +892,7 @@ every change below is a specification change rather than a refactor.
 ## ADR-28 — First Cursor prompt implements Phase 0 only; every phase carries a prompt
 
 - **Date:** 2026-09-21
-- **Status:** Accepted
+- **Status:** Accepted; one-phase rule amended by ADR-32 for three demonstration tracks
 - **Spec sections:** §30, §29 item 4
 - **Decision:** Spec §30's prompt implements Phase 0 only. `IMPLEMENTATION-PLAN.md` carries a
   paste-ready prompt for every phase, 0 through 11.
@@ -818,15 +996,14 @@ every change below is a specification change rather than a refactor.
 
 ## Pending
 
-No open blocking decisions. Five obligations are outstanding and attached to their phases:
+No open blocking decisions. Two obligations are outstanding and attached to their phases:
 
 | Obligation | Attached to | Amends | Owner |
 |---|---|---|---|
 | Calibrate `dedupe_min_tokens` and the similarity band on the pilot corpus | Phase 3 | ADR-21 | project owner |
-| Exercise the YouTube and Reddit mechanisms and update their verification status to `exercised` | Phase 7 | ADR-22 | project owner |
-| Confirm whether this research counts as non-commercial under the Reddit Data API Terms | Phase 7 | ADR-22 | project owner |
-| Re-read the Reddit Data API Wiki from a browser and confirm the 100 QPM rate limit first-hand | Phase 7 | ADR-22 consequence 7 | project owner |
 | Record per-source redistribution terms, settling where `excerpt_is_full_text` may be true | Phase 10 | ADR-23 | project owner |
+
+Closed 2026-10-04 by owner direction: do not exercise Reddit and do not request an API key. Self-service key creation is closed, and new public-API requests stop after 2026-10-31. The non-commercial free-tier question is moot because no Reddit API call will be made. YouTube was already exercised the same day.
 
 Three obligations previously listed here were **closed** by the 2026-09-21 verification pass rather
 than dropped: documenting a permitted Play Store mechanism, documenting a permitted App Store
@@ -843,3 +1020,322 @@ One genuine decision is not settled by this revision and does not need to be bef
 | Question | Why it is open | Needed by |
 |---|---|---|
 | The exact dev/holdout split ratio and stratification keys | 40/60 stratified by source platform and scope class is a reasonable default, but the right ratio depends on how many gold documents land in each scope class, which is unknown until labelling starts. Too small a holdout makes the final numbers noisy; too small a dev split makes prompt iteration blind. | Phase 6, before labelling begins |
+
+---
+
+## Implementation decision — 2026-10-01: nullable extraction wire encoding
+
+- **Status:** Implemented and verified offline; vendor acceptance pending separate authorization.
+- **Spec sections:** §15.10, §19.4–19.5, §26.2. No application contract or accepted ADR is amended.
+- **Evidence:** The separately authorized one-request synthetic diagnostic was rejected
+  with HTTP 400 `invalid_request`, parameter `response_format`, and a message requiring
+  `anyOf` branch disambiguation. The preserved run is `577e727e72cc`.
+- **Decision:** Extraction opts into nullable scalar type arrays in the existing Groq
+  request-schema conversion. All 19 scalar-or-null extraction unions are represented
+  as `type: [scalar, null]`. Nullable local scalar enum references are inlined with
+  the original allowed values plus JSON null. Bounds, strict objects, required keys,
+  Pydantic application validation, and evidence gates stay intact. Other compositions
+  are untouched; relevance keeps its existing conversion.
+- **Identity:** The transmitted-schema digest changes the cache key. Legacy cache
+  entries and failed-run artifacts remain intact. Prompt instructions and registered
+  `extract/v1` remain unchanged; the embedded wire schema changes alongside the SDK
+  request. Run IDs do not include that digest, so any authorized live verification
+  needs a new output parent rather than reuse of an occupied run directory.
+- **Rejected:** Adding artificial discriminator fields to the response contract,
+  removing nulls or enum/range restrictions, changing prompts or labels, altering
+  relevance/holdout behavior, deleting legacy cache, or retrying the provider as part
+  of this offline fix.
+- **Verification:** Mocked request/prompt equality, idempotence, application constraints,
+  cache-key migration, and legacy-entry preservation pass. Vendor acceptance and
+  extraction quality are not established by these tests; M1 remains incomplete.
+
+### Verification follow-up — 2026-10-01
+
+The user executed one request with the revised schema under the fresh output parent
+`data/interim/phase5/diagnostic-nullable-fix`. Its saved technical state is `ok` and
+the matching cached response has the correct synthetic document identity and
+`cases: []`. This establishes vendor acceptance for that request and supersedes the
+pending compatibility status above. It does not measure real-document extraction
+quality. Further diagnostic or pilot requests require separate authorization;
+the preceding failed-run artifacts remain preserved.
+
+## Implementation decision — 2026-10-01: safe rejected-output diagnostics
+
+Future Groq failures may inspect rejected text transiently up to 65,536 characters,
+without retaining the generated text, values, error messages or input/context. The
+allowlist is character count, JSON state/error position, application-validation types
+and fixed-schema field paths (32 findings, 16 components; unknown names become `*`).
+This diagnostic does not accept/repair a failure or replace vendor strict validation.
+Optional known finish reasons and request digests identify future attempts; legacy
+cache entries remain readable and cache identities stay unchanged. Usage completeness
+describes recorded gateway observations, never actual billing or inferred token counts.
+
+One failed core seat may be selected through `--pilot-doc` after the unchanged five-seat
+manifest is validated, with cap one and one attempt. Existing guards and default pilot
+bounds remain; this is offline preparation, not live authorization. Prompts, schemas,
+evidence gates, labels, split and accepted ADRs are unchanged. Historical errors/billing
+remain unknown, and M1/extraction quality are not established.
+
+### Verification follow-up — 2026-10-01: completion truncation
+
+The user's one-core-document run `core-diagnostic-01/4a8c7175f992` retained an explicit
+provider message identifying completion truncation at the recorded 4096-token limit.
+That finding applies to the new attempt only; historical failure causes/charges remain
+unknown. The failed generation remains rejected and uncached, with no raw body retained.
+
+Prepared an explicit `--pilot-max-tokens 8192` option only for a single failed core seat,
+using the unchanged full manifest and one-call/no-retry controls. Other values/modes are
+refused. Default configuration, prompt/schema, evidence gates, labels, split and accepted
+ADRs remain unchanged. Existing decoding-aware cache/run identities distinguish this
+experiment; no saved run or cache entry is rewritten. Mocked checks and zero-call dry-runs
+passed; live execution still requires separate authorization and does not reconstruct
+historical billing. The new limit's sufficiency, extraction quality and M1 remain
+unassessed.
+
+### Verification follow-up — 2026-10-01: completed 8192-token diagnostic
+
+The completed one-call run `core-diagnostic-8192-01/797b223ff9f9` returned structured
+output with `finish_reason=stop`. The output guard refused a duplicate invocation.
+This demonstrates completion for that attempt only. Two abbreviated quotes and missing
+summary evidence made its case invalid; the existing gate correctly withheld it.
+The recorded list-price estimate is not an invoice, and historical charges remain unknown.
+
+Reporting fixes expose failed-candidate/state counts and failure exit status, retaining
+accepted empty output as success. Typed invalid candidates are now persisted separately
+for review; they never enter analysis, and saved review resolutions are not rewritten.
+A transport-guarded cache replay retained the pending case without another request.
+Prompt/schema/validator, approved labels, split, holdout lock and accepted ADRs remain
+unchanged. Future runs add one review-candidate artifact; historical run files remain
+intact. Extraction quality and M1 remain unassessed.
+
+## Implementation decision — 2026-10-01: authorized extract/v2 evidence instructions
+
+The user authorized the exact instruction addition proposed in
+`data/interim/phase5/extraction_evidence_correction_proposal.md`. Register `extract/v2`
+as active and retain the unchanged `extract/v1` rendering as a historical baseline.
+V2 explicitly requires separate verbatim summary support, continuous source quotes,
+no inserted ellipses/spliced passages, and empty evidence for not_stated/not_applicable.
+The only prompt-body change is the approved addition; unsupported version headers fail.
+
+Pilot and synthetic diagnostic bounds pin the approved active version while retaining
+existing provider/model/request caps, SDK/gateway retry settings, cache, key/output
+guards and holdout lock. Version-aware cache/run/case fingerprints isolate new requests;
+legacy entries and runs are not modified. Global token configuration, application/wire
+schemas, evidence validator, approved labels and split remain unchanged.
+
+Synthetic regressions exercise literal source ellipses, fabricated/spliced quotes,
+summary support and forbidden evidence for empty observation statuses. They establish
+instruction rendering and unchanged controls, not model adherence. Live execution is
+not included in this prompt-change authorization. Extraction quality, historical failed
+request billing and M1 remain unassessed.
+
+## Implementation decision — 2026-10-01: align extraction detail with the existing contract
+
+The user requested a fix after the v2 diagnostic exposed a transport/application mismatch:
+the request schema allowed detail on remembered cues while ObservedValue allowed it only
+on target_subjects. Enforce null detail on all six non-subject transport label dimensions
+and retain subject-specific optional text. Reject invalid responses instead of stripping
+detail or weakening the application gate. Saved runs, cached responses and review items
+remain unchanged. This corrects transport to the existing contract; record schema 1.0.0
+and extract/v2 instructions remain unchanged. The embedded/transmitted schema changes,
+so Groq's schema digest supplies cache separation. Run IDs do not include this digest;
+use a fresh output parent rather than resuming or overwriting an earlier run.
+
+Document aggregation must preserve assembly schema_validation_failed instead of mapping
+all reviewed cases to evidence_validation_failed. Schema failure takes precedence in a
+mixed document's summary/event, while individual case artifacts preserve their findings.
+Thirteen new offline regressions verify the fix; full suite: 949 passed, 5 skipped.
+The zero-call diagnostic dry-run does not establish provider adherence or extraction
+quality. A further live request requires separate authorization; M1 remains unassessed.
+
+## Implementation decision — 2026-10-01: five-document 8192-token cache reuse
+
+The corrected-schema response for `google_support-d7f386f347b7` is cached at 8192
+tokens. A five-document check at the configured 4096-token limit would miss that entry
+and could request the document again. `--pilot --pilot-max-tokens 8192` without
+`--pilot-doc` therefore applies 8192 to the existing five-seat manifest and requires
+`--call-budget 4` and `--max-retries 1`. Before any provider call or output creation,
+the expected cache entry must match every request parameter and pass local
+`ExtractionPayload` validation. A missing, incompatible, or unusable entry fails closed.
+The ordinary pilot stays at 4096 tokens and five calls. The single-core diagnostic stays
+at one call. SDK retries, prompt pins, the manifest, labels, and the fresh-output and
+missing-key guards stay as they are. Offline mode is refused for this path. Automatic
+validation of the cached case is not semantic approval. This entry did not authorize
+the live command. The user later executed it; the results are in `STATUS.md`. Full
+suite at the time of this entry: 958 passed, 5 skipped. Extraction quality and M1
+remain unassessed.
+
+## ADR-32 — October 2026 demonstration schedule
+
+- **Date:** 2026-10-01
+- **Status:** Accepted
+- **Amends:** ADR-22 consequence 1 (the 300-document line is an internal ambition, not an assignment gate); ADR-27 (sequencing only, for the three tracks below); ADR-28 (one phase at a time, for those same tracks)
+- **Spec sections:** §1.1, §5, §11.1, §24.0, §27
+- **Decision:** The assignment requirement remains Section 5: analyze real public feedback and compare retrieval problems with traceable evidence. Provenance, privacy, evidence validation, and honest reporting stay in force. Milestone 1 and every unfinished phase stay incomplete.
+
+  For the demonstration aimed at 2026-10-03 and the submission on 2026-10-07:
+
+  1. YouTube comment collection, extraction review, and a basic evidence browser may proceed in parallel.
+  2. At least 300 documents across four source types is an internal ambition. The submission reports the actual corpus and its limitations. Today that corpus is the 35-document manual pilot workbook, not an API collection.
+  3. The only automated collector to start is YouTube comments, written as existing `CollectedDocument` records. Workbook import stays. YouTube remains `documented, unexercised` until a bounded API call is separately authorized.
+  4. Chat synthesis, embeddings, composite opportunity scores, additional collectors, and architectural refactoring are deferred.
+  5. The basic browser reads existing JSONL. It does not complete the quality report, public export, or Streamlit deployment.
+
+- **Rationale:** User research and a product MVP share the same calendar. Waiting for every numbered phase leaves no demonstration. The assignment does not require a 300-document gate, a second collector, or a generative layer. Relaxing the phase order without relaxing evidence rules is the change that still answers Section 5.
+- **Rejected:** Treating the demonstration as Milestone 1. Treating 35 workbook rows as 300 documents. Repairing saved model output so the browser looks complete. Opening the holdout or changing approved labels and splits to process a new batch.
+
+## Implementation note — 2026-10-03: starter development annotation pack
+
+The starter pack seats `gold-split/v1` on the 35 Phase 4 development documents,
+using source platform and the existing human seed scope as the strata. Only the
+10 gold-`dev` seats are copied, with blank gold fields. The existing seed scope
+is not a gold label. The 25 gold-`holdout` seats among those 35, and all 15
+Phase 4 holdout documents, stay out of the pack. Two documents whose seed scope
+and model scope differ are marked for a second reviewer. The quality gate
+remains pending.
+
+## Implementation note — 2026-10-03: Phase 6 evaluation without a gold set
+
+The gold split is `gold-split/v1`: within each source-and-scope stratum, documents
+are ordered by the SHA-256 of `gold-split/v1` and `doc_id`, and the first two of
+every five are `dev`. Evaluation reads the split stored on a label. It does not
+reassign it, and it does not read the Phase 4 seed split as gold. There are no
+gold labels yet, so the quality gate is pending. Thresholds stay 0.90, 0.85,
+and 0.80.
+
+## Implementation note — 2026-10-03: Phase 5 case overrides
+
+A human case is a new row with `extractor_type = human`. It does not rewrite the
+model case. `v_current_cases` uses it only when its validation state is valid.
+No override was written for the development corpus, because that would invent a
+review decision. Two historical failed calls have no usage fields in their saved
+manifests; those charges remain unknown.
+
+## Implementation note — 2026-10-03: development corpus extraction meets M1
+
+The qualifying-case count is 10 analysis cases from 35 development documents.
+It was not targeted. Sampling: no new collection; the frozen development split
+is the 35-document corpus. Prefilter: 35 succeeded events and no drop event in
+that split. Classification: 14 effective decisions are out of scope and were
+skipped; 21 were eligible. One model relevance event remains unavailable
+(`reddit-c49086caf891`); extraction used the existing human adjacent decision
+and did not edit either row. Eleven disagreements with the approved labels were
+recorded and the labels were not changed. Extraction: 17 new calls and 4 cache
+hits; 6 documents failed the evidence gate and stayed out of
+`retrieval_cases.jsonl`; 7 eligible documents stored zero cases; 8 documents
+stored 10 cases. The prompt and schema were not loosened to raise that count.
+Semantic approval was not granted.
+
+## Implementation note — 2026-10-03: submission app, YouTube batch already saved
+
+`STATUS.md` records the later bounded YouTube collection and the research-batch
+model calls. This note does not reopen that work. `app.py` reads the prepared
+export of those saved runs and of the development pilot. It does not change the
+frozen split, approved labels, or review decisions. Phase 10 remains
+incomplete. The development-corpus note above is the M1 record. The 2026-10-01
+note below described the collector before that bounded call.
+
+## Implementation note — 2026-10-04: YouTube exercised, Reddit skipped
+
+A bounded live YouTube collection wrote 266 new comment documents in 40
+comment-read requests. Combined with the existing manual imports, the deduped
+corpus is 318 documents across five platforms: YouTube 272, Google support 21,
+Reddit 17, Play Store 5, and App Store 3. YouTube is 272/318, above the 40%
+concentration line, and that imbalance is recorded in
+`data/processed/phase7-corpus-2026-10-04/funnel_by_source.json`. The Play and
+App Store rows are the earlier manual imports. No store or support-forum
+collector was added. On 2026-10-04 the owner directed the project to skip Reddit:
+self-service API keys are no longer issued, and no access request will be filed.
+Reddit made zero requests and stays unexercised. The 17 Reddit rows are manual
+imports. No relevance or extraction call was made.
+`youtube.enabled` stays false.
+
+## Implementation note — 2026-10-01: YouTube collector, live API unexercised
+
+`src/collect/youtube.py` implements the read-only collector from ADR-32 item 3.
+It writes existing `CollectedDocument` records and leaves workbook import in
+place. Tests mock `commentThreads.list` and `comments.list`. No live YouTube
+request was made, so ADR-22's status for YouTube remains permitted, documented,
+and **unexercised**. `config/sources.yaml` keeps `youtube.enabled` false.
+
+## Implementation note — 2026-10-01: research batch, no new documents
+
+`main.py run --research-batch` is the bounded path from ADR-32 for documents
+that are not in the frozen seed split. It does not edit that split, the
+approved labels, or prior runs. A dry-run of the collected imports selected
+nothing, because every stored `doc_id` is already in the split. No provider
+call was made. This note does not authorize a live model run and does not
+complete Milestone 1.
+## ADR-35 — Bounded frozen gold verification (2026-10-04)
+
+The owner authorized completing development freeze, opening the required
+holdout sources and making necessary bounded calls. Use the existing gold
+seating and stages, not the legacy five-document pilot as a general runner.
+Scope extract/v3 to this verification; preserve legacy extract/v2 behavior.
+Pin relevance/v5, corrected schema and Groq openai/gpt-oss-120b, temperature 0
+(effective 1e-8), 4096 relevance/8192 extraction output tokens, SDK retries 0
+and gateway attempts 1. Budgets reserve one first attempt per seat per stage:
+20 maximum development requests, 50 maximum holdout requests, cache hits free.
+
+Freeze code/config/source/approved-dev-label hashes before the holdout run.
+Prepare reference drafts from audit sources without model predictions, retain
+the owner's actual approval, and bind exact labels and packets by hash.
+Sunayana reviewed and approved all 25 proposed holdout labels. Sole-human,
+AI-assisted labeling is disclosed; no independent coder agreement is invented.
+Claim the measurement before calls and claim scoring before report output;
+interruption or failure is not permission to retry the same frozen experiment.
+
+The numeric measurement passed five thresholds on 25 reserved gold-holdout
+seats, but those seats were previously Phase 4 development data. Do not describe
+this as wholly unseen validation, complete the 75–100 research target, or
+approve extraction semantics from a quote gate. Report 5/15 case coverage,
+failed/empty outputs and unknown usage honestly. Keep all prior runs, caches,
+reviews and split membership. Original 15 Phase 4 holdout seats remain separate.
+
+## ADR-36 — Parallel submission integration and separate reference demo (2026-10-04)
+
+**Accepted.** Owner authorized fixing submission gaps, preparing Streamlit
+Community Cloud and integrating the n8n collection route. Preserve the original
+tagging workflow, labels, model outputs and frozen one-shot measurement. Use
+existing collection/stage/gateway/cache/persistence contracts rather than a
+second framework. Source collection is a strict original-post envelope with
+document/request bounds, author hashing, exact text and no model side effects.
+Refuse the supplied old tagging endpoint; Cloud import, credentials and actual
+page compatibility are still required. No live n8n verification is claimed.
+
+Provide a separate public view of already-approved development references,
+minimum exact evidence, field comparisons and journeys. Reference approval is
+not semantic approval of a model case. Curate the Cloud package with an explicit
+allowlist; do not publish source/gold/holdout/credentials. Prepare only; actual
+account publication remains a separate owner step. No artificial taxonomy,
+cluster count, prevalence estimate or composite score is substituted for missing
+research. Collection, review and demonstration may progress in parallel; corpus
+and gold targets are internal ambitions with actual limitations disclosed.
+
+Sunayana separately authorized one dev-only v4 extraction experiment with at
+most 20 requests. It completed six requests and consumed that authorization.
+Four of six references match, versus v3 two of six; precision still 0.8333.
+Preserve source-based semantic disagreements and the frozen holdout result.
+Candidate routing is explicit, version-isolated and refused on holdout. The
+paired relevance/v6 candidate is inactive/unmeasured and needs a new paid-run
+authorization. Alternative rejected: silently activate candidates globally,
+retry holdout, approve model cases from quote validity, or upload the whole
+workspace to Cloud. Sections affected: 1, 24, 26 and submission/public-export
+guidance; research evidence/quality requirements are not waived.
+
+## ADR-37 — The approved gold set is final (2026-10-04)
+
+**Accepted.** The owner does not have time to label 75–100 documents. The
+labels already approved and stored as official gold are the final gold set:
+35 documents and 21 cases, split 10/6 development and 25/15 holdout. No
+further gold documents will be added for this submission.
+
+This amends the internal volume in spec Sections 11.1, 24 Phase 6, and 27.
+It does not edit a label to match a model, move a split, invent a second
+reviewer, or treat 35 documents as if they were the former 75–100 volume.
+ADR-35's measurement stays 35 documents. Prior holdout exposure, null
+agreement, unmatched cases, and unapproved model cases remain disclosed.
+Thresholds stay 0.90, 0.85, and 0.80.
+
+**Rejected:** leaving the 75–100 volume open as unfinished required work, and
+adding unapproved labels to make the count larger.

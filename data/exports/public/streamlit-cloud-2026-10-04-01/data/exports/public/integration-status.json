@@ -1,0 +1,7 @@
+{
+  "implementation": "bridge and inactive workflow prepared; mocked tests only",
+  "live_connection": "not configured or exercised in this session",
+  "source_access": "not verified; unsupported or blocked pages fail closed",
+  "replies": "not fetched; completeness false",
+  "last_import_documents": 0
+}

@@ -1,0 +1,9 @@
+{
+  "rule": "gold-split/v1",
+  "seed": "gold-split/v1",
+  "dev_share": "2/5",
+  "holdout_share": "3/5",
+  "stratified_by": ["source_platform", "scope_class"],
+  "hash": "sha256 of the seed and doc_id",
+  "labels": "none"
+}

@@ -97,6 +97,9 @@ class EvaluationReport:
     ambiguous_span_rate: float
     operations: OperationStats
     documents: tuple[dict[str, object], ...] = field(default_factory=tuple)
+    context_comparability: dict[str, dict[str, str]] | None = None
+    cross_split_families: tuple[dict[str, object], ...] = ()
+    evaluation_limitation: str | None = None
 
     def to_json(self) -> dict[str, object]:
         average_latency = None
@@ -105,7 +108,7 @@ class EvaluationReport:
                 sum(self.operations.latency_seconds) / len(self.operations.latency_seconds),
                 6,
             )
-        return {
+        payload = {
             "split": self.split_name,
             "split_version": self.split_version,
             "performance_claim": False,
@@ -152,6 +155,13 @@ class EvaluationReport:
             "average_latency_seconds": average_latency,
             "documents": list(self.documents),
         }
+        if self.context_comparability is not None:
+            payload["context_comparability"] = self.context_comparability
+        if self.cross_split_families:
+            payload["cross_split_families"] = list(self.cross_split_families)
+        if self.evaluation_limitation:
+            payload["evaluation_limitation"] = self.evaluation_limitation
+        return payload
 
 
 def evaluate_relevance(
@@ -163,6 +173,9 @@ def evaluate_relevance(
     confidence_review_below: float = 0.7,
     conflict_decision_ids: tuple[str, ...] | list[str] = (),
     operations: OperationStats | None = None,
+    context_comparability: dict[str, dict[str, str]] | None = None,
+    cross_split_families: tuple[dict[str, object], ...] = (),
+    evaluation_limitation: str | None = None,
 ) -> EvaluationReport:
     """Score ``split_name``. Labels are matched to decisions by ``doc_id``."""
     if split_name not in {SPLIT_DEVELOPMENT, SPLIT_HOLDOUT, "all"}:
@@ -363,6 +376,9 @@ def evaluate_relevance(
         ambiguous_span_rate=_rate(ambiguous, count),
         operations=stats,
         documents=tuple(documents),
+        context_comparability=context_comparability,
+        cross_split_families=tuple(cross_split_families),
+        evaluation_limitation=evaluation_limitation,
     )
 
 
@@ -557,5 +573,21 @@ def _markdown(report: EvaluationReport) -> str:
         lines.append("## Missing predictions")
         lines.append("")
         lines.extend(f"- `{doc_id}`" for doc_id in report.missing_doc_ids)
+        lines.append("")
+    if report.evaluation_limitation:
+        lines.append("## Context limitations")
+        lines.append("")
+        lines.append(report.evaluation_limitation)
+        lines.append("")
+        lines.append(
+            "Seed-row text, model context, and known human-review context are separate. "
+            "A reply-only seed row does not mean the reviewer lacked a parent thread."
+        )
+        lines.append("")
+    if report.cross_split_families:
+        lines.append("Cross-split thread families, by id:")
+        lines.append("")
+        for family in report.cross_split_families:
+            lines.append(f"- `{family.get('parent_thread_id')}`")
         lines.append("")
     return "\n".join(lines)

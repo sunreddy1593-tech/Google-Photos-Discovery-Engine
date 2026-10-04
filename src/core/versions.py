@@ -50,14 +50,41 @@ TAXONOMY_VERSION: Final[str] = "0-unassigned"
 #: invalidates only its own cache, which is why these are separate from
 #: ``SCHEMA_VERSION`` rather than folded into it.
 #:
-#: Phase 4 registers ``relevance``. Phase 5 adds ``extraction``, Phase 8 the
-#: taxonomy prompts, Phase 9 ``ask``. A prompt edit bumps its own entry.
-#: ``relevance/v4`` states general scope rules and, when supplied, parent
-#: context as a separate document. ``relevance/v3`` stated the document id.
-#: ``relevance/v2`` required offset keys but did not supply the id. Older
-#: versions stay valid for stored decisions and cache entries; those entries
-#: are not reused.
-PROMPT_VERSIONS: Final[dict[str, str]] = {"relevance": "relevance/v4"}
+#: Phase 4 registers ``relevance``. ``extract`` is the extraction prompt.
+#: Phase 8 adds the taxonomy prompts and Phase 9 ``ask``. A prompt edit bumps
+#: its own entry.
+#: ``relevance/v5`` states general reason-selection rules. The development
+#: evaluation is stored and this entry was not changed for extraction.
+#: ``relevance/v4`` stated general scope
+#: rules and, when supplied, parent context as a separate document.
+#: ``relevance/v3`` stated the document id. ``relevance/v2`` required offset
+#: keys but did not supply the id. Older versions stay valid for stored
+#: decisions and cache entries; those entries are not reused.
+#: Approved evidence instructions: separate summary support, continuous quotes,
+#: and empty evidence for unstated fields. The v1 rendering remains historical.
+#: ``extract/v3`` is the measured development-review correction. It is not the
+#: active pin: pilot, diagnostic, and development-corpus bounds stay on
+#: ``extract/v2`` so the five-document corrected-schema cache still matches.
+#: ``extract/v4`` is an inactive candidate prepared after the v3 development
+#: misses. It is not registered, not the quality-route correction, and not measured.
+#: ``extract/v5`` is a later development-only candidate for the two remaining
+#: development misses. It is not the active pin and is refused on holdout.
+#: ``relevance/v6`` is the paired inactive candidate for the spliced-quote
+#: rejection and the short-title out-of-scope miss. It is not the active pin.
+EXTRACTION_PROMPT_BASELINE: Final[str] = "extract/v1"
+EXTRACTION_PROMPT_VERSION: Final[str] = "extract/v2"
+EXTRACTION_PROMPT_CORRECTION: Final[str] = "extract/v3"
+#: Inactive candidate. It is not the active pin and not the measured correction.
+EXTRACTION_PROMPT_CANDIDATE: Final[str] = "extract/v4"
+#: Development-only candidate. It is not the active pin and is refused on holdout.
+EXTRACTION_PROMPT_DEV_CANDIDATE: Final[str] = "extract/v5"
+#: Inactive candidate. Registered relevance stays ``relevance/v5``.
+RELEVANCE_PROMPT_CANDIDATE: Final[str] = "relevance/v6"
+
+PROMPT_VERSIONS: Final[dict[str, str]] = {
+    "relevance": "relevance/v5",
+    "extract": EXTRACTION_PROMPT_VERSION,
+}
 
 
 def prompt_version(prompt_id: str) -> str:

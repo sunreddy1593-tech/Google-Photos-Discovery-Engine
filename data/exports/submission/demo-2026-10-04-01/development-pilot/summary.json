@@ -1,0 +1,45 @@
+{
+  "dataset_id": "development-pilot",
+  "run_id": "024f9b18b60f",
+  "description": "Manual pilot documents in the development split. The extraction run is the five-document 8192-token pilot.",
+  "split_policy": "development_only",
+  "documents": 35,
+  "withheld_evaluation_documents": 15,
+  "frozen_split_overlap_excluded": 0,
+  "analysis_documents": 35,
+  "confirmed_duplicate_links": 0,
+  "pending_duplicate_links": 0,
+  "human_relevance_labels": 35,
+  "human_labeled_out_of_scope": 16,
+  "model_relevance_attempts": 35,
+  "model_relevance_out_of_scope": 15,
+  "model_relevance_by_scope": {
+    "out_of_scope": 15,
+    "core_incomplete_recall": 11,
+    "adjacent_known_item_retrieval": 8
+  },
+  "extraction_attempts": 5,
+  "extraction_by_state": {
+    "ok": 3,
+    "evidence_validation_failed": 1,
+    "provider_error": 1
+  },
+  "stored_cases": 2,
+  "exported_cases": 2,
+  "automatically_valid_cases": 2,
+  "semantically_approved_cases": 0,
+  "failed_attempts": 2,
+  "empty_responses": 1,
+  "unresolved_review_items": 3,
+  "recorded_semantic_findings": 8,
+  "corrections": 0,
+  "missing_inputs": [
+    "human_corrections.jsonl"
+  ],
+  "limitations": [
+    "35 development documents come from one manual import. 15 evaluation-split documents in that same file are counted and their text is not exported.",
+    "Extraction ran on 5 development seats, not on every development document.",
+    "Saved run timestamps use a fixed date and are not treated as the wall-clock time of the live call."
+  ],
+  "counts_are_this_dataset_only": true
+}

@@ -1,0 +1,116 @@
+{
+  "accepted_empty_documents": 4,
+  "all_numeric_thresholds_passed": true,
+  "all_processed_provider_outputs_validated": false,
+  "approval_sha256": "10291421d45dee8cafc95285bc19f30225e11875590f0fdfb378f2ba28bdc000",
+  "attempt_finish_reasons": {
+    "None": 4,
+    "stop": 10
+  },
+  "billing": "unknown; recorded-usage list-price subtotal is not a bill",
+  "case_coverage": {
+    "accepted_model_cases": 5,
+    "field_metrics_basis": "matched cases only; unmatched gold cases and technical failures are not silently scored as field matches",
+    "gold_case_coverage": 0.3333333333333333,
+    "gold_cases": 15,
+    "matched_cases": 5,
+    "unmatched_gold_cases": 10,
+    "unmatched_model_cases": 0
+  },
+  "cost_is_complete": false,
+  "development_provider_calls": 9,
+  "development_usage": {
+    "estimated_cost_usd": 0.019051,
+    "input_tokens": 74513,
+    "output_tokens": 14788,
+    "provider_calls_without_recorded_usage": 0,
+    "usage_scope": "recorded_provider_usage_only",
+    "usage_totals_complete": true
+  },
+  "extraction_attempts": 14,
+  "extraction_event_counts": {
+    "failed": 5,
+    "skipped": 11,
+    "succeeded": 9
+  },
+  "failed_document_attempt_types": {
+    "evidence_validation_failed": 1,
+    "provider_error": 4
+  },
+  "freeze_sha256": "cbfc7b67493f69520b5186b9e35b5a0293d2517c38203bd3c1b3f48012154e68",
+  "full_holdout_relevance": {
+    "basis": "all 25 holdout documents; non-ok or missing decisions count as no delivered relevance decision",
+    "fn": 1,
+    "fp": 1,
+    "precision": 0.9285714285714286,
+    "recall": 0.9285714285714286,
+    "tp": 13
+  },
+  "gates": {
+    "prefilter_recall": {
+      "pass": true,
+      "threshold": 0.9,
+      "value": 1.0
+    },
+    "relevance_precision": {
+      "pass": true,
+      "threshold": 0.85,
+      "value": 0.9285714285714286
+    },
+    "relevance_recall": {
+      "pass": true,
+      "threshold": 0.8,
+      "value": 0.9285714285714286
+    },
+    "schema_validation_rate": {
+      "pass": true,
+      "threshold": 1.0,
+      "value": 1.0
+    },
+    "span_validation_rate": {
+      "pass": true,
+      "threshold": 1.0,
+      "value": 1.0
+    }
+  },
+  "gold_cases_total": 21,
+  "gold_dev_documents": 10,
+  "gold_documents_total": 35,
+  "gold_holdout_cases": 15,
+  "gold_holdout_documents": 25,
+  "holdout_provider_calls": 16,
+  "holdout_usage": {
+    "estimated_cost_usd": 0.031715,
+    "input_tokens": 124298,
+    "output_tokens": 26776,
+    "provider_calls_without_recorded_usage": 4,
+    "usage_scope": "recorded_provider_usage_only",
+    "usage_totals_complete": false
+  },
+  "human_gold_labels_approved": true,
+  "human_gold_reviewer": "Sunayana",
+  "independent_double_coding": false,
+  "limitations": [
+    "Gold holdout was reserved from 35 previously processed Phase 4 development documents. Prior development exposure limits independence; this is not an untouched external test set. The original 15 Phase 4 holdout seats are separate.",
+    "35 reviewed documents do not complete the internal 75-100 gold-document research target.",
+    "Accepted-record schema/span rates exclude technically rejected outputs; five extraction failures and ten missing reference cases remain visible.",
+    "No independent coder agreement estimate; these are AI-assisted labels approved by one human.",
+    "No holdout error-analysis CSV or prompt tuning from holdout outcomes. No provider retry.",
+    "The initial offline scoring invocation required absolute input paths; it wrote no report and made no calls."
+  ],
+  "matched_holdout_cases": 5,
+  "model_case_semantic_approval": false,
+  "numeric_quality_gate": "numeric_thresholds_passed",
+  "provider_calls_without_recorded_usage": 4,
+  "recorded_usage_estimated_cost_usd": 0.05544735,
+  "report_sha256": "bb5af74a08e0c39ebcfee1302c044855eb42a2f3da92f811beb6c1f7fe22de9a",
+  "research_gold_size_target_75_to_100_met": false,
+  "retained_failure_record_types": {
+    "evidence_validation_failed": 2,
+    "provider_error": 4
+  },
+  "status": "measured",
+  "total_provider_calls": 25,
+  "unrecorded_extraction_finish_reasons": 4,
+  "wholly_unseen_external_validation": false
+}

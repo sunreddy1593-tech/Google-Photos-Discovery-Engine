@@ -79,6 +79,34 @@ _RELEVANCE_PRIORITY: dict[ReasonCode, int] = {
 }
 
 
+def open_extraction_items(
+    pairs: list[tuple[str, str, ReasonCode]] | tuple[tuple[str, str, ReasonCode], ...],
+    *,
+    opened_at: datetime,
+) -> tuple[ReviewItem, ...]:
+    """One open item per extraction target and reason. Duplicate pairs collapse."""
+    items: list[ReviewItem] = []
+    seen: set[tuple[str, str, str]] = set()
+    for target_type, target_id, reason in pairs:
+        key = (target_type, target_id, reason.value)
+        if key in seen:
+            continue
+        seen.add(key)
+        items.append(
+            ReviewItem(
+                item_id=sha1_short("review", "extraction", target_type, target_id, reason.value),
+                target_type=target_type,
+                target_id=target_id,
+                reason_code=reason,
+                priority=_RELEVANCE_PRIORITY.get(reason, 3),
+                state="open",
+                opened_at=opened_at,
+            )
+        )
+    items.sort(key=lambda item: (item.priority, item.item_id))
+    return tuple(items)
+
+
 def open_relevance_items(
     pairs: list[tuple[str, ReasonCode]] | tuple[tuple[str, ReasonCode], ...],
     *,

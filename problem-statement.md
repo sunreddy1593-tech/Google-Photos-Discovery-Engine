@@ -10,6 +10,22 @@
 
 ## 1. How to Use This Document
 
+Owner-authorized submission amendment, 2026-10-04 (ADR-36): collection
+integration, semantic review and evidence browsing may proceed in parallel.
+The original graduation assignment is analysis of real public feedback at
+scale and comparison of retrieval problems using traceable evidence. The
+300-document/four-source ambition and larger gold target are internal targets,
+not an externally mandated submission threshold. Report actual corpus and
+method limitations. The read-only demo may show approved reference assignments
+separately from unapproved model predictions; this cannot complete a quality
+gate by substituting reference labels. Prepare Cloud publication with minimum
+public excerpts and preserve private source, privacy and evidence validation.
+The new n8n collector must import original text rather than tags or summaries.
+Optional chat synthesis, embeddings, composite scores, new collectors and
+architectural refactoring remain deferred. No completed research is inferred
+from the software demonstration. This amendment supersedes strict phase-order
+wording below within these owner-authorized submission workstreams only.
+
 This file is the source of truth for building the discovery engine in Cursor.
 
 Cursor must read this document completely before proposing architecture or writing code. Implementation must follow the phased build order in Section 24. Cursor must not jump directly to the Streamlit interface, large-scale collection, RAG, or solution design.
@@ -28,6 +44,75 @@ This project must maintain:
 - `CHANGELOG.md` — material implementation changes by date.
 
 Section 24.0 separates MVP scope from stretch scope. When time is short, stretch items are cut; MVP scope is not reduced.
+
+### 1.1 Assignment requirement and the 2026-10-01 schedule change
+
+The graduation assignment is Section 5: analyze real public feedback and compare retrieval problems with traceable evidence. Source provenance, privacy, verbatim evidence, and honest limits on what the corpus can support are part of that requirement.
+
+The numbered phases, the 300-document / four-source line, the gold-set quality gates, taxonomy, composite scores, embeddings, chat synthesis, and a deployed Streamlit app are **internal build targets**. They are not an external submission threshold. ADR-32 records the owner's change for the October 2026 deadline:
+
+- A usable discovery-engine demonstration is aimed at **2026-10-03**. Submission is **2026-10-07**. User research and a product MVP are separate fellowship work and are not a reason to relax evidence rules or to design a Google Photos solution.
+- Collection, extraction review, and a basic evidence browser may proceed in parallel. That does not mark any unfinished phase or Milestone 1 complete.
+- At least 300 collected documents across four source types remains an ambition. The submission reports the actual corpus size and its limitations.
+- The only automated collector to start is YouTube comments, into the existing `CollectedDocument` contract. Workbook import stays. Further collectors are deferred.
+- Chat synthesis, embeddings, composite opportunity scores, and architectural refactoring are deferred.
+- YouTube stays `documented, unexercised` until a bounded API call is separately authorized and then reported as exercised. A fixture-tested collector is not a verification claim.
+
+As of 2026-10-02, the three parallel tracks exist only to the extent below. None of them completes a numbered phase or Milestone 1.
+
+- `main.py collect --youtube` writes `CollectedDocument` rows through `commentThreads.list` and `comments.list`. Workbook import is unchanged. Tests mock the API. No live YouTube call has been made.
+- `main.py run --research-batch` reuses normalization, deduplication, relevance, and extraction for at most 20 documents outside the frozen development/holdout split. The dry-run against the collected files selected nothing, because every collected `doc_id` is inside that split. No research-batch model call has been made. The five-document pilot is not the batch runner.
+- `main.py browse` serves a local page over saved development outputs. It is not the Phase 10 application in Section 23, it does not read a public export, and it does not load holdout text. Automatic validity is shown as not semantic approval. No provisional problem group is proposed, because no extraction case is semantically approved.
+
+### 1.2 Owner-authorized single-reviewer method, 2026-10-04
+
+This is an individual project. The owner approved the reviewed annotation drafts
+and authorized **Sunayana as the sole human reviewer** (ADR-33). AI drafting and
+human review must both be disclosed. For this submission, independent second
+coding and adjudication are not required; they are **not performed**, rather
+than completed or passed. Raw agreement and Cohen's kappa remain unavailable.
+This amendment supersedes the internal double-coding requirements below for the
+individual submission. It does not change evidence validation, quality thresholds,
+document IDs or frozen split assignments, and does not complete M1.
+
+The original starter seating manifest and earlier drafts remain immutable. A new
+review manifest records the authorized single-reviewer procedure and preserves
+the original double-code flags for audit. Approved references retain AI-assistance
+provenance. Reviewer-directed scope exceptions, including the family-album core
+label without demonstrated incomplete recall, remain visible.
+
+### 1.3 M1 verification record, 2026-10-04
+
+The five checks in Section 28 are complete on the retained 35-document
+development-corpus run, verified offline in
+`data/exports/milestones/m1-2026-10-04/report.json` (ADR-34). The complete
+field-evidence count is 61, combining 24 inline and 37 external spans. All
+ten saved analysis cases pass the current record gate, and all 61 spans match
+successful retained source-validation verdicts. Fresh checks of 20 spans use
+only approved gold-development source packets; reserved holdout sources stay
+closed. The current full suite has 1087 passed and five skipped tests.
+
+This records completion against the existing M1 checklist; no threshold or
+evidence rule changed. Automatic field/span validity does not establish semantic
+correctness of model interpretations. Sunayana's ten approved reference
+documents and six reference cases are separate from the saved model cases.
+The Phase 6 quality gate remains pending; historical M1-incomplete statements
+describe earlier verification states, not the current milestone status.
+
+### 1.4 Final gold set, 2026-10-04
+
+The owner closed further gold labelling. There is no time for the internal
+75–100 document volume. The approved labels already stored as official gold
+are the final gold set: **35 documents and 21 cases** (10 development
+documents with 6 cases, and 25 holdout documents with 15 cases). ADR-37
+records that decision.
+
+Those labels are not edited to match model output, and no documents are added.
+The earlier 75–100 figure in Section 11.1, Phase 6, and Section 27 is that
+closed internal volume, not an open task. The set remains one reviewer's
+AI-assisted labels. Agreement stays unavailable. Holdout prior exposure and
+extraction coverage stay disclosed limits. Closing the volume does not approve
+model cases or lower a quality threshold.
 
 ---
 
@@ -271,13 +356,13 @@ Candidacy is not feasibility. Section 11.4 states, per source, which collection 
 ### 11.1 Initial sampling target
 
 - Manual pilot: 30–50 collected documents.
-- Gold evaluation set: 75–100 manually labeled documents, split into development and frozen holdout sets (Section 24, Phase 6).
-- Submission corpus: at least 300 collected public documents across at least four source types.
+- Gold evaluation set: the approved final set is 35 documents and 21 cases, split into development and frozen holdout (Section 1.4, ADR-37). The earlier internal volume of 75–100 documents is closed.
+- Internal ambition: at least 300 collected public documents across at least four source types. ADR-32 makes this an internal target, not the assignment's completion rule. The submission reports the actual count and its limitations.
 - Report the number of core, adjacent, contextual, excluded, duplicate, pending-review, and technically failed records separately.
 
-The project must never describe 300 collected documents as 300 relevant retrieval cases unless all 300 pass the relevance criteria.
+The project must never describe collected documents as relevant retrieval cases unless they pass the relevance criteria.
 
-**Document counts are targets; case counts are findings.** The corpus size is something the project controls and may therefore commit to. How many qualifying retrieval cases that corpus yields is a measurement, and it must never be treated as a target to hit. Section 28 states this as an operating rule.
+**Document counts are targets; case counts are findings.** A corpus-size ambition is something the project controls. How many qualifying retrieval cases that corpus yields is a measurement, and it must never be treated as a target to hit. Section 28 states this as an operating rule. The October 2026 demonstration uses the corpus that exists and says so.
 
 ### 11.2 Sampling balance
 
@@ -302,20 +387,20 @@ Every source carries a feasibility tier and, where a tier claims an automated me
 | Manual CSV / JSONL import | **Guaranteed baseline** | Analyst-collected rows via `collect/manual.py` | None. This is the path that always works. |
 | YouTube comments | **Supported automated** | YouTube Data API v3 (`commentThreads.list`, `comments.list`) | Primary docs linked in `DECISIONS.md`; quota is the volume limit, and video *discovery* is the binding constraint rather than comment reading |
 | Reddit posts and comments | **Optional, credential-dependent** | Official Reddit Data API, read-only, registered OAuth credentials | Primary docs linked; the source is skipped cleanly when credentials are absent |
-| Google Play Store reviews | **Experimental** | **Closed.** The only official API is gated by publisher ownership, so reviews of an app this project does not publish cannot be read at all | Never built. Manual import permanently, unless the vendor changes the API. See `DECISIONS.md` ADR-22. |
-| Apple App Store reviews | **Experimental** | **Closed** on the same publisher-ownership basis; the legacy customer-review RSS feed is undocumented, robots-disallowed, and returns zero reviews | Same. Manual import permanently, and the RSS feed must not be used. |
-| Google Photos Help Community / Google support forums | **Manual import by default** | No documented API. Thread and reply URLs are addressable and not robots-disallowed, but the terms of service bar scraping content belonging to other users | Automated collection requires a permission basis, not merely a working URL. Collected by hand until then. |
+| Google Play Store reviews | **Experimental; inspected routes blocked** | Official publisher access is unavailable to this project; inspected free libraries use the robots-disallowed Play web RPC | No qualifying route exercised. Reassess only with route-specific access evidence; see the 2026-10-01 ADR-22 amendment. |
+| Apple App Store reviews | **Experimental; inspected routes blocked** | Official publisher access is unavailable; inspected RSS routes are robots-disallowed. Current feed contents were not probed | Historical empty responses do not prove permanent closure. No qualifying route exercised; see the source audit. |
+| Google Photos Help Community / Google support forums | **Access requirements unresolved** | Supplied thread URLs are not robots-disallowed; native search/internal API paths are. No documented public collection API was established | Resolve collection permission separately from URL addressability and discovery. No current thread probe or automated adapter is verified. |
 | Other public forums, social posts | **Experimental** | Case by case | Per-source documentation required before any automated collection |
 
 Rules that follow from this table:
 
-1. **Manual import is the guaranteed baseline, not the fallback of last resort.** The corpus target in Section 11.1 must be achievable through manual import alone. Every automated collector is an accelerator, and losing one changes the schedule, not the deliverable.
+1. **Manual import is the guaranteed baseline, not the fallback of last resort.** The internal corpus ambition in Section 11.1 must remain achievable through manual import alone. Every automated collector is an accelerator, and losing one changes the schedule, not the deliverable. ADR-32 starts only the YouTube accelerator.
 2. **"Experimental" must never be labelled low risk.** A source with no documented permitted mechanism is the highest-risk kind of source, regardless of how easy an unofficial library makes it look. Availability is not permission.
 3. **No source mechanism may be described as verified without a link to the primary vendor documentation in `DECISIONS.md`.** "Verified against current documentation" with no citation is an unverifiable claim, and this specification treats it as no claim at all.
 4. **Documented does not mean exercised.** A source whose documentation is linked but whose access has not yet been run in this repository is recorded as `documented, unexercised`. The distinction is stated in the ADR and carried into the Phase 7 report.
 5. A blocked or restricted source degrades to manual import and records the reason. It is never worked around.
-6. **An ownership-gated API is closed, not expensive.** Where a vendor's only official mechanism authenticates the *publisher* of the content rather than a consumer of it — as both app-store review APIs do — no quota increase, paid tier, or access request can open it. Such a source must be recorded as closed and planned around, never left on a backlog as though effort would eventually resolve it. This is an architectural constraint, not a cost or throughput problem.
-7. **`robots.txt` permission is not terms permission.** The two are independent, and a source is permitted only when both allow it. A path that `robots.txt` does not disallow may still be barred by a terms-of-service clause against scraping content belonging to other users, which is the case for Google's support forums. Conversely, a permissive terms document does not license a robots-disallowed path. Whenever the two disagree, the stricter one governs and the disagreement is recorded in `DECISIONS.md`.
+6. **Assess routes, not permanent source closure.** Publisher APIs require authorized publisher access; a public app listing does not confer it. Alternative routes need their own endpoint, permission, robots, provenance, and reliability checks. Library availability does not establish access. The [2026-10-01 source audit](SOURCE-COLLECTION-AUDIT-2026-10-01.md) records the current blocked and unresolved routes; it does not enable collection.
+7. **An undisallowed robots path is not a terms permission grant.** These checks are independent. Evaluate the applicable terms in context, record unresolved permission honestly, and do not fetch a robots-disallowed route. Supplied community thread URLs and automated discovery must be evaluated separately. See the ADR-22 amendment for the correction to the earlier blanket Google terms interpretation.
 
 ---
 
@@ -1548,7 +1633,9 @@ The final Streamlit application should provide:
 
 ### 23.5.1 Evidence browser and the public profile
 
-The evidence browser renders the excerpt from the public export profile (Section 12.1), with spans highlighted from stored excerpt-relative offsets. It must not re-search for the quote at render time, because that would be a second, unvalidated matching implementation. Where the excerpt is a subset of the document, the surface says so and links to the original.
+The Phase 10 evidence browser renders the excerpt from the public export profile (Section 12.1), with spans highlighted from stored excerpt-relative offsets. It must not re-search for the quote at render time, because that would be a second, unvalidated matching implementation. Where the excerpt is a subset of the document, the surface says so and links to the original.
+
+The local page at `main.py browse` is not that surface. It reads saved development JSONL, shows a redacted audit excerpt, and highlights stored document offsets. It does not write `data/exports/`, does not load holdout text, and does not satisfy this section.
 
 ### 23.7 Quality report
 
@@ -1572,7 +1659,7 @@ The first six deterministic views must load without an external API key. Only op
 
 ## 24. Phased Build Plan and Acceptance Criteria
 
-Cursor must implement one phase at a time.
+Cursor must implement one phase at a time, except for the three parallel tracks authorized in Section 1.1 and ADR-32: YouTube collection into `CollectedDocument`, extraction review, and a basic evidence browser.
 
 ### 24.0 MVP versus stretch scope
 
@@ -1610,6 +1697,8 @@ Part 1 has a defensible core and a set of genuinely optional extensions. Separat
 | Embeddings or semantic retrieval | Section 22.1 explicitly requires an auditable lexical baseline first |
 
 A stretch item may never be started while an MVP item is unfinished, and a stretch item may never become a dependency of an MVP item. If the schedule compresses, stretch items are cut — the MVP scope is not reduced.
+
+ADR-32 amends that sequencing rule for the October 2026 demonstration only. YouTube collection, extraction review, and a basic local evidence browser may proceed while gold evaluation, taxonomy, the quality report, public export, and deployment are unfinished. Those unfinished items stay unfinished. The deferred items in Section 1.1 are not started. The basic browser does not complete Phases 10 or 11. The commands that exist for those tracks, and the limits on what they have done, are in Section 1.1.
 
 ### Phase 0 — project scaffold
 
@@ -1776,7 +1865,7 @@ Build:
 
 Research task:
 
-- Manually label 75–100 documents at the document level.
+- The final document-level gold set is the 35 approved labels (Section 1.4, ADR-37). Do not add documents to reach the former 75–100 volume.
 - For each relevant document, label **zero, one, or several** gold cases. Zero is a valid and expected label: a document can be relevant at the document level and still yield no extractable case, and a gold set that cannot express this cannot measure over-extraction.
 - Include both relevant and excluded examples.
 - Include multiple sources and difficult boundary cases.
@@ -1838,7 +1927,9 @@ Acceptance criteria:
 - Manual import remains available and tested as the guaranteed path, not merely as a fallback.
 - No collector is described as verified without primary documentation linked in `DECISIONS.md`, and a documented-but-unexercised mechanism is reported as such.
 - The full funnel is recorded by source.
-- At least 300 collected documents are processed across at least four source types. Manual import counts toward this target.
+- The run reports actual document counts by source. The internal ambition of 300 documents across four source types is not a completion rule (Section 1.1, ADR-32). Manual import counts toward whatever corpus is actually processed.
+
+`src/collect/youtube.py` implements the YouTube row. On 2026-10-04 it was exercised: 40 comment-read requests, 266 new documents. The deduped corpus is 318 documents across five platforms, with YouTube above the 40% concentration line. Reddit's live client exists and skips when credentials are absent. The owner directed the project to skip Reddit on 2026-10-04 because self-service API keys are no longer issued; no access request will be filed, no Reddit request has been made, and Reddit stays `documented, unexercised`. The recorded funnel is the collection import. Relevance and extraction were not run on this corpus.
 
 ### Phase 8 — taxonomy and analysis
 
@@ -1880,7 +1971,7 @@ Acceptance criteria:
 
 ### Phase 10 — Streamlit application
 
-Build the surfaces in Section 23, plus the public-export profile in Section 12.1 that they read from.
+Build the surfaces in Section 23, plus the public-export profile in Section 12.1 that they read from. `main.py browse` is the local demonstration page from Section 1.1. It does not meet the criteria below.
 
 Acceptance criteria:
 
@@ -2214,13 +2305,13 @@ These live in `config/analysis.yaml` and are reported in the manifest:
 Part 1 is complete only when:
 
 - [ ] Every MVP capability in Section 24.0 is built and verified. Stretch items are explicitly marked as included or dropped.
-- [ ] At least 300 collected public documents have been processed across at least four source types.
+- [ ] Actual corpus size, source mix, and limitations are reported. The internal ambition of 300 documents across four source types (Section 11.1, ADR-32) is not an assignment completion rule and is not claimed unless the count is real.
 - [ ] Per-stage funnel counts are reported from stage events, with duplicate, contextual, core, adjacent, excluded, pending-review, technically failed, reviewed, and included counts separate.
 - [ ] Every processed record validates against the schema.
 - [ ] Every evidence quote is verified against raw text.
 - [ ] Every evidence-required field has field-level evidence or a permitting observation status.
 - [ ] Direct-user and contextual sources are separated.
-- [ ] A 75–100 document gold set has been manually labeled, with document-level and case-level labels separated and development and holdout splits defined.
+- [x] The final gold set is the 35 approved documents and 21 cases, with document-level and case-level labels separated and development and holdout splits defined (Section 1.4, ADR-37). The former 75–100 volume is closed.
 - [ ] Prefilter recall ≥ 0.90, end-to-end relevance precision ≥ 0.85, and end-to-end relevance recall ≥ 0.80 on the holdout split.
 - [ ] Scalar accuracy, multi-label precision/recall/F1, unsupported inference rate, and evidence validation are reported.
 - [ ] Inter-reviewer agreement is reported before adjudication.

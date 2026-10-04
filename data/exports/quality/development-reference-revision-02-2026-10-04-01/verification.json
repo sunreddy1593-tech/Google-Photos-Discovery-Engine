@@ -1,0 +1,28 @@
+{
+  "cat_severity": 3,
+  "mismatches": [],
+  "latest_full_suite": "1100 passed, 5 skipped (prior verified run)",
+  "saved_model_case_coverage": {
+    "accepted_model_cases": 2,
+    "field_metrics_basis": "matched cases only; unmatched gold cases and technical failures are not silently scored as field matches",
+    "gold_case_coverage": 0.3333333333333333,
+    "gold_cases": 6,
+    "matched_cases": 2,
+    "unmatched_gold_cases": 4,
+    "unmatched_model_cases": 0
+  },
+  "production_code_changed": false,
+  "development_frozen": false,
+  "provider_calls": 0,
+  "protected_input_files": 166,
+  "cat_impact": "not_stated/empty",
+  "revised_reviews_valid": 10,
+  "approved_review_records": 6,
+  "unchanged_source_packets": 10,
+  "final_quality_gate": "pending",
+  "unchanged_other_review_files": 9,
+  "holdout_source_text_loaded": false,
+  "reference_cases": 6,
+  "new_evaluation_input_hashes": 26,
+  "exact_reference_quote_attachments": 38
+}

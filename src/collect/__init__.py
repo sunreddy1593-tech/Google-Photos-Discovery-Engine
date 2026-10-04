@@ -1,9 +1,7 @@
-"""Manual collection, the guaranteed baseline path (spec Section 11.4).
+"""Collection into ``CollectedDocument`` records.
 
-The workbook importer lives here. CSV/JSONL import, the SQLite store, and
-stage-event emission are the rest of Phase 2 and are not imported by this
-package, so a workbook can become a ``CollectedDocument`` with no Phase 3
-module present.
+Workbook import is the guaranteed baseline. YouTube comment collection is a
+separate read-only path in ``youtube.py`` and does not classify or extract.
 """
 
 from src.collect.workbook import import_workbook

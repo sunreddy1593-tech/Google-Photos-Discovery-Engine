@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from src.core.ids import raw_text_sha256, source_url_key
 from src.models.enums import (
     DecisionTechnicalState,
@@ -111,6 +113,28 @@ def test_no_signal_is_retained_for_recall() -> None:
     result = prefilter_document("doc-1", "hello from the park.")
     assert result.reason_labels == (LABEL_RETAINED,)
     assert result.passed is True
+
+
+def test_v6_candidate_is_renderable_and_does_not_replace_relevance_v5() -> None:
+    from src.core.versions import PROMPT_VERSIONS, RELEVANCE_PROMPT_CANDIDATE, prompt_version
+
+    audit = "Lost my oldest photos"
+    current = render_relevance_prompt(doc_id="doc-v5", raw_text_audit=audit)
+    candidate = render_relevance_prompt(
+        doc_id="doc-v5", raw_text_audit=audit, version=RELEVANCE_PROMPT_CANDIDATE
+    )
+    assert prompt_version("relevance") == "relevance/v5"
+    assert RELEVANCE_PROMPT_CANDIDATE == "relevance/v6"
+    assert "relevance/v6" not in PROMPT_VERSIONS.values()
+    assert "Prompt relevance/v5." in current
+    assert "Unmeasured relevance/v6" not in current
+    assert "Prompt relevance/v6." in candidate
+    assert "one continuous verbatim span" in candidate
+    assert "insufficient_evidence_for_a_case" in candidate
+    assert "oldest is not a forgotten date" in candidate
+    assert current.split("JSON schema:\n", 1)[1] == candidate.split("JSON schema:\n", 1)[1]
+    with pytest.raises(ValueError, match="unsupported relevance prompt"):
+        render_relevance_prompt(doc_id="doc-v5", raw_text_audit=audit, version="relevance/v99")
 
 
 def test_prompt_quotes_the_audit_text_and_does_not_ask_for_is_relevant() -> None:

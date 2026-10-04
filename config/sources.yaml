@@ -1,8 +1,9 @@
 # Source configuration. Tiers are from problem-statement.md Section 11.4 and were
 # verified against live vendor documentation on 2026-09-21 (DECISIONS.md ADR-22).
 #
-# `enabled: false` everywhere at Phase 0: no collector exists yet. Phase 2 enables
-# manual import; Phase 7 enables youtube and, if credentials are present, reddit.
+# `enabled: false` does not start collection. Workbook import is `collect --path`.
+# YouTube collection is `collect --youtube`; `youtube.enabled` stays false until a
+# live call is separately authorized.
 
 recency_months: 12
 languages:
@@ -18,7 +19,7 @@ sources:
       reachable through manual import alone; every collector is an accelerator.
 
   youtube:
-    enabled: false          # Phase 7
+    enabled: false          # Live collection ran 2026-10-04. This flag does not start another call.
     tier: supported_automated
     collection_method: youtube_data_api_v3
     queries:
@@ -34,7 +35,7 @@ sources:
       Reply trees are one level deep.
 
   reddit:
-    enabled: false          # Phase 7, and only when credentials are present
+    enabled: false          # Skipped 2026-10-04: self-service keys are not issued; do not request access.
     tier: optional_credential_dependent
     collection_method: reddit_data_api
     queries:
@@ -43,7 +44,8 @@ sources:
     rate_limit_per_minute: 100
     notes: >
       Registered OAuth credentials are required even for read-only access.
-      Free tier is non-commercial only. Skips cleanly when credentials are absent.
+      Self-service key creation is closed. This project will not request access.
+      The collector skips cleanly when credentials are absent.
 
   google_support:
     enabled: false          # never automated; manual import only

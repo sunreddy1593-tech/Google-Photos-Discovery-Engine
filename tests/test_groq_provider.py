@@ -288,8 +288,8 @@ def test_groq_prompt_matches_response_schema_and_leaves_old_cache(monkeypatch, t
     assert "are optional" not in prompt
     assert "human_scope_class" not in prompt
     assert "human_notes" not in prompt
-    assert prompt_version("relevance") == "relevance/v4"
-    assert "Prompt relevance/v4." in prompt
+    assert prompt_version("relevance") == "relevance/v5"
+    assert "Prompt relevance/v5." in prompt
 
     captured: dict[str, object] = {}
 
@@ -338,6 +338,10 @@ def test_groq_prompt_matches_response_schema_and_leaves_old_cache(monkeypatch, t
         prompt_version="relevance/v4",
         **shared,
     )
+    assert cache_key(prompt_version="relevance/v4", **shared) != cache_key(
+        prompt_version="relevance/v5",
+        **shared,
+    )
     lock = build_prompt_lock(
         provider="groq",
         model="openai/gpt-oss-120b",
@@ -358,6 +362,119 @@ def test_groq_prompt_matches_response_schema_and_leaves_old_cache(monkeypatch, t
             temperature=0.0,
             max_tokens=32,
             transmitted_schema_sha256=transmitted_schema_sha256(wire),
+        )
+
+
+def test_relevance_v5_rules_change_identity_without_labels(monkeypatch, tmp_path: Path) -> None:
+    from src.relevance.lock import build_prompt_lock, write_prompt_lock
+
+    audit = "I searched for the edited photos and the search returned nothing."
+    wire = groq_request_schema(relevance_json_schema(), doc_id="doc-v5")
+    prompt = render_relevance_prompt(doc_id="doc-v5", raw_text_audit=audit, schema=wire)
+    assert prompt_version("relevance") == "relevance/v5"
+    assert "Prompt relevance/v5." in prompt
+    for phrase in (
+        "An unsuccessful formulated search does not, by itself, show that inability.",
+        "A filename is not required.",
+        "previously surfaced Memories",
+        "An approximate date range is not, by itself, a forgotten date",
+        "Organization advice or a feature request can address a real retrieval problem",
+        "They do not establish deletion, corruption, backup failure, or incomplete memory.",
+        "the selected text must support the scope and reason",
+        "Use reason_summary to explain the whole-document basis",
+    ):
+        assert phrase in prompt
+    for forbidden in (
+        "human_notes",
+        "human_scope_class",
+        "human_reason_code",
+        "Camaro",
+        "google_support-d7f386f347b7",
+        "google_support-e1e5277da7e8",
+    ):
+        assert forbidden not in prompt
+    embedded = json.loads(prompt.split("JSON schema:\n", 1)[1].split("\n\nUSER_POST\n", 1)[0])
+    assert embedded == wire
+    assert embedded["properties"]["doc_id"]["enum"] == ["doc-v5"]
+
+    captured: dict[str, object] = {}
+
+    def create(**kwargs):
+        captured["kwargs"] = kwargs
+        return _completion("{}")
+
+    monkeypatch.setitem(sys.modules, "groq", _groq_module(create))
+    GroqProvider(SECRET).complete_structured(
+        prompt,
+        wire,
+        CompletionParams(
+            model="openai/gpt-oss-120b",
+            temperature=0.0,
+            max_tokens=32,
+            timeout_seconds=5,
+        ),
+    )
+    kwargs = captured["kwargs"]
+    assert isinstance(kwargs, dict)
+    request_text = json.dumps(kwargs)
+    assert kwargs["response_format"]["json_schema"]["schema"] == embedded
+    assert SECRET not in request_text
+    assert "human_notes" not in request_text
+    assert "human_scope_class" not in request_text
+    assert "human_reason_code" not in request_text
+
+    shared = dict(
+        provider="groq",
+        model="openai/gpt-oss-120b",
+        prompt_id="relevance",
+        schema_version=SCHEMA_VERSION,
+        content_hash_value="abc",
+        ruleset_version=RULESET_VERSION,
+        decoding_params=cache_decoding_params(temperature=0.0, max_tokens=32, schema=wire),
+    )
+    assert cache_key(prompt_version="relevance/v4", **shared) != cache_key(
+        prompt_version="relevance/v5",
+        **shared,
+    )
+    digest = transmitted_schema_sha256(relevance_json_schema())
+    lock = build_prompt_lock(
+        provider="groq",
+        model="openai/gpt-oss-120b",
+        temperature=0.0,
+        max_tokens=32,
+        transmitted_schema_sha256=digest,
+    )
+    assert lock["prompt_version"] == "relevance/v5"
+    assert "doc-v5" not in json.dumps(lock)
+    stale = dict(lock)
+    stale["prompt_version"] = "relevance/v4"
+    path = tmp_path / "v4-lock.json"
+    write_prompt_lock(path, stale)
+    with pytest.raises(HoldoutLocked, match="prompt id and version"):
+        authorize_live_classification(
+            split_name="holdout",
+            holdout_unlocked=True,
+            lock_path=path,
+            provider="groq",
+            model="openai/gpt-oss-120b",
+            temperature=0.0,
+            max_tokens=32,
+            transmitted_schema_sha256=digest,
+        )
+    mismatched = dict(lock)
+    mismatched["prompt_hash"] = "0" * 64
+    hash_path = tmp_path / "stale-hash-lock.json"
+    write_prompt_lock(hash_path, mismatched)
+    with pytest.raises(HoldoutLocked, match="prompt hash"):
+        authorize_live_classification(
+            split_name="holdout",
+            holdout_unlocked=True,
+            lock_path=hash_path,
+            provider="groq",
+            model="openai/gpt-oss-120b",
+            temperature=0.0,
+            max_tokens=32,
+            transmitted_schema_sha256=digest,
         )
 
 
@@ -494,7 +611,7 @@ def test_document_id_enum_is_per_request_and_a_wrong_id_still_fails(monkeypatch)
         transmitted_schema_sha256=template,
     )
     assert first_id not in json.dumps(lock)
-    assert lock["prompt_version"] == "relevance/v4"
+    assert lock["prompt_version"] == "relevance/v5"
 
 
 def test_groq_holdout_lock_records_the_transmitted_schema(tmp_path: Path) -> None:

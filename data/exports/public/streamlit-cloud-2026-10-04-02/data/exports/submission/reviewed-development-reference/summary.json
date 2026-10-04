@@ -1,0 +1,20 @@
+{
+  "dataset_id": "reviewed-development-reference",
+  "description": "Ten reviewed development documents and six human-approved reference cases. Model predictions are not included; separate quality aggregates retain actual measured coverage.",
+  "documents": 10,
+  "reference_cases": 6,
+  "stored_cases": 0,
+  "automatically_valid_cases": 0,
+  "semantically_approved_cases": 0,
+  "analysis_documents": 10,
+  "extraction_attempts": 0,
+  "failed_attempts": 0,
+  "empty_responses": 0,
+  "unresolved_review_items": 0,
+  "limitations": [
+    "Six reviewed development reference cases; not model extraction recovery or population prevalence.",
+    "AI-assisted drafting and sole-human review; no independent second coder.",
+    "Scope exceptions remain disclosed; the family-album core label is an owner-directed exception.",
+    "Evidence fragments are not additional cases. Null/unstated fields are not filled by inference."
+  ]
+}

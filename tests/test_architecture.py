@@ -220,25 +220,30 @@ def test_phase_1_packages_exist() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# Phase scope — nothing from a later phase exists yet
+# Implemented packages — saved analysis cannot invoke upstream stages
 # --------------------------------------------------------------------------- #
 
 
-def test_phase4_packages_exist_and_later_phases_do_not() -> None:
-    """Phase 4 adds relevance and llm. Later packages stay absent.
+def test_implemented_packages_exist_and_saved_analysis_is_isolated() -> None:
+    """Package presence is implementation, not completion of a research phase.
 
-    ``src/relevance`` is the classifier. ``src/models/relevance.py`` is the
-    contract. Extraction prompts, taxonomy, analysis, retrieval, and the store
-    are still later work.
+    Taxonomy, analysis and lexical retrieval now exist. Their functions consume
+    saved records without importing collection, pipeline or model stages.
     """
     for name in ("relevance", "llm", "normalize", "dedupe", "review", "pipeline"):
         assert (SRC / name).is_dir(), name
-    premature = [
-        name
-        for name in ("taxonomy", "analyze", "retrieve", "store")
-        if (SRC / name).exists()
-    ]
-    assert not premature, f"these belong to later phases: {premature}"
+    offenders = []
+    for name in ("taxonomy", "analyze", "retrieve"):
+        files = _python_files(SRC / name)
+        assert files, f"expected implemented package src/{name}"
+        allowed = ("src.core", "src.models", f"src.{name}")
+        offenders.extend(
+            f"{_module_label(path)} imports {module}"
+            for path in files
+            for module in _imported_modules(path)
+            if _is_internal(module) and not module.startswith(allowed)
+        )
+    assert not offenders, "saved-analysis import boundary:\n" + "\n".join(offenders)
 
 
 def test_collect_imports_only_core_models_and_itself() -> None:
@@ -282,6 +287,7 @@ def test_phase3_stages_do_not_import_each_other() -> None:
             "src.relevance",
             "src.llm",
             "src.extract",
+            "src.gold",
         ),
     }
     offenders = [
@@ -314,16 +320,72 @@ def test_phase4_modules_do_not_import_each_others_stages() -> None:
     assert not offenders, "phase 4 import boundary:\n" + "\n".join(offenders)
 
 
-def test_extract_holds_only_the_validator_so_far() -> None:
-    """``prompts.py`` and ``extractor.py`` are Phase 5: the gate is built before
-    the thing it gates, so validation cannot be relaxed to let output through."""
+def test_extract_contains_only_the_offline_foundation_so_far() -> None:
+    """The Phase 5 foundation reuses the pre-existing gate; no provider runner."""
     present = {p.name for p in _python_files(SRC / "extract")}
-    assert present == {"__init__.py", "validator.py"}, sorted(present)
+    assert present == {"__init__.py", "validator.py", "schema.py", "prompts.py", "extractor.py"}, sorted(present)
 
 
-def test_no_streamlit_app_exists_yet() -> None:
-    """``app.py`` is Phase 10."""
-    assert not (PROJECT_ROOT / "app.py").exists()
+def test_submission_app_reads_prepared_exports_only() -> None:
+    """The submission app exists and cannot open research artifacts or credentials.
+
+    Phase 10 is still unfinished. This guard replaces the earlier assertion that
+    ``app.py`` was absent. The local browser remains ``main.py browse``.
+    """
+    app = PROJECT_ROOT / "app.py"
+    assert app.is_file()
+    source = app.read_text(encoding="utf-8")
+    for banned in (
+        "data/raw",
+        "data/interim",
+        "data/processed",
+        "data/manual",
+        "os.environ",
+        "os.getenv",
+        "holdout-unlock",
+        "dotenv",
+    ):
+        assert banned not in source
+    modules = _imported_modules(app)
+    banned_prefixes = (
+        "src.collect",
+        "src.extract",
+        "src.llm",
+        "src.relevance",
+        "src.pipeline",
+        "src.export.build",
+        "groq",
+        "anthropic",
+        "dotenv",
+        "googleapiclient",
+    )
+    leaked = [
+        module
+        for module in modules
+        if module.split(".")[0] in {"groq", "anthropic", "dotenv", "googleapiclient"}
+        or any(module.startswith(prefix) for prefix in banned_prefixes)
+    ]
+    assert not leaked, leaked
+    assert "src.export.load" in modules
+    loader = (SRC / "export" / "load.py").read_text(encoding="utf-8")
+    for banned in ("data/raw", "data/interim", "data/processed", "data/manual", "os.environ"):
+        assert banned not in loader
+
+
+def test_browse_reads_saved_outputs_without_pipeline_stages() -> None:
+    """The local browser does not import collection, extraction, or a provider."""
+    banned = ("src.collect", "src.extract", "src.llm", "src.relevance", "streamlit")
+    offenders = [
+        f"{_module_label(path)} imports {module}"
+        for path in _python_files(SRC / "browse")
+        for module in _imported_modules(path)
+        if module.split(".")[0] in {"streamlit"} or any(module.startswith(name) for name in banned)
+    ]
+    assert not offenders, "\n".join(offenders)
+    for path in _python_files(SRC / "browse"):
+        source = path.read_text(encoding="utf-8")
+        assert "data/raw" not in source
+        assert "os.environ" not in source
 
 
 def test_prototype_is_outside_the_package_boundary() -> None:

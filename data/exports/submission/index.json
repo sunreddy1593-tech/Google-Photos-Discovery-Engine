@@ -1,0 +1,39 @@
+{
+  "submission_id": "submission-2026-10-03",
+  "datasets": [
+    {
+      "dataset_id": "development-pilot",
+      "description": "Manual pilot documents in the development split. The extraction run is the five-document 8192-token pilot.",
+      "run_id": "024f9b18b60f",
+      "split_policy": "development_only",
+      "limitations": [
+        "35 development documents come from one manual import. 15 evaluation-split documents in that same file are counted and their text is not exported.",
+        "Extraction ran on 5 development seats, not on every development document.",
+        "Saved run timestamps use a fixed date and are not treated as the wall-clock time of the live call."
+      ]
+    },
+    {
+      "dataset_id": "youtube-discussion-2026-10-03",
+      "description": "Partial YouTube comment sample from the 2026-10-03 research batch. It is outside the frozen split.",
+      "run_id": "ae60feaa840d",
+      "split_policy": "outside_frozen_split",
+      "limitations": [
+        "20 comments from one video. Collection stopped during Dottotech's video. Howfinity's video was not started.",
+        "One thread with five replies was fetched to completion. The video-level report stays incomplete.",
+        "This sample is not added to the 35-document pilot and does not change the frozen split.",
+        "Nineteen relevance decisions are out of scope and one is adjacent. That adjacent classification is not an approved known-item episode. Its extraction attempt failed and saved no case.",
+        "Saved decision timestamps are not the 3 October wall-clock time."
+      ]
+    }
+  ],
+  "not_combined": [
+    "The 50-row, 22-row, and 35-row pilot imports overlap. This export reads the 50-row import once and keeps the development split only.",
+    "The 2026-10-02 YouTube collection saved one comment from two videos and is not merged into the 20-comment batch."
+  ],
+  "semantic_risks": [
+    "retrieval_trigger must be the stated reason the item was needed, not the search method",
+    "impact and severity need a quote that states that impact or severity",
+    "problem_summary evidence must support every factual clause",
+    "quotes must be one continuous span; invented, abbreviated, or spliced text is invalid"
+  ]
+}

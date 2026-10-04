@@ -1,0 +1,20 @@
+{
+  "freeze_and_approval_integrity": "passed",
+  "completed_measurement_artifacts_verified": 21,
+  "prior_data_files_verified": 660,
+  "original_empty_gold_backups_verified": true,
+  "full_suite": {
+    "passed": 1131,
+    "skipped": 5
+  },
+  "focused_app_quality_saved_run_tests": {
+    "passed": 31
+  },
+  "git_diff_check_exit_code": 0,
+  "git_diff_check_warnings": "CRLF conversion warnings only",
+  "git_status_checked": true,
+  "committed": false,
+  "pushed": false,
+  "deployed": false,
+  "additional_provider_calls_during_final_checks": 0
+}

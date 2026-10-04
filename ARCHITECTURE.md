@@ -1,8 +1,159 @@
 # Architecture — Google Photos Remembered-Item Retrieval Discovery Engine
 
+Phase 7 collection, 2026-10-04: `src/collect/youtube.py` was exercised with 40
+`commentThreads.list` / `comments.list` requests and wrote 266 new documents.
+The deduped corpus is 318 documents: YouTube 272, Google support 21, Reddit 17,
+Play Store 5, and App Store 3. YouTube is 272/318, above the 40% concentration
+line. That imbalance is recorded in
+`data/processed/phase7-corpus-2026-10-04/funnel_by_source.json`. Play and App
+Store rows are the existing manual imports. No store or support-forum collector
+was added, and `search.list` was not called. Reddit stays permitted, documented,
+and unexercised: the owner directed the project not to request access after
+self-service API keys stopped being issued. The 17 Reddit rows are manual
+imports. `youtube.enabled` stays false. Relevance and extraction were not run
+on this corpus.
+
+Corrected n8n node exercised, 2026-10-04: after owner publication, one reserved
+POST to the dedicated collection route returned execution 15, one exact original
+post and no failures. The workflow attests one page fetch and zero model calls;
+the existing importer persists one CollectedDocument with hashed author and
+source/date provenance. Replies remain unfetched. This is the live result of
+the parser correction below. Historical failure 14 and
+all earlier records are preserved. No model stage or evaluation is invoked.
+Scope and artifacts: `docs/n8n-parser-v2-live-check-2026-10-04-01.md`.
+
+n8n parser correction, 2026-10-04: the existing Extract original post Code node
+now has paste-ready replacement code in `n8n/extract-original-post-v2.js`, which
+the existing workflow builder also reuses. It preserves static QAPage support
+and safely decodes the public thread_view JSON literal when that markup is
+absent. Verified thread/canonical IDs bind the plain original-post field;
+unknown shapes and HTML bodies fail closed, and replies are not traversed.
+No page script executes. Offline replay of the owner's execution-14 fetch
+recovers the exact 489-character original and passes existing importer dry
+validation, with no requests or collection records. The owner then published
+that node; the live result is the execution-15 check above. Historical
+workflow exports and the first live failure remain unchanged. Details and
+metadata mapping: `docs/n8n-parser-fix-2026-10-04-01.md`.
+
+Submission integration, 2026-10-04 (ADR-36): `src/collect/community.py` maps a
+strict collection-only envelope into existing CollectedDocument contracts,
+identifiers, author hashing and append-only records. `main.py collect` selects
+this adapter separately from workbook/YouTube collection. The n8n variant is
+inactive, bounded to direct thread URLs and plain structured original-post text;
+the old tagging endpoint is refused. No model stage runs during collection.
+Existing research-batch normalization, privacy, dedupe and bounded stage routes
+remain the integration path; frozen evaluation membership is excluded.
+
+`src/export/reference.py` validates already-approved development label values
+and offsets and emits minimum PublicExportRecord fragments linked by reference
+case ID. Runtime comparisons operate on that export, not raw/gold/holdout files.
+`scripts/prepare_submission_demo.py` packages an explicit file allowlist for
+Cloud, with only public excerpts and aggregate results. The public app contains
+no provider or collection gateway and requires no secret. Human reference
+assignments remain distinct from automatically valid model cases. This adds
+views and adapters to existing contracts, not another processing framework.
+
+The quality runner accepts explicit extraction and relevance candidates.
+Ordinary holdout refuses those candidates before output or calls. A successor
+holdout is allowed only when both `extract/v4` and `relevance/v6` are requested,
+and it writes `successor_claim.json` inside the new output. It does not write
+the consumed freeze claim. Scoped versions participate in prompts, fingerprints,
+cache keys, and manifests. Active pins remain `relevance/v5` and `extract/v2`;
+the candidates are not registered in `PROMPT_VERSIONS`. The paired development
+run `d7581cf180be` recovered 4 of 6 reference cases at precision 0.8571. The
+separate holdout successor recovered 7 of 15 and does not replace the frozen
+v3 measurement of 5 of 15. Sunayana's approval of the older-photo and
+sleeping-video cases is recorded for that development run. The other model
+cases stay unapproved. The public overview counts those two approvals only on
+dataset `development-quality-v6`.
+
+Frozen quality route, 2026-10-04: `src/pipeline/quality.py` orchestrates the
+existing Phase 4 stages and extraction for the original 10 gold-dev or 25
+reserved gold-holdout seats. Pipeline orchestration may import `src.gold`;
+stages and contracts retain their existing boundaries. A run-scoped extraction
+version changes request/cache/fingerprint/manifest identities without changing
+the legacy extract/v2 registry or weakening its special pilot cache guard.
+Relevance/v5, corrected extraction schema, Groq/model, token limits, decoding,
+source/label/code hashes and seating are frozen before the consumed holdout
+measurement. The later successor uses the unregistered candidates and does not
+change that freeze.
+Credentials are loaded only through Settings. SDK retries remain disabled;
+each stage reserves one first attempt per seat and has a separate finite budget.
+
+The holdout adapter requires complete seating, source packets matching the
+actual audit text, a hash-bound human approval receipt, an exclusive pre-call
+measurement claim and unchanged completed artifacts. Scoring creates its own
+exclusive claim and never a holdout error-analysis CSV. Development-only
+annotation/evaluation guards remain intact for ordinary callers. Absolute
+paths are currently required for the saved holdout evaluator's inputs.
+
+Official gold publication preserves the original empty files and copies
+approved reference bytes unchanged. CURRENT.json pointers distinguish current
+measured reports from retained historical pending reports. The app reads only
+the public aggregate quality pointer for its status display; it does not load
+holdout source text, provider payloads or gold records. Numeric thresholds,
+case coverage, technical failures, source exposure, AI-assisted single-human
+labeling and semantic approval remain separate. Rejected records are not
+called schema/span successes; accepted-record rates disclose their denominator.
+See `docs/quality-verification-2026-10-04.md` for measured counts and commands.
+
+Development evaluation integration, 2026-10-04: `src/gold/saved_run.py` adapts
+saved model relevance, extraction cases, recorded prefilter routes and extraction
+events for the existing `evaluate_gold` implementation. It reuses production
+contracts and `validate_record`'s full evidence union. Exact-source checks use
+only selected, approved gold-dev packets; the adapter refuses non-dev seats
+before opening a packet. No collection file, provider or cache mutation is needed.
+The four optional `scripts/evaluate.py` saved-input flags must be supplied
+together with `--split dev`, and output must be fresh. Prediction absence remains
+pending; omissions, technical failures, accepted-empty outputs and matched-case
+field metrics are reported separately. Accepted relevance evidence participates
+in the span gate. Structured gold multi-label entries compare by enum value;
+missing expected labels affect recall rather than unsupported-prediction counts.
+No reference summary value means semantic summary support stays unassessed.
+Reports identify `gold-evaluation/v2`, source/code hashes, method limitations
+and `quality_gate_status: development_only`. That ten-document diagnostic meets
+five numeric thresholds but matches only 2/6 reference cases. It left holdout
+locked. The later quality-route measurement is the current development result:
+4 of 6 at precision 0.8571, with two owner-approved model cases. Official gold
+and the consumed holdout report stay unchanged. Full suite at this diagnostic:
+1100 passed, 5 skipped. See
+`data/exports/quality/development-approved-2026-10-04-03/DEVELOPMENT-EVALUATION.md`
+and `data/exports/quality/CURRENT.json`.
+
+M1 verification update, 2026-10-04 (ADR-34): the five Section 28 pipeline
+checks are complete on saved development run `3dc346ec030a`. The new offline
+audit reuses current model/record gates and retained source-validation verdicts.
+Development-corpus reporting now derives its complete field-evidence union via
+`validate_record`, combining inline evidence with external scalar-field rows;
+61 spans belong to the ten accepted cases. The serialized `all_evidence_spans`
+property alone contains only 24 inline spans and is not the store-wide union.
+Original run reports and attempt ledgers remain immutable. Fresh source checks
+use only approved gold-dev packets; reserved holdout sources remain closed.
+`scripts/audit_m1.py` writes a fresh verification report, makes no provider call
+and refuses occupied output. Full suite: 1087 passed, 5 skipped. This closes M1,
+not semantic approval of saved model interpretations or Phase 6 quality gates.
+The historical implemented-state snapshot below is superseded by this update.
+
+Annotation-provenance amendment, 2026-10-04 (ADR-33): approved development
+references name Sunayana as the sole human reviewer and disclose AI drafting.
+Original seating manifests and AI draft revisions remain immutable. A new review
+manifest explicitly records the authorized single-reviewer policy; it preserves
+document IDs/splits and historical double-code flags, without changing the
+existing validator/emitter. Agreement is unavailable because independent second
+coding was not performed. No second reviewer or adjudication is fabricated.
+Reviewer-directed scope exceptions remain alongside the reference export.
+
+Execution reporting amendment, 2026-10-03: live relevance/extraction stage entry
+points capture UTC run-start time for decisions, cases, failure records, events,
+review opening times and manifests. Explicit offline modes use deterministic fixture
+dates; tests can inject `recorded_at`. Time remains excluded from cache and run identity.
+Research-batch extraction refuses an existing extraction destination and reports a
+failure exit status for rejected attempts. Empty provider generations are identified
+without retaining response text or inventing usage. Historical records are immutable.
+
 > Companion to `problem-statement.md` (the authoritative specification).
-> Document role: system architecture and design rationale. Version 1.1.
-> Runtime: Python 3.12. Storage: SQLite + file-based artifacts. Interface: Streamlit.
+> Document role: system architecture and design rationale. Version 1.2.
+> Runtime: Python 3.12. Target storage: SQLite + file-based artifacts. Target interface: Streamlit.
 >
 > Where this document and `problem-statement.md` disagree, the problem statement wins.
 > Every design choice below cites the specification section it satisfies, so the two can
@@ -11,7 +162,7 @@
 
 ---
 
-## 1. Repository state found
+## 1. Repository state at the original design review
 
 Inspected before writing this document:
 
@@ -26,14 +177,71 @@ reference files/
 └── requirements.txt         27 B     streamlit, anthropic, pandas (unpinned)
 ```
 
-There is no `.git` directory, no `src/`, no `prototype/`, no tests, and no data directories.
-This is a greenfield build with a working reference prototype beside it.
+At that original review there was no `.git` directory, `src/`, `prototype/`, tests, or data
+directories. This historical inventory describes the starting point, not today's checkout.
 
-The `reference files/` directory corresponds to the `prototype/` directory in
-specification Section 14. Treat it as **read-only reference**. Its 16 records are not
+The original `reference files/` directory was moved to `prototype/`, the reference
+directory in specification Section 14. Treat it as **read-only reference**. Its 16 records are not
 validated research evidence (specification Section 30). Section 20 of this document
 records exactly which prototype behaviours the architecture keeps and which it must
 correct, with reasons.
+
+### 1.1 Implemented state, reviewed 2026-10-01
+
+Phases 0–3 are recorded as complete in `STATUS.md`. Phase 4 relevance and Phase 5
+extraction integration are in progress; M1 is not complete. The repository now has a
+Git checkout, `src/`, configuration, tests, and local data artifacts. SQLite projections,
+the final export surfaces, taxonomy, retrieval, and the evaluator app described below
+remain target architecture; do not infer their implementation from a design diagram.
+
+The current relevance baseline is `relevance/v5`; extraction is `extract/v2`.
+The approved v2 addition makes separate summary support, continuous verbatim quotes
+and empty evidence for unstated/inapplicable fields explicit. The historical
+`extract/v1` rendering remains byte-for-byte reproducible. Application/wire schemas,
+evidence gates and relevance behavior are unchanged; cache/run/fingerprint identities
+separate v2 from historical outputs. No v2 provider request has run.
+`extract/v3` is a prepared correction from the 2026-10-04 approved development
+review. It is renderable and is not the active pin. Pilot, diagnostic, and
+development-corpus bounds stay on `extract/v2`, so the five-document
+corrected-schema cache still matches. A request that used `extract/v3` would
+miss that cache entry and fail closed before a provider call.
+The bounded quality route later measured `extract/v3`; that measurement is
+separate from the legacy pin. `extract/v4` and `relevance/v6` remain
+unregistered candidates. The quality route has measured them: development
+coverage 4/6 at precision 0.8571, and a successor holdout coverage of 7/15.
+They are not the active pins. Approval-hash path keys are resolved from the
+project root before comparison. The historical freeze hashes were not rewritten.
+`main.py` dispatches extraction to `src/pipeline/extraction.py`, which resolves effective
+relevance, calls `ModelGateway`, and persists JSONL artifacts. `src/extract/extractor.py`
+is the pure `assemble_cases` boundary; it does not call providers or write files.
+`src/review/overrides.py` currently implements human relevance overrides, not general
+case-level overrides or a `v_current_cases` projection.
+
+The five-document development pilot uses the existing extraction path, cache, and budget.
+Its preserved live-mode artifact records five failed attempts and zero cases; the retained
+terminal log reports HTTP 400 `invalid_request`, without the vendor detail needed to
+identify the cause. A later authorized one-request synthetic diagnostic retained Groq's
+rejection of ambiguous `anyOf` branches. Extraction now uses equivalent nullable scalar
+type arrays through the existing adapter conversion, with constraints preserved.
+One subsequent synthetic diagnostic returned technical state `ok` with the correct
+document identity and `cases: []`, confirming acceptance for that request. A separately
+authorized five-document pilot under `data/interim/phase5/pilot-nullable-fix` then made
+five provider calls: two core documents returned HTTP 400 `json_validate_failed`, one
+adjacent document returned an accepted empty case list, and two Reddit cases failed
+evidence validation. Neither assembled case entered the analysis records. These later
+generation/validation errors differ from the original ambiguous-schema rejection;
+the retained diagnostics from that pilot do not identify the failed generated fields.
+A later user-executed one-core-document diagnostic explicitly reports completion
+truncation at the recorded 4096-token limit; its safe summary reports missing application
+content. That new finding does not establish the earlier failures' causes. Real-document
+extraction quality remains unassessed.
+Both synthetic and single-core diagnostics use the same extraction path. An optional
+8192-token single-core check completed with accepted structured output but an
+evidence-invalid case. The CLI refused a duplicate invocation against its occupied
+directory. A guarded cache replay retains that pending case in a fresh review directory
+without a provider call. Summaries now show failures, CLI exits reflect rejection, and
+future runs retain typed review candidates outside analysis. `STATUS.md` and
+`CHANGELOG.md` carry the latest run and test results.
 
 ---
 
@@ -62,8 +270,9 @@ requirements drive nearly every structural decision:
 
 ### 2.1 Architectural invariants
 
-These are the load-bearing rules. Each has a test that fails loudly if violated
-(Section 19).
+These are the load-bearing design rules. Implemented boundaries have regression tests;
+tests for later store, export, and presentation paths arrive with their phases
+(Section 19). This list does not claim all eighteen are already implemented end to end.
 
 | # | Invariant | Source |
 |---|---|---|
@@ -190,14 +399,19 @@ dry-run — so no individual stage reimplements it.
 
 ```text
 python main.py run --stages normalize,dedupe --limit 50 --dry-run
-python main.py run --resume <run_id>
-python main.py rebuild            # drop DB, replay raw + cache, expect identical hashes
-python main.py export --tag pilot-01
+python main.py run --stages relevance --split development --dry-run
+python main.py run --stages extract --pilot --dry-run --provider groq --split development --cache data/interim/cache --call-budget 5 --max-retries 1 --output data/interim/phase5/pilot
 ```
+
+These are current planning/dry-run commands. The current CLI accepts
+`--resume RUN_ID` for completed relevance work; the extraction pilot refuses resume.
+`rebuild` and `export` are later CLI deliverables, not current executable procedures.
+The extraction stage currently writes run-specific JSONL directly; the shared SQLite
+checkpoint/projection design remains planned.
 
 `rebuild` is the reproducibility proof. Because every identifier is content-derived and
 every LLM response is cached by content, replaying a run offline must reproduce the same
-**canonical content hashes** for every exported artifact (Section 7.4). A mismatch means
+**canonical content hashes** for every exported artifact (Section 8.2). A mismatch means
 something non-deterministic leaked into the data, and the manifest makes that visible
 instead of subtle.
 
@@ -522,6 +736,12 @@ an expensive one.
 - A change to a prompt, the schema, the model, or the document's content produces a new key,
   so stale interpretations can never survive a prompt edit.
 
+Current extraction also includes the target `doc_id` and the transmitted-schema digest
+in its decoding identity. Identical text in two different documents therefore cannot
+replay each other's extraction or evidence ownership. This is checked through the
+existing stage on both cache misses and hits in
+`tests/test_extraction_evidence_isolation.py`.
+
 ### 8.1 `taxonomy_version` is scoped to taxonomy stages
 
 `taxonomy_version` is in the cache key for taxonomy candidate generation and taxonomy
@@ -535,14 +755,14 @@ which is in direct opposition to spec §20's requirement that the taxonomy be re
 evidence and re-assigned across the corpus. Scoping the key makes a taxonomy revision cost
 one assignment pass.
 
-Because the raw response is stored, `main.py rebuild` replays an entire corpus with **no
-API key at all**. That property is what makes analysis reproduction achievable for an
+Because the raw response is stored, the planned `main.py rebuild` will replay an entire corpus with **no
+API key at all**. That target property is what makes analysis reproduction achievable for an
 external evaluator without credentials or budget — and spec §12.1 is explicit that analysis
 reproduction, not source re-collection, is what is being promised.
 
 ### 8.2 Rebuild equality is content equality
 
-`rebuild` asserts **identical canonical content hashes** for every exported artifact, not
+The planned `rebuild` will assert **identical canonical content hashes** for every exported artifact, not
 byte-identical run manifests (spec §26.4).
 
 A manifest legitimately differs run to run: new run ID, new timestamps, new durations,
@@ -551,7 +771,7 @@ from cache. A byte-identical requirement would fail for reasons unrelated to the
 the predictable response to a test that cries wolf is to weaken or skip it — at which point
 genuine non-determinism stops being caught, which is the entire purpose of the check.
 
-Artifacts are canonicalised before hashing: records sorted by primary key, object keys
+The rebuild design canonicalises artifacts before hashing: records sorted by primary key, object keys
 sorted, numbers normalised, and volatile fields removed — `run_id`, execution timestamps
 (`occurred_at`, `derived_at`, `decided_at`, `extracted_at`, `assigned_at`, run start and
 end), durations, token and request counts, hostname, PID, local paths, and cache hit status.
@@ -684,18 +904,26 @@ key" guarantee is trivially broken by a single stray top-level import.
 
 ```text
 relevance/classifier.py ─┐
-extract/extractor.py ────┼─→ llm.gateway.ModelGateway ─→ cache (hit? return)
-retrieve/answer.py ──────┘                             ─→ provider adapter
+pipeline/extraction.py ──┴─→ llm.gateway.ModelGateway ─→ cache (hit? return)
+                                                     ─→ provider adapter
                                                           ├─ anthropic
-                                                          ├─ openai
+                                                          ├─ groq
                                                           └─ null (offline / no key)
+
+pipeline/extraction.py ─→ extract/extractor.assemble_cases ─→ validation verdicts
 ```
+
+`retrieve/answer.py` is planned; the OpenAI adapter is stretch, not an implemented
+provider. Groq uses its own SDK through the existing provider boundary (ADR-31).
 
 The gateway owns: cache lookup and write, retry with backoff, timeouts, token accounting,
 structured-output request shaping, and the repair ladder. Providers are thin adapters
 behind a `Protocol` with one method, `complete_structured(prompt, schema, params)`. Model
-names and providers come from `config/models.yaml`; none appear in source code
-(Section 29.11) — a rule the prototype's hard-coded `ANSWER_MODEL` breaks.
+names and providers normally come from `config/models.yaml` (Section 29.11). The pilot
+also asserts the specifically authorized Groq/model pair in its bounds, so changing
+configuration cannot silently substitute another provider or model. Its CLI uses the
+Groq runtime selection (`openai/gpt-oss-120b`), while the general `extraction_model`
+configuration still names the Anthropic model; these are distinct runtime paths.
 
 The `null` provider is not a test double. It is the production path when no key is
 configured: it returns "unavailable" cleanly so the pipeline records an honest failure and
@@ -711,10 +939,183 @@ appears in `v_relevance_unavailable`, not in the `out_of_scope` count. Collapsin
 outage into "not relevant" would make a billing problem look like a research finding, and it
 would do so in the direction that flatters the corpus.
 
+### Current development extraction controls
+
+`src/pipeline/extraction_pilot.py` supplies selection and bounds around `run_extraction`;
+it is not a second extraction engine. The manifest contains only `doc_id`, `split`, and
+`split_version`. Selection uses approved/effective scope agreement locally: two core
+seats and three adjacent seats, including the two required validated human adjacent
+decisions, with remaining seats chosen by `doc_id`. Human labels and notes are absent
+from completion requests. Pending/context-limited and approved/effective-conflicting
+records remain unchanged and excluded from this pilot.
+
+Unrestricted live extraction remains refused. The pilot enforces development-only input,
+Groq `openai/gpt-oss-120b`, approved `extract/v2`, strict structured output, a five-attempt budget,
+and `max_retries=1` (one gateway attempt, no retry). The Groq SDK has `max_retries=0`.
+Both pilot and synthetic diagnostic paths refuse registry versions other than the
+explicit approved extraction version. Historical v1 rendering is available for audit,
+not as a live-mode bypass of that version guard.
+The gateway reserves a first attempt for each remaining document; cache hits require
+no provider attempt. Existing `data/interim/cache` entries remain enabled.
+
+Optional `--pilot-doc` validates the same full five-seat manifest, then selects only
+`google_support-d7f386f347b7` or `google_support-e1e5277da7e8` with a one-call cap and
+one attempt. It refuses input overrides, resume, holdout, other stages and synthetic
+diagnostic mode. The default five-document controls and fresh-output/key guards remain.
+`--pilot-max-tokens 8192` is accepted on that single-core path, and also on the full
+five-seat manifest when `--call-budget 4` and `--max-retries 1` are set. The
+five-document mode confirms, before any provider call or output directory is created,
+that the corrected-schema cache entry for `google_support-d7f386f347b7` matches the
+request that would be sent and passes local response validation. A missing, mismatched,
+or unusable entry fails closed and is not requested. At most four documents are then
+uncached, and the existing gateway budget reserves one first attempt for each. Offline
+mode is refused there so the run cannot switch to the null provider and miss that Groq
+entry. Other token values stay refused. Omitting the flag preserves the configured
+4096-token limit and the five-call budget. The effective limit reaches the existing
+gateway and SDK, request identity, cache key and run identity; earlier entries and runs
+stay intact.
+This is a bounded diagnostic experiment after a provider-reported truncation, not an
+automatic retry or a claim of general sufficiency. The recorded 8192 request completed
+with `finish_reason=stop`; its invalid evidence remains a separate review concern.
+
+### Research batch
+
+`src/pipeline/research_batch.py` plans a separate development batch of at most 20
+documents whose `doc_id` is outside the frozen split. It calls the existing
+`derive_document`, `detect_links`, `run_phase4`, and `run_extraction` paths. It
+does not open the five-seat pilot manifest and does not use `--pilot` or
+`--diagnostic` as a general runner. Output under `data/interim/phase3`, `phase4`,
+`phase5`, or the pilot-import directories is refused. The default `run` commands
+are unchanged: live relevance still keeps only split ids, and unrestricted live
+extraction is still refused.
+
+The 2026-10-01 dry-run selected nothing. Every collected document is inside the
+frozen split, so the maximum external request count for that corpus is 0. No
+research-batch model call has been made. When a later JSONL has documents outside
+the split, relevance and extraction each allow at most 20 external requests, and
+the call budget must equal that stage's count. Cache hits are not external
+requests. The provider is Groq `openai/gpt-oss-120b`, with one gateway attempt
+and the configured 4096-token limit. Output goes under
+`data/interim/research-batch`. The cache stays `data/interim/cache`.
+
+Missing credentials and any existing run-specific output directory are refused before
+execution. Fatal authentication stops the run. A dry-run returns before completion or
+output-record persistence. The CLI can prepare a missing pilot manifest, so this is a
+zero-extraction-output guarantee rather than a promise of no filesystem preparation.
+Run outputs include cases, labels, evidence, verdicts, failures, inputs, review items,
+events, checkpoints, disagreements, and a manifest. Future failures preserve the existing
+allowlisted `ProviderDiagnostic` in failure rows and event detail after secret/source
+filtering. Earlier generic failure records cannot acquire diagnostics retrospectively.
+Future runs also write `extraction_candidates.jsonl`: typed failed candidates with their
+pending assembled case, or explicit null when assembly failed. These review records
+are separate from `retrieval_cases.jsonl` and cannot enter analysis. Resume retains
+earlier candidates unless the current accepted case has the same id; review rows are
+not resolved automatically. Historical eleven-file run directories remain unchanged;
+new runs write twelve files. CLI failure status follows failed candidates, including
+provider/parse/schema/evidence errors; accepted empty cases remain successful. Summaries
+expose failure/state counts, and fatal-stop attempt counts reflect actual outcomes.
+
+Future extraction inputs, failures and events retain request identity: provider/model,
+prompt id/version, content hash, prompt/schema digests, character count and requested
+decoding limits. This contains no prompt text, labels or notes and changes no cache key.
+On a cache hit it identifies the constructed request, not a newly transmitted request.
+Fatal authentication retains identity while stopping execution.
+
+Groq can inspect `failed_generation` transiently up to 65,536 characters. Its retained
+`rejected_output_summary` contains only character count, JSON state/error position and
+application-validation types/paths. Paths use fixed application property names or array
+indices; invented names become `*`. Limits are 32 findings and 16 path components, with
+a total error count. Generated text, values, error prose/input/context are omitted.
+This diagnostic neither accepts nor repairs a failed response and does not replace the
+vendor's stricter wire-schema validation. Missing or oversized output stays undiagnosed.
+Known finish reasons are retained only when provided, including in new cache entries;
+legacy entries remain readable with an unknown finish reason. No truncation is inferred.
+
+Span-verdict rows now add the original candidate quote, offsets and offset state alongside
+the post-ladder values and `repair_applied`. This distinguishes locating a quote supplied
+with null offsets from correcting supplied offsets, without changing the offset enum.
+Evidence-failure rows retain every gate reason code, invalid field and retained span id;
+generated `gate_errors` are bounded to 32 messages of 500 characters each and omit messages
+containing the target audit text or a denylisted secret. Existing row keys remain compatible.
+Checkpoints now record every non-`ok` outcome as failed, matching stage events; blocked
+documents remain skipped and an accepted empty case list remains succeeded. General resume
+reprocesses future failures through the existing cache. These fixes do not rewrite older
+checkpoints or change the pilot's refusal of resume.
+
+Groq extraction requests opt into nullable scalar normalization: a scalar-or-null
+`anyOf` becomes `type: [scalar, null]`; local enum references are inlined with their
+original enum values plus null. This addresses the branch shape rejected by the synthetic
+diagnostic without adding response discriminator fields. Other union forms are untouched.
+The application case and evidence contracts remain authoritative; relevance retains its
+existing wire conversion. The extraction transport schema now mirrors the subject-only
+detail rule: target_subjects accepts optional string detail, while remembered_cues,
+forgotten_information, query_strategies, system_responses, workarounds and impact_signals
+require null detail. Both JSON Schema and local Pydantic validation enforce this rule;
+assembly does not silently strip forbidden model output. The transmitted-schema digest changes
+cache identity automatically. Conversion is idempotent, and the same normalized schema
+is embedded in the prompt and sent to the SDK. See the implementation decision in
+`DECISIONS.md`. A separately executed synthetic request succeeded with this representation;
+that compatibility check does not establish real-document extraction quality.
+
+Assembly schema failures retain schema_validation_failed at the document level, including
+CLI summaries, manifests and stage events. For mixed-case documents schema failures take
+precedence over evidence failures; case-level artifacts preserve each individual outcome.
+Prompt instructions remain extract/v2. Transport corrections change the schema digest in
+Groq cache identity, but extraction run IDs do not include that digest: a separately
+authorized diagnostic must use a fresh output parent. Saved runs are never rewritten.
+
+The subsequent development pilot retained fourteen verbatim spans at repaired offsets
+and rejected three unsupported quotes. A summary may be an interpretation, but its
+supporting `field_evidence` must still be verbatim source text. `not_stated` requires
+an empty value and no evidence. These gates excluded both assembled Reddit cases;
+rejected evidence must not be replaced or accepted merely to obtain a case count.
+The preserved pilot attached failures without assembled cases to upstream relevance
+decisions. Future failures now target `extraction_attempt` with `run_id:doc_id` identity;
+blocked documents still target their relevance decision and assembled cases still target
+their retrieval case. Existing rows remain unchanged. The generic reason mapping from
+`provider_error` to `provider_unavailable` remains pending a separate vocabulary decision;
+it does not establish an outage or a relevance-label defect. The two original mis-targeted
+items stay open; their reconciliation note is in `STATUS.md`.
+
+Provider-call counts represent gateway invocations, including possible adapter failures
+before an HTTP request. Zero recorded tokens do not establish zero billing. Pilot outputs
+are preparation/technical execution evidence, not gold-set quality measurements or M1.
+Recorded token totals and the corresponding list-price estimate cover usage returned to
+the gateway. Failed attempts without a usage response contribute no recorded tokens;
+their actual token usage and billing are unknown and must not be inferred from document size.
+New manifests label totals `recorded_provider_usage_only`, record gateway calls without
+recorded usage across retries/fatal errors, and mark totals incomplete when any such
+call exists. Cache hits add no current-call usage. Reported numeric usage remains
+counted when response text is withheld. These fields do not establish actual billing.
+Current extraction artifacts use the fixed `EXTRACT_INSTANT` for deterministic record
+timestamps; those values do not establish actual wall-clock execution time. Use retained
+execution logs when establishing when an attempt occurred. Current extraction manifests
+also leave `output_hashes` empty; final artifact-hash/rebuild verification remains pending.
+
+### Synthetic extraction diagnostic
+
+`src/pipeline/extraction_diagnostic.py` wraps `run_extraction` for the fixed synthetic
+document `reddit-synthetic-diagnostic` and a matching valid relevance decision. The
+`run --stages extract --diagnostic` CLI refuses `--pilot`, real-document input options,
+limits, links, and resume. It uses the corrected subject-only detail transport schema and `extract/v2` prompt with the
+Groq nullable wire encoding described above, strict output, and
+`openai/gpt-oss-120b`, existing cache, one gateway attempt, no SDK retry, and a request
+cap of one. Missing credentials, occupied run output, and output under preserved pilot
+directories are refused. Preparation uses `--dry-run` for zero calls and zero output;
+`--offline` null-provider execution is refused for this diagnostic. A separately
+authorized live attempt may make one external request; a cache hit makes none.
+Diagnostic outcomes are not corpus evidence or extraction-quality measurements.
+
 ### 10.1 Repair ladder as an explicit state machine
 
 Section 19.4's ordering, with every transition recorded in `extraction_failures` so the
 Phase 6 quality report can show *where* models fail rather than only how often:
+
+The diagram below is the full target repair design. Currently `src/llm/repair.py`
+implements local syntax cleanup and validation; the extraction pilot does not issue
+repair-prompt or re-extraction requests. Its one-attempt bound takes precedence over
+the target ladder. Those later transitions remain unimplemented work, not implicit
+extra calls allowed by a failed structured response.
 
 ```text
 parse ──ok──→ validate ──ok──→ persist as valid
@@ -769,6 +1170,18 @@ written to avoid.
   makes the Phase 6 error analysis possible at all.
 - **Overrides set `extractor_type = human`**, keeping human and machine contributions
   distinguishable in the quality report (Section 23.7).
+
+Current implementation: `RelevanceOverride` rows are append-only and retain target
+decision, author, rationale, approval provenance, and supporting quote.
+`src/pipeline/human_relevance.py` validates that quote to create a separate
+`RelevanceDecision` with `decided_by=human`. Only a validated, technically successful
+human decision supersedes the model for extraction eligibility. Pending decisions do
+not replace it. These inputs are passed through `assemble_cases` as provenance and
+scope; human rationale/labels are not prompt content. `CaseOverride` rows are
+append-only and do not edit the model case. `build_human_case` writes a separate
+row with `extractor_type=human` and a null `model_name`. `v_current_cases` returns
+that row only when it is valid; a pending human row leaves the model row current.
+The SQL projection of that precedence remains with the Phase 2 store.
 
 ---
 
@@ -972,6 +1385,59 @@ Guarantees:
 - **`explorer.html`** is retained as a zero-dependency static snapshot for the Phase 11
   backup evidence export — regenerated from the committed export rather than hand-edited.
 
+### Current local page
+
+`main.py browse` is the October 2026 demonstration page. It is not `app.py`, and it
+does not complete this section. `src/browse/` reads saved development JSONL and
+renders one local HTML page. It imports neither `collect`, `extract`, `llm`,
+`relevance`, nor Streamlit, and it does not read `data/raw/`. Holdout rows are
+counted and their text is discarded. Display text is `raw_text_audit`, with
+highlights taken from stored document offsets rather than a search for the quote.
+
+The page keeps automatic validity separate from semantic approval. Recorded
+semantic findings stay on the case. Failed and unresolved records are omitted
+from comparison counts. Core and adjacent model output stay in separate columns.
+Confirmed duplicate links collapse the analysis document count; pending links do
+not. No provisional problem group is proposed while no extraction case is
+semantically approved. A human correction, when one exists, is listed beside the
+original value. `retrieval_cases.jsonl` is not rewritten. The page makes no
+provider call and reads no API key.
+
+Launch: `python main.py browse --port 8765`, then open `http://127.0.0.1:8765/`.
+
+### Current submission app
+
+`app.py` is the submission view. It reads prepared exports through
+`src.export` and does not import `collect`, `extract`, `llm`, `relevance`, or
+a provider SDK. Its sections are Overview, Evidence browser, Problem
+comparison, Methodology and limitations, and Community insights. The first four
+describe saved runs. They are not the seven surfaces in the table above, and
+they do not complete this section.
+
+Community insights is a separate reader, `community_insights.py`. n8n scrapes
+Google Photos Community threads, tags them, and writes the `insights` sheet.
+The app reads that sheet when `INSIGHTS_SHEET_URL` is set, then an optional
+service-account connection, then `data/insights_seed.csv`. The 2026-10-04
+snapshot has 48 rows and 23 retrieval-problem rows after cleaning. The queued
+run POSTs `{"limit": n, "source": "streamlit"}` to the workflow webhook
+`photo-discovery`, with `X-Api-Key` only when `N8N_WEBHOOK_KEY` is set.
+
+The same section has an always-visible "🔎 Analyse a thread live" box. One
+pasted Google Photos Community link POSTs `{"url": "<thread link>", "limit": 1,
+"source": "streamlit"}` through the existing `trigger_n8n` helper. Reddit
+links and other non-thread links are refused in the page, before that POST.
+n8n returns immediately and writes the tagged row to the `insights` tab, using
+the canonical thread URL `https://support.google.com/photos/thread/<id>`. The
+page polls `_read_public_sheet` directly every 10 seconds for up to 120
+seconds, bypassing the `load_insights` cache, and stops when a row URL
+contains that thread id. A match renders a result card and then clears the
+cache so the existing charts include the row. A thread already in the sheet
+is shown with "Already analysed earlier. Here's the result." No row after 120
+seconds shows "Still processing. Click Refresh data in a minute." Python does
+not scrape or tag. The rows stay outside `CollectedDocument`, the gold set,
+and the saved-run counts. Webhook and sheet URLs stay in
+`.streamlit/secrets.toml`, which is gitignored.
+
 ---
 
 ## 16. Configuration and observability
@@ -1015,13 +1481,15 @@ equality claim in Section 8.2 is unfalsifiable.
 
 ## 17. Module map and dependency rules
 
-Section 14's structure, with additions marked `+`. Additions are consolidations of
+Target Section 14 structure, not an inventory of implemented files, with additions marked `+`. Additions are consolidations of
 cross-cutting concerns that Section 14 leaves implicit; each is listed in Section 22 for
 approval.
 
 ```text
 google-photos-retrieval-engine/
-├── app.py                    Streamlit, read-only over exports
+├── app.py                    submission Streamlit view over prepared exports
+├── community_insights.py     n8n insights sheet, one-thread live analyse, CSV fallback
+├── requirements.txt          streamlit, sheet connection, pandas, requests
 ├── main.py                   CLI over the stage runner
 ├── pyproject.toml            pinned/bounded deps (replaces prototype requirements.txt)
 ├── problem-statement.md      specification (authoritative)
@@ -1032,6 +1500,8 @@ google-photos-retrieval-engine/
 ├── data/                     manual/ raw/ interim/ processed/
 │                             gold/{documents,cases}.jsonl
 │                             exports/{public,runs}/
+│                             insights_seed.csv   n8n insights snapshot, not a collected corpus
+├── n8n/                      workflow export and sheet template, reference only
 ├── prototype/                the current reference files, moved here, read-only
 ├── src/
 │   ├── core/               + config.py  logging.py  ids.py  versions.py  errors.py
@@ -1057,6 +1527,24 @@ google-photos-retrieval-engine/
 └── tests/                    per Section 25, + test_architecture.py
 ```
 
+Implemented extraction/review additions to that target map are
+`src/extract/schema.py`, `src/pipeline/extraction.py`,
+`src/pipeline/extraction_pilot.py`, `src/pipeline/extraction_diagnostic.py`,
+`src/pipeline/human_relevance.py`, and `src/pipeline/research_batch.py`.
+Manual collection currently lives in `src/collect/workbook.py` and `cli.py`.
+`src/collect/youtube.py` is the read-only comment collector. Tests mock the
+API. A bounded live run on 2026-10-04 wrote 266 documents; `youtube.enabled`
+stays false. `src/collect/reddit.py` skips when credentials are absent and
+was not exercised. `src/collect/community.py` is the separate n8n
+original-post adapter. `src/collect/scaled.py` checkpoints the scaled
+collection run. Normalization includes `derive.py`, and
+deduplication uses `detect.py`, `safety.py`, and `simhash.py`.
+`src/browse/` is the local demonstration page from Section 15. It is not
+`app.py` and not `store/export.py`. `community_insights.py` is not a pipeline
+stage. `src/store/` is not yet implemented. Do not
+create parallel modules merely to make the original target filenames match the
+working implementation.
+
 **[ADR-4] `src/llm/` replaces `src/extract/cache.py`.** Section 14 places the cache under
 `extract/`, but relevance classification and Ask synthesis need the same cache, retry, and
 repair behaviour. Leaving it in `extract/` forces either duplication or a stage-to-stage
@@ -1076,11 +1564,15 @@ llm         ← imports core, models
 stages      ← import core, models, store, llm — never another stage
 analyze     ← imports core, models, store (views only)
 retrieve    ← imports core, models, store, llm
-app.py      ← imports core, analyze, retrieve, store.export
+app.py      ← target: core, analyze, retrieve, store.export
+              current submission view: src.export and community_insights only
+browse      ← imports nothing internal outside src.browse; no Streamlit, no data/raw
 ```
 
 `tests/test_architecture.py` asserts these edges, that no module outside `src/llm/providers/`
-imports a provider SDK, and that `app.py` has no transitive path to `collect` or `extract`.
+imports a provider SDK, that `app.py` does not import the research pipeline or
+read `data/raw/`, and that `src/browse/`
+has no path to `collect`, `extract`, `llm`, `relevance`, or `data/raw/`.
 Layering that is only documented erodes; layering that fails a test does not.
 
 ---
@@ -1119,7 +1611,7 @@ invalidate the research:
 
 | Test | Defends |
 |---|---|
-| `test_architecture.py` — import boundaries; `app.py` has no path to `collect`, `extract`, or `data/raw/` | I5, I8, I18, and the no-key guarantee |
+| `test_architecture.py` — import boundaries; `app.py` does not import the research pipeline or read `data/raw/`; `src/browse/` has no path to `collect`, `extract`, `llm`, `relevance`, or `data/raw/` | I5, I8, I18, and the no-key guarantee |
 | `test_evidence.py` — fabricated quote, shifted offsets, duplicate occurrence, ambiguous tie routed to review, whitespace repair preserving displayed text, span overlapping a redaction rejected | I2, I3 |
 | `test_evidence_map.py` — every model field is in exactly one of the required or exempt lists; `all_evidence_spans` equals the field-level union; a span attached to no field fails; each observation status gates evidence correctly | I12 |
 | `test_models.py` — `CollectedDocument` validates with no derived record present; `retrieval_cases` has no cluster or taxonomy column; `is_relevant` conflict rejected | I11, I13, I7 |
@@ -1250,7 +1742,7 @@ specification, not a reinterpretation of it.
 | ADR-19 | Accepted | `taxonomy_version` removed from `extraction_fingerprint` and the extraction cache key; `assignment_fingerprint` introduced | A taxonomy revision should cost an assignment pass, not a full paid re-extraction (Section 8.1) | Taxonomy version in every key |
 | ADR-20 | Accepted | `doc_id` from collection-time values; canonical duplicate is lowest `doc_id`; `case_id` tie-breaks and `#u` fallback | Identifiers become assignable at their own stage and independent of ingestion order (Sections 7.1–7.3) | `content_hash` in `doc_id`; first-collected canonical |
 | ADR-21 | Accepted | Deduplication safety conditions: minimum token length, cross-author guard, explicit review states | Prefers the reversible error; collapsing two users is invisible once done | Similarity thresholds alone |
-| ADR-22 | Accepted | Source feasibility tiers; no "verified" claim without linked primary documentation. Verified 2026-09-21: YouTube and Reddit permitted, both app stores **closed** by publisher-gated APIs, forum barred by terms rather than by URL | Availability is not permission; an ownership-gated API is closed rather than expensive; `robots.txt` permission is not terms permission | Treating store scrapers as low risk; leaving closed sources on a backlog as though effort would open them |
+| ADR-22 | Accepted; source reassessment amended 2026-10-01 | Source feasibility requires linked access evidence. Inspected Play and Apple routes are blocked; community collection permission remains unresolved. See the [route audit](SOURCE-COLLECTION-AUDIT-2026-10-01.md) | Evaluate actual endpoints, robots, terms, provenance, and reliability separately; library availability is not verified collection | Permanent source-wide closure inferred from one publisher API; treating an undisallowed URL as permission |
 | ADR-23 | Accepted | Public export is a minimum redacted excerpt around validated spans, with rebased offsets | Satisfies §12 while keeping every quote verifiable; separates analysis reproduction from re-collection | Committing full document text |
 | ADR-24 | Accepted | Review queue is built in Phase 3, when the first review items are produced | Phase 3 had review decisions and nowhere to put them (Section 11) | Deferring duplicate review to Phase 4 |
 | ADR-25 | Accepted | Gold set splits document-level and case-level labels, with dev and frozen holdout splits and named metric families | A single accuracy number over mixed field types is not interpretable, and iterating on the holdout is fitting | One flat gold file, precision-only gate |
@@ -1258,6 +1750,8 @@ specification, not a reinterpretation of it.
 | ADR-27 | Accepted | MVP and stretch scope separated; stretch may never be an MVP dependency | Prevents an optional feature consuming the core's time | One undifferentiated backlog |
 | ADR-28 | Accepted | The first Cursor prompt implements Phase 0 only; every phase carries its own paste-ready prompt | Phase 1 carries the contract split and evidence map and must not be rushed alongside scaffolding | Bundling Phases 0 and 1 in one prompt |
 | ADR-29 | Accepted | Milestone M1 reports and diagnoses the case count instead of targeting 15–25 | The only reliable way to move the count is to loosen the evidence rules | A case-count band as a gate |
+| ADR-30 | Accepted | Phase 4 seed split and abstention metrics do not amend the Phase 6 gold set | Preserve the development/holdout distinction and report technical exclusions | Presenting seed results as final product performance |
+| ADR-31 | Accepted | Groq is a provisional Phase 4 relevance provider through the existing gateway | Provider-specific cache identity, bounded attempts, strict output, and retained Anthropic adapter | Dual-provider consensus or bypassing evidence validation |
 
 ### 22.1 Obligations still attached to phases
 
@@ -1266,10 +1760,20 @@ These are not open decisions. Each is a task with a home:
 | Obligation | Phase | Recorded in |
 |---|---|---|
 | Calibrate the ADR-21 similarity band and `dedupe_min_tokens` against the pilot corpus | 3 | ADR-21 amendment |
-| Exercise the YouTube and Reddit mechanisms and mark them `exercised` | 7 | ADR-22 amendment |
-| Confirm this research is non-commercial under the Reddit Data API Terms | 7 | ADR-22 amendment |
 | Record per-source redistribution terms, to decide where `excerpt_is_full_text` may be true | 10 | ADR-23 amendment |
 
-The store-mechanism and support-forum obligations that previously sat here were closed by the
-2026-09-21 verification pass — the stores negatively, the forum affirmatively-but-still-manual.
-See `DECISIONS.md` ADR-22 consequences 2 and 4.
+YouTube comment collection was exercised on 2026-10-04 and is recorded as
+permitted, documented, and exercised. The Reddit exercise and the
+non-commercial confirmation were closed the same day by owner direction: no
+access request and no Reddit API call. Reddit stays permitted, documented, and
+unexercised. The deduped corpus is 318 documents, and YouTube is above the 40%
+concentration line. See the Phase 7 note at the start of this document and
+`DECISIONS.md` ADR-22.
+
+The 2026-10-01 [source audit](SOURCE-COLLECTION-AUDIT-2026-10-01.md) replaces
+permanent closure with route-specific blocked/unresolved findings. No source
+probe qualified and no adapter was added. A future qualifying adapter must use
+the existing `CollectedDocument` import contract, salted author hashing and
+deduplication, with explicit request bounds and a zero-call dry-run. Supplied
+community thread fetching and thread discovery require separate assessment.
+See the amendment at the start of `DECISIONS.md` ADR-22.

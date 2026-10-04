@@ -20,6 +20,7 @@ from src.llm.providers.base import (
     diagnostic_from_exception,
     provider_failed,
     rate_limited,
+    safe_finish_reason,
     timed_out,
     unavailable,
 )
@@ -60,13 +61,66 @@ def cache_decoding_params(
     return params
 
 
-def groq_request_schema(schema: Mapping[str, Any], *, doc_id: str) -> dict[str, Any]:
-    """Strict schema for one document. ``doc_id`` may be only that document's id."""
+def groq_request_schema(
+    schema: Mapping[str, Any], *, doc_id: str, nullable_scalars: bool = False,
+) -> dict[str, Any]:
+    """Strict schema bound to one document, with opt-in scalar null encoding.
+
+    Extraction opts in to avoid Groq's rejected anyOf branches. Relevance keeps
+    its existing transmitted schema and cache/lock identity.
+    """
     wire = groq_strict_schema(schema)
+    if nullable_scalars:
+        _flatten_nullable_scalars(wire, wire.get("$defs", {}))
     properties = wire.get("properties")
     if isinstance(properties, dict) and "doc_id" in properties:
         properties["doc_id"] = {"type": "string", "enum": [doc_id]}
     return wire
+
+
+def _flatten_nullable_scalars(node: Any, definitions: Mapping[str, Any]) -> None:
+    """Use type unions for scalar-or-null fields, without changing allowed values.
+
+    Groq rejected extraction's anyOf branches as lacking discriminators. A scalar
+    and null need no response discriminator: JSON Schema can express them with
+    type=[scalar, null]. Local scalar enum refs are inlined and include null in
+    their enum. Object unions and other compositions are deliberately untouched.
+    """
+    if isinstance(node, list):
+        for item in node:
+            _flatten_nullable_scalars(item, definitions)
+        return
+    if not isinstance(node, dict):
+        return
+    branches = node.get("anyOf")
+    if (isinstance(branches, list) and len(branches) == 2
+            and branches.count({"type": "null"}) == 1):
+        scalar = next(branch for branch in branches if branch != {"type": "null"})
+        if isinstance(scalar, dict):
+            if set(scalar) == {"$ref"}:
+                ref = scalar["$ref"]
+                if isinstance(ref, str) and ref.startswith("#/$defs/"):
+                    name = ref[len("#/$defs/"):].replace("~1", "/").replace("~0", "~")
+                    scalar = definitions.get(name)
+            annotations = {"title", "description", "default", "examples", "$comment"}
+            allowed = annotations | {
+                "type", "enum", "minimum", "maximum", "exclusiveMinimum",
+                "exclusiveMaximum", "multipleOf", "minLength", "maxLength", "pattern",
+            }
+            if (isinstance(scalar, dict)
+                    and isinstance(scalar.get("type"), str)
+                    and scalar["type"] in {"string", "integer", "number", "boolean"}
+                    and set(scalar) <= allowed
+                    and not (set(scalar) & (set(node) - annotations))):
+                replacement = json.loads(json.dumps(scalar))
+                replacement["type"] = [scalar["type"], "null"]
+                if "enum" in replacement and None not in replacement["enum"]:
+                    replacement["enum"].append(None)
+                replacement.update({key: value for key, value in node.items() if key != "anyOf"})
+                node.clear()
+                node.update(replacement)
+    for value in node.values():
+        _flatten_nullable_scalars(value, definitions)
 
 
 def groq_strict_schema(schema: Mapping[str, Any]) -> dict[str, Any]:
@@ -174,6 +228,7 @@ class GroqProvider:
                 exc,
                 elapsed,
                 redact=_request_redactions(prompt, self._api_key),
+                response_model=params.diagnostic_model,
             ) from None
 
         elapsed = time.perf_counter() - started
@@ -190,6 +245,13 @@ class GroqProvider:
             latency_seconds=elapsed,
             requested_temperature=requested,
             effective_temperature=effective,
+            finish_reason=safe_finish_reason(
+                getattr((getattr(completion, "choices", None) or [None])[0], "finish_reason", None)
+            ),
+            usage_reported=all(
+                type(getattr(usage, name, None)) is int and getattr(usage, name) >= 0
+                for name in ("prompt_tokens", "completion_tokens")
+            ),
         )
 
 
@@ -220,51 +282,55 @@ def _mapped_error(
     elapsed: float,
     *,
     redact: tuple[str, ...] = (),
+    response_model: type[Any] | None = None,
 ) -> ProviderCallError:
     """Map vendor errors. The public message does not include the key or the body."""
+    def diagnostic(category: str):
+        return diagnostic_from_exception(
+            exc, category=category, redact=redact, response_model=response_model,
+        )
+
     if isinstance(exc, getattr(groq, "APITimeoutError", ())):
         return timed_out(
             "the provider timed out",
             latency_seconds=elapsed,
-            diagnostic=diagnostic_from_exception(exc, category="timeout", redact=redact),
+            diagnostic=diagnostic("timeout"),
         )
     if isinstance(exc, getattr(groq, "RateLimitError", ())):
         return rate_limited(
             "the provider rate-limited the request",
             retry_after_seconds=_retry_after(exc),
             latency_seconds=elapsed,
-            diagnostic=diagnostic_from_exception(exc, category="rate_limited", redact=redact),
+            diagnostic=diagnostic("rate_limited"),
         )
     if isinstance(exc, getattr(groq, "APIConnectionError", ())):
         return unavailable(
             "the provider could not be reached",
             latency_seconds=elapsed,
-            diagnostic=diagnostic_from_exception(exc, category="connection", redact=redact),
+            diagnostic=diagnostic("connection"),
         )
     if isinstance(exc, getattr(groq, "AuthenticationError", ())) or _status_code(exc) == 401:
         return authentication_failed(
             "the provider rejected the credentials",
             latency_seconds=elapsed,
-            diagnostic=diagnostic_from_exception(exc, category="authentication", redact=redact),
+            diagnostic=diagnostic("authentication"),
         )
     if isinstance(exc, getattr(groq, "APIStatusError", ())):
         return provider_failed(
             "the provider returned an error",
             latency_seconds=elapsed,
-            diagnostic=diagnostic_from_exception(
-                exc, category=_status_category(exc), redact=redact
-            ),
+            diagnostic=diagnostic(_status_category(exc)),
         )
     if isinstance(exc, getattr(groq, "APIError", ())):
         return provider_failed(
             "the provider returned an error",
             latency_seconds=elapsed,
-            diagnostic=diagnostic_from_exception(exc, category="sdk_error", redact=redact),
+            diagnostic=diagnostic("sdk_error"),
         )
     return provider_failed(
         "the provider returned an error",
         latency_seconds=elapsed,
-        diagnostic=diagnostic_from_exception(exc, category="local_exception", redact=redact),
+        diagnostic=diagnostic("local_exception"),
     )
 
 

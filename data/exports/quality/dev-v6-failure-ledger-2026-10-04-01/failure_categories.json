@@ -1,0 +1,158 @@
+{
+  "categories": [
+    {
+      "category": "prefilter_false_drop",
+      "disposition": "accepted_limitation",
+      "evidence": [],
+      "observed_count": 0,
+      "statement": "Gold documents with prefilter_should_pass that this run dropped: 0. Prefilter recall on this development report is 1.0. The 0.90 threshold was not lowered, and the prefilter ruleset was not edited."
+    },
+    {
+      "category": "relevance_false_positive",
+      "disposition": "accepted_limitation",
+      "evidence": [
+        "google_support-8c6ab430fbee"
+      ],
+      "observed_count": 1,
+      "statement": "End-to-end relevance false positives: 1 (google_support-8c6ab430fbee). Development precision is 0.8571428571428571 against 0.85. The threshold was not lowered and gold labels were not changed to match the model."
+    },
+    {
+      "category": "relevance_false_negative",
+      "disposition": "accepted_limitation",
+      "evidence": [],
+      "observed_count": 0,
+      "statement": "End-to-end relevance false negatives: 0. Development recall is 1.0 against 0.80. A prefilter drop counts as predicted not-relevant. Non-ok technical states stay excluded."
+    },
+    {
+      "category": "scope_boundary_disagreement",
+      "disposition": "accepted_limitation",
+      "evidence": [
+        "google_support-2a080da4b930: gold core_incomplete_recall, predicted adjacent_known_item_retrieval",
+        "google_support-5b2ec98df32b: gold adjacent_known_item_retrieval, predicted core_incomplete_recall"
+      ],
+      "observed_count": 2,
+      "statement": "Core versus adjacent disagreements, both still relevant: 2 (google_support-2a080da4b930: gold core_incomplete_recall, predicted adjacent_known_item_retrieval, google_support-5b2ec98df32b: gold adjacent_known_item_retrieval, predicted core_incomplete_recall). These do not move the relevance precision or recall gates. Labels were not edited to remove them."
+    },
+    {
+      "category": "provider_schema_rejection",
+      "disposition": "accepted_limitation",
+      "evidence": [
+        "google_support-8c6ab430fbee"
+      ],
+      "observed_count": 1,
+      "statement": "Provider outputs rejected for schema validation: 1 (google_support-8c6ab430fbee). A rejected output is excluded from the accepted-record schema rate and is not a successful validation. The one-attempt bound was not used to issue a repair or re-extraction call."
+    },
+    {
+      "category": "evidence_span_rejection",
+      "disposition": "corrective_action",
+      "evidence": [
+        "reddit-c2c00b25a88b"
+      ],
+      "observed_count": 1,
+      "statement": "Extraction cases withheld by the evidence gate: 1 (reddit-c2c00b25a88b). The gate kept the invalid case out of stored analysis. The gold case stays unmatched, and no span was edited to force a match."
+    },
+    {
+      "category": "unmatched_gold_case",
+      "disposition": "accepted_limitation",
+      "evidence": [
+        "reddit-87311c2633df#g01",
+        "reddit-c2c00b25a88b#g01"
+      ],
+      "observed_count": 2,
+      "statement": "Gold cases without an evidence-overlap match: 2 (reddit-87311c2633df#g01, reddit-c2c00b25a88b#g01). Report coverage is 4 of 6. Unmatched gold cases are not scored as field matches. Gold quotes were not rewritten."
+    },
+    {
+      "category": "unmatched_model_case",
+      "disposition": "accepted_limitation",
+      "evidence": [
+        "reddit-87311c2633df#c01"
+      ],
+      "observed_count": 1,
+      "statement": "Stored model cases without an evidence-overlap match: 1 (reddit-87311c2633df#c01). A stored case that misses its reference is not semantic approval and was not deleted to raise coverage."
+    },
+    {
+      "category": "unsupported_inference",
+      "disposition": "accepted_limitation",
+      "evidence": [
+        "forgotten_information",
+        "query_strategies",
+        "remembered_cues",
+        "retrieval_trigger",
+        "target_subjects"
+      ],
+      "observed_count": 5,
+      "statement": "Overall unsupported-inference rate on matched cases is 0.38095238095238093. A verbatim quote does not prove the value is supported. Fields above zero: forgotten_information=1.0, query_strategies=0.5, remembered_cues=0.5, retrieval_trigger=1.0, target_subjects=0.5."
+    },
+    {
+      "category": "accepted_empty_extraction",
+      "disposition": "corrective_action",
+      "evidence": [],
+      "observed_count": 0,
+      "statement": "Eligible accepted-empty documents in this development run: 0. extract/v4 replaced the earlier accepted-empty album, Memories, and poodle responses on this measurement. The earlier extract/v3 report was not rewritten. A stored case that does not overlap its reference remains an unmatched-case limitation."
+    },
+    {
+      "category": "excluded_technical_failure",
+      "disposition": "accepted_limitation",
+      "evidence": [],
+      "observed_count": 0,
+      "statement": "Relevance records excluded for a non-ok technical state: 0. Provider schema rejections are counted in their own category: 1. Evidence-gate rejections are counted in their own category: 1. Other failed extraction documents: 0. These failures stay out of every metric and are not counted as matches."
+    },
+    {
+      "category": "inter_reviewer_agreement",
+      "disposition": "accepted_limitation",
+      "evidence": [],
+      "observed_count": 0,
+      "statement": "Independent pre-adjudication pairs: 0. Raw agreement is null and Cohen's kappa is null. One reviewer does not create agreement of zero or one, and no second coder was added."
+    },
+    {
+      "category": "gold_set_final",
+      "disposition": "accepted_limitation",
+      "evidence": [],
+      "observed_count": 0,
+      "statement": "Official gold is 35 documents and 21 cases, reviewed by Sunayana. The owner closed the former 75-100 labelling volume. These approved labels are the final gold set. No documents were added, and existing labels were not edited."
+    },
+    {
+      "category": "holdout_prior_exposure",
+      "disposition": "accepted_limitation",
+      "evidence": [],
+      "observed_count": 0,
+      "statement": "The consumed holdout measurement remains 5 of 15 reference cases. The separate successor remains 7 of 15 and does not replace that consumed claim. Those seats had prior development exposure. This ledger did not rescore them."
+    },
+    {
+      "category": "accepted_record_schema_denominator",
+      "disposition": "accepted_limitation",
+      "evidence": [],
+      "observed_count": 0,
+      "statement": "The reported schema validation rate uses this denominator: ok model relevance decisions plus stored accepted extraction cases; technical failures are excluded and reported. It does not establish that 100% of processed provider outputs passed validation."
+    },
+    {
+      "category": "model_case_semantic_approval",
+      "disposition": "accepted_limitation",
+      "evidence": [
+        "reddit-0d477b54fb9b#c01",
+        "reddit-bde62ddef9b5#c01"
+      ],
+      "observed_count": 2,
+      "statement": "Sunayana approved these development cases after the disclosed disagreements were shown: reddit-0d477b54fb9b#c01, reddit-bde62ddef9b5#c01. Other model cases in the run stay unapproved. model_outputs_semantically_approved stays false. Approval was not extended by this ledger. Unmatched stored cases remain unapproved: reddit-87311c2633df#c01."
+    },
+    {
+      "category": "cross_stage_prompt_label",
+      "disposition": "corrective_action",
+      "evidence": [],
+      "observed_count": 0,
+      "statement": "The measured relevance prompt is relevance/v6, from the relevance-stage manifest. The extraction manifest still records the registry relevance pin relevance/v5. The measured extraction prompt is extract/v4. This ledger uses the stage that ran each prompt. The historical report was not rewritten, and the active pins were not moved."
+    }
+  ],
+  "document_text_included": false,
+  "holdout_rescored": false,
+  "labels_edited": false,
+  "ledger_version": "phase6-failure-ledger/v2",
+  "split": "dev",
+  "status": "documented",
+  "thresholds": {
+    "prefilter_recall": 0.9,
+    "relevance_precision": 0.85,
+    "relevance_recall": 0.8
+  },
+  "thresholds_lowered": false
+}

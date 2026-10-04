@@ -404,3 +404,66 @@ def test_cli_evaluates_without_a_provider(tmp_path: Path, monkeypatch: pytest.Mo
     assert stored["missing_doc_ids"]
     assert len(stored["missing_doc_ids"]) == 50
     assert SPLIT_VERSION == stored["split_version"]
+
+
+@pytest.mark.parametrize("change_document_identity", [False, True])
+def test_cli_preserves_frozen_split_after_adjudication(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, change_document_identity: bool
+) -> None:
+    """Revised labels use original membership, without bypassing ID checks."""
+    import csv
+    from dataclasses import replace
+
+    from main import main
+    from src.relevance.seed import COLUMNS, write_seed_review
+
+    def blocked(*_args, **_kwargs):
+        raise AssertionError("live network call")
+
+    monkeypatch.setattr(socket, "create_connection", blocked)
+    monkeypatch.setattr(socket.socket, "connect", blocked)
+    original = _population()
+    seed = tmp_path / "relevance_seed_review.csv"
+    manifest = tmp_path / "relevance_split_manifest.csv"
+    write_seed_review(seed, list(original))
+    assigned = write_split_manifest(manifest, original)
+    manifest_bytes = manifest.read_bytes()
+    target = next(
+        row.doc_id for row in assigned
+        if row.split == "development" and row.stratum == "out_of_scope"
+    )
+    revised = [
+        replace(
+            row,
+            doc_id="replacement-id" if change_document_identity else row.doc_id,
+            human_scope_class="adjacent_known_item_retrieval",
+            human_reason_code="known_item_with_precise_recall_failure",
+        ) if row.doc_id == target else row
+        for row in original
+    ]
+    with seed.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=COLUMNS)
+        writer.writeheader()
+        writer.writerows(row.as_dict() for row in reversed(revised))
+    output = tmp_path / "adjudicated"
+    code = main([
+        "evaluate", "--split", "development", "--seed", str(seed),
+        "--manifest", str(manifest),
+        "--decisions", str(tmp_path / "missing-decisions.jsonl"),
+        "--reviews", str(tmp_path / "missing-reviews.jsonl"),
+        "--run-manifest", str(tmp_path / "missing-run.json"),
+        "--output", str(output),
+    ])
+    assert manifest.read_bytes() == manifest_bytes
+    assert code == (1 if change_document_identity else 0)
+    if change_document_identity:
+        assert not output.exists()
+        return
+    result = json.loads((output / "relevance_evaluation.json").read_text(encoding="utf-8"))
+    assert result["document_count"] == 35
+    assert result["provider_calls"] == 0
+    assert result["confusion_matrix"]["adjacent_known_item_retrieval"]["abstained"] == 11
+    assert result["confusion_matrix"]["out_of_scope"]["abstained"] == 16
+    assert set(result["missing_doc_ids"]) == {
+        row.doc_id for row in assigned if row.split == "development"
+    }

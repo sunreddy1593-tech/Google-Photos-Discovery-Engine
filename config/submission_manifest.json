@@ -1,0 +1,84 @@
+{
+  "submission_id": "submission-2026-10-03",
+  "frozen_split": "data/interim/phase4/relevance_split_manifest.csv",
+  "not_combined": [
+    "The 50-row, 22-row, and 35-row pilot imports overlap. This export reads the 50-row import once and keeps the development split only.",
+    "The 2026-10-02 YouTube collection saved one comment from two videos and is not merged into the 20-comment batch."
+  ],
+  "datasets": [
+    {
+      "dataset_id": "development-pilot",
+      "description": "Manual pilot documents in the development split. The extraction run is the five-document 8192-token pilot.",
+      "split_policy": "development_only",
+      "collected": "data/processed/pilot-import/collected_documents.jsonl",
+      "derived": "data/interim/phase3/documents_derived.jsonl",
+      "links": "data/interim/phase3/duplicate_links.jsonl",
+      "labels": "data/interim/phase4/relevance_seed_review.csv",
+      "relevance": "data/interim/phase4/development/01455c8aab03/relevance_decisions.jsonl",
+      "reviews": [
+        "data/interim/phase5/pilot-v2-8192-01/024f9b18b60f/review_queue.jsonl",
+        "data/interim/phase4/development/01455c8aab03/review_queue.jsonl",
+        "data/interim/phase3/review_queue.jsonl"
+      ],
+      "corrections": "data/interim/phase5/human_corrections.jsonl",
+      "extraction_run": {
+        "run_id": "024f9b18b60f",
+        "path": "data/interim/phase5/pilot-v2-8192-01/024f9b18b60f"
+      },
+      "limitations": [
+        "35 development documents come from one manual import. 15 evaluation-split documents in that same file are counted and their text is not exported.",
+        "Extraction ran on 5 development seats, not on every development document.",
+        "Saved run timestamps use a fixed date and are not treated as the wall-clock time of the live call."
+      ]
+    },
+    {
+      "dataset_id": "youtube-discussion-2026-10-03",
+      "description": "Partial YouTube comment sample from the 2026-10-03 research batch. It is outside the frozen split.",
+      "split_policy": "outside_frozen_split",
+      "collected": "data/processed/youtube-discussion-2026-10-03/collected_documents.jsonl",
+      "derived": "data/interim/youtube-discussion-2026-10-03/normalize/documents_derived.jsonl",
+      "links": "data/interim/youtube-discussion-2026-10-03/normalize/duplicate_links.jsonl",
+      "labels": null,
+      "relevance": "data/interim/youtube-discussion-2026-10-03/relevance/relevance_decisions.jsonl",
+      "reviews": [
+        "data/interim/youtube-discussion-2026-10-03/extract/ae60feaa840d/review_queue.jsonl",
+        "data/interim/youtube-discussion-2026-10-03/relevance/review_queue.jsonl"
+      ],
+      "corrections": null,
+      "extraction_run": {
+        "run_id": "ae60feaa840d",
+        "path": "data/interim/youtube-discussion-2026-10-03/extract/ae60feaa840d"
+      },
+      "limitations": [
+        "20 comments from one video. Collection stopped during Dottotech's video. Howfinity's video was not started.",
+        "One thread with five replies was fetched to completion. The video-level report stays incomplete.",
+        "This sample is not added to the 35-document pilot and does not change the frozen split.",
+        "Nineteen relevance decisions are out of scope and one is adjacent. That adjacent classification is not an approved known-item episode. Its extraction attempt failed and saved no case.",
+        "Saved decision timestamps are not the 3 October wall-clock time."
+      ]
+    },
+    {
+      "dataset_id": "development-quality-v6",
+      "description": "Gold-dev quality run relevance/v6 + extract/v4. Sunayana approved the five stored cases. The cat summary-quote rejection and the schema failure were accepted and were not repaired.",
+      "split_policy": "development_only",
+      "collected": "data/processed/pilot-import/collected_documents.jsonl",
+      "derived": "data/interim/phase3/documents_derived.jsonl",
+      "links": "data/interim/phase3/duplicate_links.jsonl",
+      "labels": "data/interim/phase4/relevance_seed_review.csv",
+      "relevance": "data/interim/phase6/quality-dev-v6-2026-10-04-01/relevance/relevance_decisions.jsonl",
+      "reviews": [
+        "data/interim/phase6/quality-dev-v6-2026-10-04-01/extraction/d7581cf180be/review_queue.jsonl"
+      ],
+      "corrections": "data/interim/phase6/semantic-approval-dev-v6-2026-10-04-01/corrections.jsonl",
+      "extraction_run": {
+        "run_id": "d7581cf180be",
+        "path": "data/interim/phase6/quality-dev-v6-2026-10-04-01/extraction/d7581cf180be"
+      },
+      "limitations": [
+        "This dataset is the gold-dev quality run, not the five-document pilot.",
+        "Five stored cases have a recorded owner approval. Coverage stays 4 of 6: the poodle case still does not overlap its reference, and the cat quote stays rejected.",
+        "Holdout source text is not included."
+      ]
+    }
+  ]
+}

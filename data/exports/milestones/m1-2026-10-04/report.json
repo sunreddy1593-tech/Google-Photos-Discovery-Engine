@@ -1,0 +1,107 @@
+{
+  "milestone": "M1",
+  "status": "complete",
+  "basis": "problem-statement.md Section 28; technical pipeline checkpoint, not Phase 6 quality certification",
+  "checks": {
+    "at_least_30_genuine_public_documents": true,
+    "end_to_end_processing": true,
+    "validated_verbatim_field_evidence": true,
+    "stage_funnel_reported": true,
+    "schema_and_evidence_tests_passing": true
+  },
+  "documents": 35,
+  "imported_rows": 50,
+  "phase4_holdout_excluded": 15,
+  "gold_holdout_sources_not_loaded": 25,
+  "run_id": "3dc346ec030a",
+  "stages": {
+    "dedupe": {
+      "succeeded": 35
+    },
+    "extract": {
+      "succeeded": 15,
+      "failed": 6,
+      "skipped": 14
+    },
+    "normalize": {
+      "succeeded": 35
+    },
+    "prefilter": {
+      "succeeded": 35
+    },
+    "relevance": {
+      "succeeded": 34,
+      "unavailable": 1
+    }
+  },
+  "extraction": {
+    "eligible": 21,
+    "analysis_cases": 10,
+    "case_scope_counts": {
+      "adjacent_known_item_retrieval": 6,
+      "core_incomplete_recall": 4
+    },
+    "documents_with_cases": 8,
+    "accepted_empty_documents": 7,
+    "analysis_spans": 61,
+    "historical_inline_only_count": 24,
+    "ledger_nonvalid_attempt_spans": 8,
+    "current_record_gate_failures": 0,
+    "nonvalid_analysis_spans": 0,
+    "missing_retained_valid_verdicts": 0,
+    "fresh_development_source_checks": 20,
+    "fresh_verbatim_failures": 0,
+    "verbatim_basis": "All analysis spans matched retained successful source-validation verdicts; fresh source checks restricted to approved gold-dev packets."
+  },
+  "approved_reference": {
+    "documents": 10,
+    "review_files": 10,
+    "human_reviewer": "Sunayana",
+    "method": "single-reviewer-ai-assisted/v1"
+  },
+  "tests": {
+    "tests": 1092,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 5,
+    "passed": 1087,
+    "required_families_present": true,
+    "ok": true
+  },
+  "historical_provider_calls": 17,
+  "historical_cache_hits": 4,
+  "provider_calls_this_audit": 0,
+  "holdout_source_text_loaded": false,
+  "quality_gate": "pending; no holdout scoring or extraction quality claim",
+  "semantic_approval_of_saved_model_cases": "not established by this technical audit; approved human references are separate",
+  "limitations": [
+    "Manual convenience sample; provenance is retained, source availability was not re-fetched.",
+    "Six failed extraction documents and seven accepted empty responses remain diagnostic findings.",
+    "One unavailable model relevance decision used an existing effective human decision.",
+    "Known semantic risks remain: retrieval_trigger, unsupported impact/severity, incomplete summary evidence, invented or spliced quotes.",
+    "Gold references are ten documents, single-human-reviewed with AI assistance, and include a disclosed album scope exception."
+  ],
+  "input_sha256": {
+    "data/processed/pilot-import/import_report.json": "0a1505ccb3743a0037352d360897e72f2efbb9af2448c1b14753870028942569",
+    "data/interim/phase4/relevance_split_manifest.csv": "8ab49cdbe4bea8ae330610e8c7424f3851f724dda77170a34a7e67ce0001db97",
+    "data/interim/verification/m1-2026-10-04/full-suite.xml": "fa2a696f05c249cc5bfa0e8dfe2ebe7e89fabd4e34426ed0436e8a52f061fb3a",
+    "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-01/manifest.json": "492f3c345f2c733ccd477237fc46d74e0b0b1ddc9fbad85637fca9e094d1fb26",
+    "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-01/review_policy.json": "aa7bdb481ac5f86783ae31d060934d0e15a6b629c91d54353c8b80f3b44af00f",
+    "data/interim/phase5/development-corpus/3dc346ec030a/case_labels.jsonl": "e715d259ad96911dbaf690897759f65c74214f83aa654c82ab5d7200d7d2d09e",
+    "data/interim/phase5/development-corpus/3dc346ec030a/checkpoints.jsonl": "84c663562aed2e343fa3452590aba1996f4b0bb6f1c29fb24d7c66545a56d75b",
+    "data/interim/phase5/development-corpus/3dc346ec030a/evidence_spans.jsonl": "e2a5980a8691167b16b09c085beb77e10cb675da688c717b0564d088e1eeae02",
+    "data/interim/phase5/development-corpus/3dc346ec030a/extraction_candidates.jsonl": "80eb5ba2031b0c0a97acf7665d271871c405391ce7859ce04cf9a5481dd02e7d",
+    "data/interim/phase5/development-corpus/3dc346ec030a/extraction_failures.jsonl": "986d39bbdfc6e9910009bc6c5390bd5d8a3f6ac653fc8c47b5752a941a7de00d",
+    "data/interim/phase5/development-corpus/3dc346ec030a/extraction_inputs.jsonl": "2fc01127eaf882a1dbebe700cf7b124c67951482b07b44962058c22474e13561",
+    "data/interim/phase5/development-corpus/3dc346ec030a/label_disagreements.jsonl": "4a7d79768ee6148593e41e41adad596cd3474c064b0af9acef59112465673374",
+    "data/interim/phase5/development-corpus/3dc346ec030a/retrieval_cases.jsonl": "970843534d1aa99f467af862a3e9b1943827e158ac9fe825f61b48fa96c65cc8",
+    "data/interim/phase5/development-corpus/3dc346ec030a/review_queue.jsonl": "8a6af0514297478bbbf1ebb68d224e0e0b2ebf508909f4f50d80a32bb90a7c7f",
+    "data/interim/phase5/development-corpus/3dc346ec030a/run_manifest.json": "6b154a91f1cc79d639b414c740a55a0cb53ff246744597fc319ee6f2a4cfce17",
+    "data/interim/phase5/development-corpus/3dc346ec030a/span_validations.jsonl": "b65afd43582759b795db262145901a4f087ea7b0d489ff55611d1896f10f7603",
+    "data/interim/phase5/development-corpus/3dc346ec030a/stage_events.jsonl": "ed0c1802f49c6bd1270486c8bdc5d21c42f6f14ce8846129b9eae3153b1a4223",
+    "data/interim/phase5/development-corpus/3dc346ec030a/stage_funnel.json": "be96cfb62d1dddc2cbbb2863c8fbdd02891491aff1808840326b652580b08f96",
+    "data/interim/phase3/stage_events.jsonl": "4c6e9e46cca96e25136630cb358363421fd31a4bb81583afe6e94d11326ebd73",
+    "data/interim/phase4/stage_events.jsonl": "11ee668e2fd55813052110b161d1237c2331d1e53ac275f8d8ad246ddc582beb",
+    "data/interim/phase4/development/01455c8aab03/stage_events.jsonl": "e943c333f1896adfcb3eb6ff7c58a8884ad9776d01886cc50217ba6f6e256646"
+  }
+}

@@ -1,0 +1,316 @@
+{
+  "agreement": {
+    "cohen_kappa": null,
+    "pairs": 0,
+    "raw_agreement": null
+  },
+  "case_coverage": {
+    "accepted_model_cases": 5,
+    "field_metrics_basis": "matched cases only; unmatched gold cases and technical failures are not silently scored as field matches",
+    "gold_case_coverage": 0.6666666666666666,
+    "gold_cases": 6,
+    "matched_cases": 4,
+    "unmatched_gold_cases": 2,
+    "unmatched_model_cases": 1
+  },
+  "confusion": {
+    "adjacent_known_item_retrieval": {
+      "adjacent_known_item_retrieval": 2,
+      "core_incomplete_recall": 1
+    },
+    "core_incomplete_recall": {
+      "adjacent_known_item_retrieval": 1,
+      "core_incomplete_recall": 2
+    },
+    "out_of_scope": {
+      "adjacent_known_item_retrieval": 1,
+      "out_of_scope": 3
+    }
+  },
+  "documents": 10,
+  "duplicate_rate": null,
+  "evaluation_version": "gold-evaluation/v2",
+  "excluded_technical_failures": 0,
+  "failure_rate": 0.2857142857142857,
+  "gates": {
+    "prefilter_recall": {
+      "pass": true,
+      "threshold": 0.9,
+      "value": 1.0
+    },
+    "relevance_precision": {
+      "pass": true,
+      "threshold": 0.85,
+      "value": 0.8571428571428571
+    },
+    "relevance_recall": {
+      "pass": true,
+      "threshold": 0.8,
+      "value": 1.0
+    },
+    "schema_validation_rate": {
+      "pass": true,
+      "threshold": 1.0,
+      "value": 1.0
+    },
+    "span_validation_rate": {
+      "pass": true,
+      "threshold": 1.0,
+      "value": 1.0
+    }
+  },
+  "gold_cases": 6,
+  "gold_quote_failures": 0,
+  "limitations": [
+    "Development diagnostic over an AI-assisted, single-human-reviewed reference sample; not a final holdout quality gate.",
+    "Field accuracy is conditional on matched retained cases; inspect case coverage and extraction failures separately.",
+    "Unsupported-inference rates combine missing/invalid spans and disagreement with available reference values; a verbatim quote alone does not prove semantic support.",
+    "problem_summary has no reference summary value in the existing gold contract; its semantic support needs manual review, even when its attached span is valid.",
+    "Gold scope exceptions remain disclosed in the reference export; no label was changed to match the model."
+  ],
+  "match_version": "evidence-overlap/v1",
+  "multilabel": {
+    "forgotten_information": {
+      "macro": {
+        "f1": null,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "micro": {
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0
+      }
+    },
+    "impact_signals": {
+      "macro": {
+        "f1": null,
+        "precision": null,
+        "recall": null
+      },
+      "micro": {
+        "f1": null,
+        "precision": null,
+        "recall": null
+      }
+    },
+    "query_strategies": {
+      "macro": {
+        "f1": 1.0,
+        "precision": 0.5,
+        "recall": 0.5
+      },
+      "micro": {
+        "f1": 0.5,
+        "precision": 0.5,
+        "recall": 0.5
+      }
+    },
+    "remembered_cues": {
+      "macro": {
+        "f1": 1.0,
+        "precision": 0.5,
+        "recall": 0.3333333333333333
+      },
+      "micro": {
+        "f1": 0.4,
+        "precision": 0.5,
+        "recall": 0.3333333333333333
+      }
+    },
+    "system_responses": {
+      "macro": {
+        "f1": null,
+        "precision": null,
+        "recall": 0.0
+      },
+      "micro": {
+        "f1": null,
+        "precision": null,
+        "recall": 0.0
+      }
+    },
+    "target_subjects": {
+      "macro": {
+        "f1": 0.6666666666666666,
+        "precision": 0.5,
+        "recall": 1.0
+      },
+      "micro": {
+        "f1": 0.6666666666666666,
+        "precision": 0.5,
+        "recall": 1.0
+      }
+    },
+    "workarounds": {
+      "macro": {
+        "f1": null,
+        "precision": null,
+        "recall": null
+      },
+      "micro": {
+        "f1": null,
+        "precision": null,
+        "recall": null
+      }
+    }
+  },
+  "prediction_coverage": {
+    "documents_with_predictions": 10,
+    "documents_without_predictions": 0
+  },
+  "prefilter_recall": 1.0,
+  "quality_gate_status": "development_only",
+  "relevance": {
+    "f1": 0.923076923076923,
+    "precision": 0.8571428571428571,
+    "recall": 1.0
+  },
+  "review_method": {
+    "adjudication_performed": false,
+    "ai_assisted": true,
+    "approved_on": "2026-10-04",
+    "authorization": "There is no second reviewer as such you can name the current files with my name as the reviewer. Its an individual project i cant involve more people in it",
+    "blinded_independent_coding": false,
+    "client_timezone": "Asia/Calcutta",
+    "draft_approval": "I have reviewed both the documents in detail and approve the drafts",
+    "human_reviewer": "Sunayana",
+    "human_reviewer_count": 1,
+    "inter_reviewer_agreement": {
+      "cohen_kappa": null,
+      "raw_agreement": null,
+      "status": "not_performed_single_reviewer"
+    },
+    "limitations": [
+      "AI-generated drafts were reviewed and corrected by one human; no independent inter-coder validation.",
+      "Ten development documents are a small diagnostic sample, not full quality certification.",
+      "The family-album core scope exception remains disclosed."
+    ],
+    "original_seating_and_split_unchanged": true,
+    "recorded_at": "2026-10-03T19:02:04.763138+00:00",
+    "reference_revision": {
+      "approved_on": "2026-10-04",
+      "authorization": ". I recommend a **new reference version with impact unstated, retaining severity 3**.  - go ahead with this, I approve the rest",
+      "previous_reference": "C:\\Users\\sunayana\\Downloads\\Google Photos discovery engine\\data\\annotation\\dev-starter-2026-10-03\\sunayana-reviewed-01\\development-reference-01",
+      "recorded_at": "2026-10-04T06:00:47.030455+00:00",
+      "reviewer": "Sunayana",
+      "scope": "cat impact unstated; severity 3 retained; remaining review findings/correction proposals approved",
+      "version": "development-reference-02"
+    },
+    "second_human_review_required": false,
+    "version": "single-reviewer-ai-assisted/v1"
+  },
+  "review_rate": 0.0,
+  "saved_inputs": {
+    "accepted_empty_documents": 0,
+    "eligible_documents": 7,
+    "failed_extraction_documents": 2,
+    "holdout_source_text_loaded": false,
+    "input_sha256": {
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/scripts/evaluate.py": "a934875b3e653b11aaed8b31a569994a059d4f37117713f9f4b81d4b4930e279",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/src/gold/evaluate.py": "80345aad913f69eabf69895c6d7c934bc21f405360893a3b9c26be2e4e96a107",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/src/gold/metrics.py": "096f6d07174888213bf6e770617e7f30a1bc3301eb7ad15090795aaa0ac637f1",
+      "C:/Users/sunayana/Downloads/Google Photos discovery engine/src/gold/saved_run.py": "a44b40f083ffb5ac19f3359694dcf3a7c5dc16701415413dfa4ed6664c7e3717",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/development-reference-02/cases.jsonl": "b4c0acff98a613cda53e0be3d42e1da6abebe9a51c3cd86abd857083371f2557",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/development-reference-02/documents.jsonl": "80af2af00b83b03cc360dc1ba89b586be47793ea2a791ce8c9965fee3648d508",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/development-reference-02/scope_exceptions.json": "962e978ba0fa595f908eb83199473ab8526835d682f7aeeb97187816be8fc0aa",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/manifest.json": "492f3c345f2c733ccd477237fc46d74e0b0b1ddc9fbad85637fca9e094d1fb26",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/packets/google_support-2a080da4b930.json": "91a8b4de94f6316a829f4cfe2195699352f5737b923feda9edab8b9f7f353dc5",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/packets/google_support-4f34e2312ca6.json": "37343ed9c3705e06808ecd397067d6ec981fa7f0b6c723957b5922445e0cf1be",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/packets/google_support-5b2ec98df32b.json": "3a0c8433642d0e295f4fe46cc6e8a728012c03e858a35874a4da2f26d41d910a",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/packets/google_support-8c6ab430fbee.json": "3e3c169a517d586dd10a001b6f5e096e786ff88c27f45f6ce963f7177a5b31a1",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/packets/play_store-fb8c41525287.json": "85d0169ee43f7ee1c49a34d6a97c6194166bae4296d063fd6be8c80651c1136a",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/packets/reddit-0d477b54fb9b.json": "c2a8085bbf2a74c504e97ba05a9f1540a8d6be85ce71060ac31d3fcbe65404f6",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/packets/reddit-87311c2633df.json": "d23769c3699b5fa3f165b0b30e049f5d70d8acd07aafa225b0d7d461ed030ad4",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/packets/reddit-bde62ddef9b5.json": "d8d0b52aa10759570f2377f146c80261cdc0519cdc74453441c14d1cb1d2d4a1",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/packets/reddit-c2c00b25a88b.json": "14ba8a1e48a72b1164b8771d6d4bd29c2223297dfa982f5a7d08fc2f42fc46ea",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/packets/youtube-17fd27447275.json": "97dd0bee913e78b580dc5790f7098bad944eee1da57d363e66cbefa5541df144",
+      "data/annotation/dev-starter-2026-10-03/sunayana-reviewed-02/review_policy.json": "c2d9dd3228271f0e8a8aa95f86c405b11245014fcfd450e88c4572ceeee26ebd",
+      "data/interim/phase6/quality-dev-v6-2026-10-04-01/extraction/d7581cf180be/evidence_spans.jsonl": "0a672836fce6a6ff5c66860e0f4bd182c89d6fe9255b9a14b8cb9fdeb2c7be5d",
+      "data/interim/phase6/quality-dev-v6-2026-10-04-01/extraction/d7581cf180be/extraction_inputs.jsonl": "8dcdab034c5ac27e655c591d0fc9f25bbce7d5962cba98aa4ecddf74e3e49abe",
+      "data/interim/phase6/quality-dev-v6-2026-10-04-01/extraction/d7581cf180be/retrieval_cases.jsonl": "b1cca4a661b2e881b5ee337dd4a7098452c347170b4c0629a29fa71b6e12931d",
+      "data/interim/phase6/quality-dev-v6-2026-10-04-01/extraction/d7581cf180be/run_manifest.json": "c7fcb9ff84bdab767b7850d9b4b649a06ed183b3663ebca790ad91525bb69e96",
+      "data/interim/phase6/quality-dev-v6-2026-10-04-01/extraction/d7581cf180be/stage_events.jsonl": "cd357855bdc4aee3a40da5d3c8825413bb88ec5fc8887a058bdf6212e15dcdef",
+      "data/interim/phase6/quality-dev-v6-2026-10-04-01/relevance/relevance_decisions.jsonl": "35d1da502a2b8e1c7b74fe95af134afc22b936730baea97a647daa797e831487",
+      "data/interim/phase6/quality-dev-v6-2026-10-04-01/relevance/stage_events.jsonl": "c3141b49b5c891c3d98def1be67857576d2ec0c396436cc43215caeff4cdce93"
+    },
+    "non_ok_relevance_documents": 0,
+    "provider_calls": 0,
+    "role": "development_diagnostic_not_final_quality_certification",
+    "run_id": "d7581cf180be",
+    "schema_denominator": "ok model relevance decisions plus stored accepted extraction cases; technical failures are excluded and reported",
+    "skipped_documents": 3,
+    "versions": {
+      "normalizer_version": "1.0.0",
+      "prompt_versions": {
+        "extract": "extract/v4",
+        "relevance": "relevance/v5"
+      },
+      "ruleset_version": "prefilter/v1",
+      "schema_version": "1.0.0",
+      "taxonomy_version": "0-unassigned"
+    }
+  },
+  "scalar_accuracy": {
+    "known_item_status": 1.0,
+    "known_item_status_observation": 1.0,
+    "outcome": 0.75,
+    "outcome_observation": 0.75,
+    "reformulation_count": 1.0,
+    "reformulation_count_observation": 1.0,
+    "scope_class": 0.7,
+    "severity": 1.0,
+    "severity_observation": 1.0,
+    "target_asset_type": 1.0,
+    "target_asset_type_observation": 1.0
+  },
+  "schema_validation_rate": 1.0,
+  "scope_exceptions": [
+    {
+      "adjudicated": false,
+      "ai_assisted": true,
+      "approval_scope": [
+        "scope_class override only"
+      ],
+      "approved_scope_class": "core_incomplete_recall",
+      "client_timezone": "Asia/Calcutta",
+      "decision": "reviewer_directed_core_scope_exception",
+      "doc_id": "google_support-2a080da4b930",
+      "independent_human_double_coding": false,
+      "item": 1,
+      "previous_scope_class": "adjacent_known_item_retrieval",
+      "recorded_at": "2026-10-03T18:49:16.139572+00:00",
+      "remaining": [
+        "case fields not blanket-approved by the scope override",
+        "scope exception must be disclosed in later analysis/evaluation methodology"
+      ],
+      "reviewed_on": "2026-10-04",
+      "reviewer": "Sunayana",
+      "scope_criteria_exception": {
+        "evidence_fields_changed_to_justify_override": false,
+        "missing_condition": "incomplete, approximate, uncertain or difficult-to-express memory cues are not demonstrated by the source",
+        "rule": "problem-statement.md Section 9.1",
+        "rule_changed": false
+      },
+      "user_statement": "this can be changed to core."
+    }
+  ],
+  "span_validation_rate": 1.0,
+  "split": "dev",
+  "split_rule": "gold-split/v1",
+  "split_seed": "gold-split/v1",
+  "status": "measured",
+  "unsupported_inference": {
+    "exact_query": 0.0,
+    "forgotten_information": 1.0,
+    "known_item_status": 0.0,
+    "outcome": 0.0,
+    "overall": 0.38095238095238093,
+    "problem_summary": null,
+    "query_strategies": 0.5,
+    "remembered_cues": 0.5,
+    "retrieval_trigger": 1.0,
+    "target_asset_type": 0.0,
+    "target_subjects": 0.5
+  }
+}

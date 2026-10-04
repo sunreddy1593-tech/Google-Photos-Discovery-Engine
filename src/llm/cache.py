@@ -37,6 +37,7 @@ class CacheEntry:
     input_tokens: int
     output_tokens: int
     cached_at: str
+    finish_reason: str | None = None
 
 
 class ResponseCache:
@@ -70,6 +71,7 @@ class ResponseCache:
                 input_tokens=int(payload.get("input_tokens") or 0),
                 output_tokens=int(payload.get("output_tokens") or 0),
                 cached_at=str(payload.get("cached_at") or ""),
+                finish_reason=payload.get("finish_reason"),
             )
         except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError):
             return None
@@ -95,6 +97,7 @@ class ResponseCache:
             "input_tokens": entry.input_tokens,
             "output_tokens": entry.output_tokens,
             "cached_at": entry.cached_at,
+            "finish_reason": entry.finish_reason,
         }
         blob = json.dumps(payload, sort_keys=True, ensure_ascii=False)
         for secret in denylist:

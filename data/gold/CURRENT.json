@@ -1,0 +1,13 @@
+{
+  "approval": "data/annotation/holdout-review-2026-10-04-01/human-approval.json",
+  "cases": 21,
+  "decision": "ADR-37",
+  "documents": 35,
+  "final": true,
+  "official_sha256": {
+    "cases.jsonl": "9316d5c8038fda42465a2ff3fe846b9812ca8690caf50fd90e278f025eb5ef2c",
+    "documents.jsonl": "b81a5fd5a419cc7a1a95e431746bd98ba3a737979b100f1e1131b465418c40cf"
+  },
+  "original_empty_gold_preserved_at": "data/gold/pre-quality-freeze-2026-10-04-01",
+  "source": "data/gold/quality-freeze-2026-10-04-01"
+}

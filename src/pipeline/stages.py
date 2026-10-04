@@ -136,8 +136,12 @@ def run_phase4(
     provider_call_budget: int | None = None,
     model_call: dict | None = None,
     parent_contexts: dict[str, ParentContext] | None = None,
+    context_report: dict | None = None,
+    recorded_at: datetime | None = None,
+    relevance_prompt_version: str | None = None,
 ) -> Phase4Result:
     """Run prefilter, relevance, or both. Dry-run writes nothing and calls no provider."""
+    recorded_at = recorded_at or (PHASE_INSTANT if offline or dry_run else datetime.now(UTC))
     destination = Path(output_dir)
     ordered = sorted(documents, key=lambda document: document.doc_id)
     if limit is not None:
@@ -164,6 +168,7 @@ def run_phase4(
         confidence_review_below=confidence_review_below,
         offline=offline,
         dry_run=dry_run,
+        relevance_prompt_version=relevance_prompt_version,
     )
     skips = non_canonical_map(links)
     prefilter_rows = _prefilter_rows(ordered, derived_by_id, skips)
@@ -240,9 +245,11 @@ def run_phase4(
                     confidence_review_below=confidence_review_below,
                     denylist=denylist,
                     unattempted_documents=len(pending) - index - 1,
+                    recorded_at=recorded_at,
                     parent_context=None
                     if parent_contexts is None
                     else parent_contexts.get(row.doc_id),
+                    relevance_prompt_version=relevance_prompt_version,
                 )
             except ProviderFatalError as exc:
                 outcome = failure_outcome(
@@ -250,9 +257,10 @@ def run_phase4(
                     content_hash=derived_by_id[row.doc_id].content_hash,
                     model_name=model_name,
                     state=DecisionTechnicalState.provider_error,
-                    decided_at=PHASE_INSTANT,
+                    decided_at=recorded_at,
                     message="the provider rejected the credentials",
                     diagnostic=exc.diagnostic,
+                    prompt_version_value=relevance_prompt_version,
                 )
                 relevance_outcomes.append(outcome)
                 fresh.append(outcome.decision)
@@ -299,12 +307,13 @@ def run_phase4(
             queue = _merge_queue(
                 destination / "review_queue.jsonl",
                 relevance_outcomes,
+                recorded_at=recorded_at,
             )
             _write_models(destination / "review_queue.jsonl", queue, "item_id")
             files.append("review_queue.jsonl")
         events = _merge_stage_events(
             destination / "stage_events.jsonl",
-            _events(run_id, prefilter_rows, relevance_outcomes, stages),
+            _events(run_id, prefilter_rows, relevance_outcomes, stages, recorded_at=recorded_at),
             stages,
         )
         _write_models(destination / "stage_events.jsonl", events, "event_id")
@@ -338,6 +347,9 @@ def run_phase4(
             latency_seconds=latency_seconds,
             cached_input_tokens=cached_input_tokens,
             model_call=model_call,
+            context_report=context_report,
+            recorded_at=recorded_at,
+            relevance_prompt_version=relevance_prompt_version,
         )
         write_manifest(destination / "run_manifest.json", manifest)
         files.append("run_manifest.json")
@@ -405,6 +417,7 @@ def classify_with_ladder(
     confidence_review_below: float,
     decided_at: datetime,
     expected_doc_id: str,
+    prompt_version_value: str | None = None,
 ) -> ClassificationOutcome:
     """Validate one payload against ``audit`` only. ``raw_text`` is not accepted."""
     evidence = payload.evidence
@@ -420,6 +433,7 @@ def classify_with_ladder(
             decided_at=decided_at,
             failure_state=DecisionTechnicalState.schema_validation_failed,
             failure_message="evidence offsets must be supplied together",
+            prompt_version_value=prompt_version_value,
         )
     try:
         span = pending_span(payload, "pending")
@@ -435,6 +449,7 @@ def classify_with_ladder(
             decided_at=decided_at,
             failure_state=DecisionTechnicalState.schema_validation_failed,
             failure_message=str(exc)[:300],
+            prompt_version_value=prompt_version_value,
         )
     checked = validate_span(span, audit, redactions)
     verdict = SpanVerdict(
@@ -457,6 +472,7 @@ def classify_with_ladder(
         prefilter=prefilter,
         confidence_review_below=confidence_review_below,
         decided_at=decided_at,
+        prompt_version_value=prompt_version_value,
     )
 
 
@@ -503,7 +519,9 @@ def phase4_run_id(
     confidence_review_below: float,
     offline: bool,
     dry_run: bool,
+    relevance_prompt_version: str | None = None,
 ) -> str:
+    extra = () if not relevance_prompt_version else (relevance_prompt_version,)
     return sha1_short(
         "phase4",
         RULESET_VERSION,
@@ -519,6 +537,7 @@ def phase4_run_id(
         "" if limit is None else limit,
         *stages,
         *doc_ids,
+        *extra,
         length=12,
     )
 
@@ -556,17 +575,21 @@ def _classify_one(
     denylist: tuple[str, ...],
     unattempted_documents: int = 0,
     parent_context: ParentContext | None = None,
+    recorded_at: datetime = PHASE_INSTANT,
+    relevance_prompt_version: str | None = None,
 ) -> ClassificationOutcome:
     schema = relevance_json_schema()
     if gateway.provider_name == "groq":
         from src.llm.providers.groq import groq_request_schema
 
         schema = groq_request_schema(schema, doc_id=document.doc_id)
+    selected_prompt = relevance_prompt_version or prompt_version(PROMPT_ID)
     prompt = render_relevance_prompt(
         doc_id=document.doc_id,
         raw_text_audit=derived.raw_text_audit,
         schema=schema,
         parent_context=parent_context,
+        version=selected_prompt,
     )
     if any(secret and secret in prompt for secret in denylist):
         return failure_outcome(
@@ -574,8 +597,9 @@ def _classify_one(
             content_hash=derived.content_hash,
             model_name=model_name,
             state=DecisionTechnicalState.provider_error,
-            decided_at=PHASE_INSTANT,
+            decided_at=recorded_at,
             message="prompt withheld",
+            prompt_version_value=selected_prompt,
         )
     completed = gateway.complete(
         prompt=prompt,
@@ -583,7 +607,7 @@ def _classify_one(
         response_model=RelevancePayload,
         content_hash=derived.content_hash,
         prompt_id=PROMPT_ID,
-        prompt_version=prompt_version(PROMPT_ID),
+        prompt_version=selected_prompt,
         ruleset_version=RULESET_VERSION,
         discard_keys=("is_relevant",),
         unattempted_documents=unattempted_documents,
@@ -597,9 +621,10 @@ def _classify_one(
             content_hash=derived.content_hash,
             model_name=model_name,
             state=completed.technical_state,
-            decided_at=PHASE_INSTANT,
+            decided_at=recorded_at,
             message=completed.message or completed.technical_state.value,
             diagnostic=completed.diagnostic,
+            prompt_version_value=selected_prompt,
         )
     return classify_with_ladder(
         completed.validated,
@@ -609,8 +634,9 @@ def _classify_one(
         model_name=model_name,
         prefilter=prefilter,
         confidence_review_below=confidence_review_below,
-        decided_at=PHASE_INSTANT,
+        decided_at=recorded_at,
         expected_doc_id=document.doc_id,
+        prompt_version_value=selected_prompt,
     )
 
 
@@ -651,19 +677,20 @@ def _events(
     prefilter_rows: list[PrefilterResult],
     outcomes: list[ClassificationOutcome],
     stages: list[str],
+    *, recorded_at: datetime = PHASE_INSTANT,
 ) -> list[StageEvent]:
     events: list[StageEvent] = []
     if "prefilter" in stages:
         for row in prefilter_rows:
-            events.append(_prefilter_event(run_id, row))
+            events.append(_prefilter_event(run_id, row, recorded_at=recorded_at))
     if "relevance" in stages:
         for outcome in outcomes:
-            events.append(_relevance_event(run_id, outcome))
+            events.append(_relevance_event(run_id, outcome, recorded_at=recorded_at))
     events.sort(key=lambda event: event.event_id)
     return events
 
 
-def _prefilter_event(run_id: str, row: PrefilterResult) -> StageEvent:
+def _prefilter_event(run_id: str, row: PrefilterResult, *, recorded_at: datetime = PHASE_INSTANT) -> StageEvent:
     detail = {
         "route": row.route,
         "ruleset_version": row.ruleset_version,
@@ -690,12 +717,12 @@ def _prefilter_event(run_id: str, row: PrefilterResult) -> StageEvent:
         reason_code=reason,
         attempt=1,
         run_id=run_id,
-        occurred_at=PHASE_INSTANT,
+        occurred_at=recorded_at,
         detail=detail,
     )
 
 
-def _relevance_event(run_id: str, outcome: ClassificationOutcome) -> StageEvent:
+def _relevance_event(run_id: str, outcome: ClassificationOutcome, *, recorded_at: datetime = PHASE_INSTANT) -> StageEvent:
     state = outcome.decision.technical_state
     if state is DecisionTechnicalState.ok:
         status = StageStatus.succeeded
@@ -724,7 +751,7 @@ def _relevance_event(run_id: str, outcome: ClassificationOutcome) -> StageEvent:
         reason_code=reason,
         attempt=1,
         run_id=run_id,
-        occurred_at=PHASE_INSTANT,
+        occurred_at=recorded_at,
         detail=detail,
     )
 
@@ -788,13 +815,13 @@ def _succeeded_targets(path: Path, run_id: str | None) -> set[str]:
     return found
 
 
-def _merge_queue(path: Path, outcomes: list[ClassificationOutcome]) -> list[ReviewItem]:
+def _merge_queue(path: Path, outcomes: list[ClassificationOutcome], *, recorded_at: datetime = PHASE_INSTANT) -> list[ReviewItem]:
     pairs = [
         (outcome.decision.decision_id, reason)
         for outcome in outcomes
         for reason in outcome.review_reasons
     ]
-    incoming = open_relevance_items(pairs, opened_at=PHASE_INSTANT)
+    incoming = open_relevance_items(pairs, opened_at=recorded_at)
     return list(merge_items(_load_reviews(path), incoming))
 
 
@@ -828,6 +855,9 @@ def _manifest(
     latency_seconds: tuple[float, ...] = (),
     cached_input_tokens: int | None = None,
     model_call: dict | None = None,
+    context_report: dict | None = None,
+    recorded_at: datetime = PHASE_INSTANT,
+    relevance_prompt_version: str | None = None,
 ) -> dict[str, object]:
     counts = _count(prefilter_rows)
     drop_reasons: dict[str, int] = {}
@@ -878,8 +908,10 @@ def _manifest(
             "estimated_cost_usd": round(estimated_cost, 6),
         },
         output_hashes=hashes,
-        generated_at=PHASE_INSTANT,
+        generated_at=recorded_at,
     )
+    if relevance_prompt_version is not None:
+        payload["versions"]["prompt_versions"]["relevance"] = relevance_prompt_version
     if model_call is not None:
         recorded = dict(model_call)
         recorded["provider_calls"] = provider_calls
@@ -895,6 +927,8 @@ def _manifest(
         recorded["free_tier_usage"] = False
         recorded["latency_seconds"] = [round(value, 6) for value in latency_seconds]
         payload["model_call"] = recorded
+    if context_report is not None:
+        payload["context_report"] = context_report
     return payload
 
 

@@ -1,0 +1,48 @@
+{
+  "all_numeric_thresholds_passed": true,
+  "development_matched_cases": 2,
+  "development_reference_cases": 6,
+  "development_relevance_precision": 0.8333333333333334,
+  "development_relevance_precision_passed": false,
+  "holdout_documents": 25,
+  "matched_cases": 5,
+  "model_outputs_semantically_approved": false,
+  "reference_cases": 15,
+  "status": "measured",
+  "numeric_gate_status": "numeric_thresholds_passed",
+  "m1_status": "complete",
+  "limitations": [
+    "Gold holdout was reserved from 35 previously processed Phase 4 development documents. Prior development exposure limits independence; this is not an untouched external test set. The original 15 Phase 4 holdout seats are separate.",
+    "Case coverage is 5/15; numeric gate passage is not extraction semantic approval.",
+    "AI-assisted labels approved by one human; gold size is 35 rather than the internal 75-100 target.",
+    "Schema/span rates are for accepted records; five failed extraction attempts remain excluded. This does not establish that every processed provider output passed validation."
+  ],
+  "splits": [
+    {
+      "documents": 10,
+      "excluded_technical_failures": 1,
+      "matched_cases": 2,
+      "prefilter_recall": 1.0,
+      "quality_gate_status": "development_only",
+      "reference_cases": 6,
+      "relevance_precision": 0.8333333333333334,
+      "relevance_recall": 1.0,
+      "schema_validation_rate": 1.0,
+      "span_validation_rate": 1.0,
+      "split": "development"
+    },
+    {
+      "documents": 25,
+      "excluded_technical_failures": 0,
+      "matched_cases": 5,
+      "prefilter_recall": 1.0,
+      "quality_gate_status": "numeric_thresholds_passed",
+      "reference_cases": 15,
+      "relevance_precision": 0.9285714285714286,
+      "relevance_recall": 0.9285714285714286,
+      "schema_validation_rate": 1.0,
+      "span_validation_rate": 1.0,
+      "split": "holdout"
+    }
+  ]
+}

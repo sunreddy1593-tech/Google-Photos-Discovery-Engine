@@ -1,0 +1,38 @@
+{
+  "documents": 0,
+  "excluded_technical_failures": null,
+  "gates": {
+    "prefilter_recall": {
+      "pass": null,
+      "threshold": 0.9,
+      "value": null
+    },
+    "relevance_precision": {
+      "pass": null,
+      "threshold": 0.85,
+      "value": null
+    },
+    "relevance_recall": {
+      "pass": null,
+      "threshold": 0.8,
+      "value": null
+    },
+    "schema_validation_rate": {
+      "pass": null,
+      "threshold": 1.0,
+      "value": null
+    },
+    "span_validation_rate": {
+      "pass": null,
+      "threshold": 1.0,
+      "value": null
+    }
+  },
+  "gold_cases": 0,
+  "match_version": "evidence-overlap/v1",
+  "message": "pending: the gold set has no documents in this split",
+  "split": "holdout",
+  "split_rule": "gold-split/v1",
+  "split_seed": "gold-split/v1",
+  "status": "pending"
+}

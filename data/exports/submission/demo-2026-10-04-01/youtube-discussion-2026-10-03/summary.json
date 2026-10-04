@@ -1,0 +1,42 @@
+{
+  "dataset_id": "youtube-discussion-2026-10-03",
+  "run_id": "ae60feaa840d",
+  "description": "Partial YouTube comment sample from the 2026-10-03 research batch. It is outside the frozen split.",
+  "split_policy": "outside_frozen_split",
+  "documents": 20,
+  "withheld_evaluation_documents": 0,
+  "frozen_split_overlap_excluded": 0,
+  "analysis_documents": 20,
+  "confirmed_duplicate_links": 0,
+  "pending_duplicate_links": 0,
+  "human_relevance_labels": 0,
+  "human_labeled_out_of_scope": 0,
+  "model_relevance_attempts": 20,
+  "model_relevance_out_of_scope": 19,
+  "model_relevance_by_scope": {
+    "out_of_scope": 19,
+    "adjacent_known_item_retrieval": 1
+  },
+  "extraction_attempts": 1,
+  "extraction_by_state": {
+    "provider_error": 1
+  },
+  "stored_cases": 0,
+  "exported_cases": 0,
+  "automatically_valid_cases": 0,
+  "semantically_approved_cases": 0,
+  "failed_attempts": 1,
+  "empty_responses": 0,
+  "unresolved_review_items": 1,
+  "recorded_semantic_findings": 1,
+  "corrections": 0,
+  "missing_inputs": [],
+  "limitations": [
+    "20 comments from one video. Collection stopped during Dottotech's video. Howfinity's video was not started.",
+    "One thread with five replies was fetched to completion. The video-level report stays incomplete.",
+    "This sample is not added to the 35-document pilot and does not change the frozen split.",
+    "Nineteen relevance decisions are out of scope and one is adjacent. That adjacent classification is not an approved known-item episode. Its extraction attempt failed and saved no case.",
+    "Saved decision timestamps are not the 3 October wall-clock time."
+  ],
+  "counts_are_this_dataset_only": true
+}

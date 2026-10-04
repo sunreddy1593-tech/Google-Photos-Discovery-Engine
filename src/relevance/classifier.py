@@ -111,11 +111,13 @@ def assemble_decision(
     decided_at: datetime,
     failure_state: DecisionTechnicalState | None = None,
     failure_message: str = "",
+    prompt_version_value: str | None = None,
 ) -> ClassificationOutcome:
     """Build the stored decision. Invalid evidence does not stay on the record."""
+    selected_prompt = prompt_version_value or prompt_version(PROMPT_ID)
     fingerprint = decision_fingerprint(
         model_name,
-        prompt_version(PROMPT_ID),
+        selected_prompt,
         RULESET_VERSION,
         SCHEMA_VERSION,
         content_hash,
@@ -128,6 +130,7 @@ def assemble_decision(
             decided_at,
             "doc_id did not match the document that was sent",
             doc_id=expected_doc_id,
+            prompt_version_value=selected_prompt,
         )
     if failure_state is not None and failure_state is not DecisionTechnicalState.ok:
         return ClassificationOutcome(
@@ -138,6 +141,7 @@ def assemble_decision(
                 model_name=model_name,
                 decided_at=decided_at,
                 summary=failure_message or "No decision was produced.",
+                prompt_version_value=selected_prompt,
             ),
             review_reasons=(_STATE_REASON[failure_state],),
             retained_quote=payload.evidence.quote,
@@ -159,6 +163,7 @@ def assemble_decision(
             decided_at=decided_at,
             summary="Evidence did not validate.",
             reason_code=reason,
+            prompt_version_value=selected_prompt,
         )
         return ClassificationOutcome(
             decision=decision,
@@ -199,7 +204,7 @@ def assemble_decision(
             evidence=(span,),
             decided_by=DecidedBy.llm,
             model_name=model_name,
-            prompt_version=prompt_version(PROMPT_ID),
+            prompt_version=selected_prompt,
             ruleset_version=RULESET_VERSION,
             decision_fingerprint=fingerprint,
             decided_at=decided_at,
@@ -214,6 +219,7 @@ def assemble_decision(
             decided_at,
             str(exc)[:300],
             doc_id=expected_doc_id,
+            prompt_version_value=selected_prompt,
         )
     return ClassificationOutcome(decision=decision, review_reasons=tuple(reviews))
 
@@ -227,11 +233,13 @@ def failure_outcome(
     decided_at: datetime,
     message: str,
     diagnostic: object | None = None,
+    prompt_version_value: str | None = None,
 ) -> ClassificationOutcome:
     """A technical failure with no scope class and no evidence."""
+    selected_prompt = prompt_version_value or prompt_version(PROMPT_ID)
     fingerprint = decision_fingerprint(
         model_name,
-        prompt_version(PROMPT_ID),
+        selected_prompt,
         RULESET_VERSION,
         SCHEMA_VERSION,
         content_hash,
@@ -246,6 +254,7 @@ def failure_outcome(
             decided_at=decided_at,
             summary=message or "No decision was produced.",
             reason_code=reason,
+            prompt_version_value=selected_prompt,
         ),
         review_reasons=(reason,),
         failure_message=message,
@@ -260,6 +269,7 @@ def _schema_failure(
     decided_at: datetime,
     message: str,
     doc_id: str | None = None,
+    prompt_version_value: str | None = None,
 ) -> ClassificationOutcome:
     return ClassificationOutcome(
         decision=_failure(
@@ -269,6 +279,7 @@ def _schema_failure(
             model_name=model_name,
             decided_at=decided_at,
             summary="The response did not match the decision contract.",
+            prompt_version_value=prompt_version_value,
         ),
         review_reasons=(ReasonCode.schema_validation_failed,),
         retained_quote=payload.evidence.quote,
@@ -285,6 +296,7 @@ def _failure(
     decided_at: datetime,
     summary: str,
     reason_code: ReasonCode | None = None,
+    prompt_version_value: str | None = None,
 ) -> RelevanceDecision:
     reason = reason_code or _STATE_REASON[state]
     text = summary.strip() or "No decision was produced."
@@ -299,7 +311,7 @@ def _failure(
         evidence=(),
         decided_by=DecidedBy.llm,
         model_name=model_name,
-        prompt_version=prompt_version(PROMPT_ID),
+        prompt_version=prompt_version_value or prompt_version(PROMPT_ID),
         ruleset_version=RULESET_VERSION,
         decision_fingerprint=fingerprint,
         decided_at=decided_at,

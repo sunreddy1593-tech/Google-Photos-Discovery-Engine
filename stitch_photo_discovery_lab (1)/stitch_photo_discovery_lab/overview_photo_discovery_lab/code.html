@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"tertiary-container":"#6063ee","on-tertiary-fixed-variant":"#2f2ebe","on-tertiary-container":"#fffbff","on-surface-variant":"#3d4947","tertiary-fixed-dim":"#c0c1ff","on-primary-container":"#f4fffc","surface-bright":"#faf9f5","primary-container":"#008378","surface-container":"#efeeea","secondary-container":"#d5e0f8","outline":"#6d7a77","on-surface":"#1b1c1a","primary-fixed":"#89f5e7","inverse-on-surface":"#f2f1ed","primary":"#00685f","on-background":"#1b1c1a","on-primary":"#ffffff","surface-tint":"#006a61","tertiary-fixed":"#e1e0ff","on-error":"#ffffff","on-secondary-container":"#586377","secondary-fixed":"#d8e3fb","surface-container-highest":"#e3e2df","surface-dim":"#dbdad6","on-tertiary":"#ffffff","secondary-fixed-dim":"#bcc7de","on-primary-fixed-variant":"#005049","inverse-surface":"#30312e","on-primary-fixed":"#00201d","on-secondary-fixed-variant":"#3c475a","background":"#faf9f5","on-error-container":"#93000a","surface-container-high":"#e9e8e4","surface-variant":"#e3e2df","tertiary":"#4648d4","inverse-primary":"#6bd8cb","surface":"#faf9f5","error":"#ba1a1a","surface-container-lowest":"#ffffff","surface-container-low":"#f5f4f0","primary-fixed-dim":"#6bd8cb","on-secondary":"#ffffff","secondary":"#545f73","error-container":"#ffdad6","on-secondary-fixed":"#111c2d","outline-variant":"#bcc9c6","on-tertiary-fixed":"#07006c"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"margin":"2rem","space-md":"1rem","space-xs":"0.25rem","gutter":"1.5rem","space-sm":"0.5rem","space-lg":"1.5rem","gutter-sm":"1rem","space-xl":"2.5rem","margin-sm":"1rem"},"fontFamily":{"body-md":["Inter"],"headline-xl":["Plus Jakarta Sans"],"label-caps":["Inter"],"body-sm":["Inter"],"code-badge":["JetBrains Mono"],"headline-sm":["Plus Jakarta Sans"],"body-lg":["Inter"],"metric-stat":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"]},"fontSize":{"body-md":["0.875rem",{"lineHeight":"1.375rem","fontWeight":"400"}],"headline-xl":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.025em","fontWeight":"700"}],"label-caps":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.05em","fontWeight":"600"}],"body-sm":["0.75rem",{"lineHeight":"1.125rem","fontWeight":"400"}],"code-badge":["0.75rem",{"lineHeight":"0.95rem","letterSpacing":"0.02em","fontWeight":"500"}],"headline-sm":["1.125rem",{"lineHeight":"1.625rem","letterSpacing":"-0.01em","fontWeight":"600"}],"body-lg":["1rem",{"lineHeight":"1.625rem","fontWeight":"400"}],"metric-stat":["1.875rem",{"lineHeight":"2.25rem","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-lg":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.02em","fontWeight":"600"}]}}}};</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-72 bg-surface-container-low border-r border-[#E2E8F0] z-40 flex flex-col justify-between overflow-y-auto"><div class="p-space-md flex flex-col gap-space-md"><div class="flex items-center gap-space-sm pb-space-sm border-b border-[#E2E8F0]"><img alt="Photo Discovery Lab Logo" class="h-8 w-8 object-contain rounded-sm" src="https://lh3.googleusercontent.com/aida/AEtjO1UsHCnloUVQEbqz3aPJrjTwqjdD_yWlgBRjx4bY0G8Wh3S7_3TbQJzkIVujWGp5hXwXpFPP4d3SgqZMt3Bjx2NLSiTlG9sT0hRT0LnCciWdEwYxTb-t3uB1v3GisGLdDqfd6f-yFgMKdHurPxL6XmA_SnGaidMFsnQJxVQ3E36MaziCj8wPnQFAJivlt3hT2nh0hBE3souVFZ6Za-dwky0_tOagxbgWeRm9kV1AUMk1x1hz2A2EuM8F6w"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight leading-tight">Photo Discovery Lab</span><span class="font-label-caps text-label-caps uppercase text-secondary tracking-wider">Research Engine</span></div></div><div class="bg-surface-container p-space-sm rounded-sm flex flex-col gap-space-xs"><div class="flex items-center justify-between"><span class="font-label-caps text-label-caps uppercase text-secondary font-semibold">Perspective</span><span class="material-symbols-outlined text-[14px] text-secondary cursor-help" title="Public Evaluator view shows AI-tagged findings and public community data.">help_outline</span></div><div class="grid grid-cols-2 bg-surface-container-high p-0.5 rounded-sm gap-0.5"><button class="bg-surface-container-lowest text-primary shadow-sm font-label-caps text-label-caps py-1 px-2 rounded-sm font-semibold text-center" type="button">Public</button><button class="text-secondary hover:text-on-surface font-label-caps text-label-caps py-1 px-2 rounded-sm text-center transition-colors" type="button">Researcher</button></div></div><div class="flex flex-col gap-space-xs"><span class="font-label-caps text-label-caps uppercase text-secondary px-2 pt-1 font-semibold">Navigation</span><nav class="flex flex-col gap-1" data-active-classes="bg-surface-container-lowest text-primary font-semibold shadow-sm border-l-2 border-primary"><a aria-current="page" class="flex items-center justify-between px-3 py-2 rounded-sm transition-colors bg-surface-container-lowest text-primary font-semibold shadow-sm border-l-2 border-primary" data-path="overview" href="#"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>Overview</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="explore-evidence" href="#"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">travel_explore</span><span>Explore Evidence</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="compare-problems" href="#"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">balance</span><span>Compare Problems</span></div></a><a class="flex items-center justify-between px-3 py-2 rounded-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="collection" href="#"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">database</span><span>Collection</span></div><span class="material-symbols-outlined text-[15px] text-outline" title="Requires Researcher Access">lock</span></a><a class="flex items-center justify-between px-3 py-2 rounded-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="review" href="#"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">rate_review</span><span>Review</span></div><span class="material-symbols-outlined text-[15px] text-outline" title="Requires Researcher Access">lock</span></a><a class="flex items-center justify-between px-3 py-2 rounded-sm text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="methodology-quality" href="#"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">verified</span><span>Methodology &amp; Quality</span></div></a></nav></div></div><div class="p-space-md border-t border-[#E2E8F0] flex flex-col gap-space-sm bg-surface-container/40"><div class="flex flex-col gap-1"><span class="font-label-caps text-label-caps uppercase text-secondary font-semibold">Corpus Snapshot</span><span class="font-code-badge text-code-badge text-on-surface">Google Photos Community</span><span class="font-body-sm text-body-sm text-outline">Public community support threads</span></div><div class="flex items-center justify-between pt-1 border-t border-[#E2E8F0]"><span class="inline-flex items-center gap-1 font-code-badge text-code-badge px-1.5 py-0.5 rounded-sm bg-surface-container-high text-on-surface-variant"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span>v1.4-eval</span><span class="font-label-caps text-label-caps text-secondary font-semibold uppercase">Google Photos</span></div></div></aside><div class="pl-72 flex flex-col min-h-screen"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/95 backdrop-blur-md border-b border-[#E2E8F0] z-30 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-2 text-body-sm"><span class="font-code-badge text-code-badge text-secondary font-medium">lab://feedback-discovery</span><span class="text-outline-variant">/</span><span class="font-label-caps text-label-caps uppercase text-primary font-semibold tracking-wider">Evaluator View</span></div><div class="hidden xl:flex items-center gap-2 px-space-sm py-1 rounded-sm bg-surface-container border border-[#E2E8F0]"><span class="material-symbols-outlined text-[16px] text-[#0D9488]">bolt</span><span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Live research engine · Google Photos Community · AI-tagged data</span></div></div><div class="flex items-center gap-space-md"><nav class="hidden sm:flex items-center gap-space-md" data-active-classes="text-primary font-semibold"><a class="font-label-caps text-label-caps uppercase text-on-surface-variant hover:text-on-surface transition-colors" data-path="methodology-quality" href="#">Methodology Doc</a><a aria-current="page" class="uppercase transition-colors text-primary font-semibold font-label-caps text-label-caps" data-path="overview" href="#">Summary</a></nav><div class="flex items-center gap-space-sm pl-space-sm border-l border-[#E2E8F0]"><span class="inline-flex items-center font-label-caps text-label-caps uppercase px-2 py-0.5 rounded-full bg-primary-container/15 text-primary border border-primary/20 font-semibold">Public Mode</span><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 flex-1 bg-surface-bright"><div class="w-full px-space-lg py-space-md"><div class="mb-space-md p-space-sm bg-surface-container rounded-sm border border-[#E2E8F0] flex items-start gap-3"><span class="material-symbols-outlined text-primary text-[20px] mt-0.5">dataset</span><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Photo Retrieval &amp; Discovery Analysis Engine</span><p class="font-body-sm text-body-sm text-on-surface-variant">Synthesizing qualitative user pain points and query breakdowns when retrieving remembered media in Google Photos. Grounded in community verbatims.</p></div></div><div class="flex flex-col w-full gap-space-lg">
+<!-- Editorial Hero Callout & Primary Navigation Trigger -->
+<section class="relative overflow-hidden rounded-sm bg-surface-container-low p-space-lg shadow-sm border border-[#E2E8F0]">
+<div class="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-primary-container/10 blur-3xl pointer-events-none"></div>
+<div class="absolute right-32 -bottom-20 h-48 w-48 rounded-full bg-tertiary-container/10 blur-2xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs max-w-3xl">
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-container/20 text-on-primary-fixed-variant font-code-badge text-code-badge font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-[#0D9488] animate-pulse"></span>
+            ACTIVE SYNTHESIS ENGINE
+          </span>
+<span class="font-code-badge text-code-badge text-secondary font-medium tracking-wide">CORPUS_BUILD::v1.4.2</span>
+</div>
+<p class="font-headline-lg text-headline-lg text-on-surface tracking-tight leading-snug">
+          Discover how people struggle to find remembered photos and videos—and inspect the evidence behind each finding.
+        </p>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          Grounded taxonomy attributing query collapse, temporal ambiguity, and semantic misalignment in personal photo libraries.
+        </p>
+</div>
+<div class="flex flex-wrap sm:flex-nowrap items-center gap-space-sm pt-space-xs lg:pt-0 shrink-0">
+<a class="inline-flex items-center justify-center gap-2 px-space-md py-2.5 rounded-sm bg-[#0D9488] text-white font-body-md text-body-md font-semibold hover:bg-primary-container active:scale-[0.99] transition-all shadow-sm" data-path="explore-evidence" href="#">
+<span>Explore Evidence</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+<a class="inline-flex items-center justify-center gap-2 px-space-md py-2.5 rounded-sm bg-surface-container-lowest text-on-surface font-body-md text-body-md font-medium hover:bg-surface-container active:scale-[0.99] transition-all shadow-sm border border-[#E2E8F0]" data-path="methodology-quality" href="#">
+<span class="material-symbols-outlined text-[18px] text-secondary">menu_book</span>
+<span>Read Methodology</span>
+</a>
+</div>
+</div>
+</section>
+<!-- NEW FULL-WIDTH MODULE: Try it live: analyse a thread -->
+<section class="bg-surface-container-lowest rounded-sm p-space-lg shadow-sm border border-[#E2E8F0] flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-2.5">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Try it live: analyse a thread</h3>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-sm bg-teal-50 border border-teal-200 text-[#0D9488] font-code-badge text-code-badge font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-[#0D9488] animate-pulse"></span>
+        LIVE · n8n + Groq
+      </span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+    Paste any Google Photos Community thread. Our AI pipeline fetches it, extracts the original post and tags why retrieval failed.
+  </p>
+<!-- Input Row -->
+<div class="flex flex-col sm:flex-row items-stretch gap-2.5">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">link</span>
+<input class="w-full pl-9 pr-3 py-2.5 bg-surface rounded-sm border border-[#E2E8F0] text-body-md text-on-surface focus:outline-none focus:border-[#0D9488] focus:ring-1 focus:ring-[#0D9488] transition-colors" placeholder="https://support.google.com/photos/thread/…" type="text" value="https://support.google.com/photos/thread/284719302"/>
+</div>
+<button class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-sm bg-[#0D9488] text-white font-body-md text-body-md font-semibold hover:bg-[#0b7c72] active:scale-[0.99] transition-all shadow-sm shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+<span>Analyse</span>
+</button>
+</div>
+<!-- Horizontal 3-Step Progress Tracker -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between p-space-sm bg-surface rounded-sm border border-[#E2E8F0] gap-3">
+<div class="flex flex-wrap items-center gap-4 sm:gap-6 font-body-sm text-body-sm">
+<div class="flex items-center gap-1.5 text-[#0D9488] font-semibold">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span>1 Fetching thread</span>
+</div>
+<div class="flex items-center gap-1.5 text-primary font-semibold">
+<span class="material-symbols-outlined text-[18px] animate-spin text-[#0D9488]">sync</span>
+<span>2 Extracting original post</span>
+</div>
+<div class="flex items-center gap-1.5 text-secondary opacity-70">
+<span class="material-symbols-outlined text-[18px]">pending</span>
+<span>3 Tagging with AI</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 font-code-badge text-code-badge text-secondary bg-surface-container px-2 py-1 rounded-sm self-start sm:self-auto">
+<span class="material-symbols-outlined text-[15px]">timer</span>
+<span class="text-on-surface font-semibold">Elapsed: 00:24</span>
+</div>
+</div>
+<!-- Live Result Card -->
+<div class="bg-white rounded-sm p-5 border border-[#E2E8F0] border-l-[3px] border-l-[#0D9488] flex flex-col gap-3.5 shadow-sm">
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold">
+        Cannot locate old college trip photos even with specific person search
+      </h4>
+<a class="inline-flex items-center gap-1 text-[#0D9488] hover:underline font-body-sm text-body-sm font-semibold shrink-0" href="https://support.google.com/photos/thread/284719302" rel="noopener noreferrer" target="_blank">
+<span>View thread</span>
+<span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</a>
+</div>
+<!-- Visible Badges Row -->
+<div class="flex flex-wrap items-center gap-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-sm bg-teal-50 border border-teal-200 text-[#0D9488] font-code-badge text-code-badge font-semibold">
+<span class="material-symbols-outlined text-[14px]">check</span>
+        About finding a photo: Yes
+      </span>
+<span class="inline-flex items-center px-2.5 py-1 rounded-sm bg-surface-container border border-[#E2E8F0] text-on-surface-variant font-code-badge text-code-badge font-semibold">
+        photo type: People / event
+      </span>
+<span class="inline-flex items-center px-2.5 py-1 rounded-sm bg-surface-container border border-[#E2E8F0] text-on-surface-variant font-code-badge text-code-badge font-semibold">
+        intent: Share
+      </span>
+<span class="inline-flex items-center px-2.5 py-1 rounded-sm bg-amber-50 border border-amber-200 text-amber-900 font-code-badge text-code-badge font-semibold">
+        failure stage: Evaluation: too many look-alikes
+      </span>
+</div>
+<!-- Chip Groups: Remembered & Forgotten -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-label-caps text-label-caps uppercase text-secondary font-bold">Remembered:</span>
+<span class="px-2 py-0.5 rounded-sm bg-surface-container text-on-surface font-code-badge text-code-badge font-medium border border-[#E2E8F0]">college trip</span>
+<span class="px-2 py-0.5 rounded-sm bg-surface-container text-on-surface font-code-badge text-code-badge font-medium border border-[#E2E8F0]">friends</span>
+</div>
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-label-caps text-label-caps uppercase text-secondary font-bold">Forgotten:</span>
+<span class="px-2 py-0.5 rounded-sm bg-surface-container-high text-on-surface-variant font-code-badge text-code-badge font-medium border border-[#E2E8F0]">exact date</span>
+</div>
+</div>
+<!-- Tried Line -->
+<div class="flex items-center gap-2 font-mono text-body-sm bg-surface-container-low px-3 py-1.5 rounded-sm border border-[#E2E8F0]">
+<span class="text-secondary font-semibold">Tried:</span>
+<span class="text-primary font-medium">searched 'goa trip 2019'</span>
+</div>
+<!-- Key Quote Callout -->
+<div class="p-space-sm bg-[#F4F3EF] rounded-sm border border-[#E2E8F0] flex flex-col gap-1">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-[16px]">format_quote</span>
+<span class="font-label-caps text-label-caps uppercase font-bold">Original Post Excerpt</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface italic pl-3 border-l-2 border-[#0D9488]">
+        “I remember our entire gang standing outside the beach shack during college graduation trip, but searching returns hundreds of unrelated group selfies from other years.”
+      </p>
+</div>
+<!-- Card Footer -->
+<div class="pt-2 border-t border-[#E2E8F0] flex items-center justify-between text-secondary font-mono text-body-sm">
+<span class="inline-flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#0D9488]"></span>
+        AI-tagged · not human-reviewed · Google Photos Community
+      </span>
+<span class="text-outline">Thread ID: #284719302</span>
+</div>
+</div>
+<!-- State Variants as Compact Banners -->
+<div class="flex flex-col gap-2 pt-1">
+<div class="flex items-center justify-between px-3 py-2 rounded-sm bg-amber-50 border border-amber-200 text-amber-900 font-body-sm text-body-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-amber-700">warning</span>
+<span><strong>Input Notice:</strong> Paste a Google Photos Community thread link.</span>
+</div>
+<span class="font-code-badge text-code-badge text-amber-800 uppercase font-semibold">Validation Guard</span>
+</div>
+<div class="flex items-center justify-between px-3 py-2 rounded-sm bg-slate-100 border border-slate-200 text-slate-800 font-body-sm text-body-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-[#0D9488]">history</span>
+<span>Already analysed earlier: here's the result</span>
+</div>
+<span class="font-code-badge text-code-badge text-slate-600">cached in Groq store</span>
+</div>
+<div class="flex items-center justify-between px-3 py-2 rounded-sm bg-teal-50/70 border border-teal-200 text-teal-900 font-body-sm text-body-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-[#0D9488] animate-spin">refresh</span>
+<span>Still processing: refresh in a minute</span>
+</div>
+<span class="font-code-badge text-code-badge text-teal-800">Job In-Flight</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-secondary italic">
+    Also runs daily at 09:00 IST: reads the latest community threads, keeps likely photo-finding ones, and tags them.
+  </p>
+</section>
+<!-- Metric Architecture (Streamlit st.metric paradigm) -->
+<section class="flex flex-col gap-space-xs">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between px-1">
+<div class="flex items-center gap-2">
+<span class="font-label-caps text-label-caps uppercase text-secondary font-bold tracking-wider">Streamlit Key Pipeline Metrics</span>
+<span class="font-code-badge text-code-badge text-outline">st.metric_row</span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary italic">
+        Live automated extraction metrics across public Google Photos Community threads.
+      </span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-sm">
+<!-- Metric 1: Threads Analysed -->
+<div class="p-space-md bg-surface-container-lowest rounded-sm border border-[#E2E8F0] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-start justify-between">
+<span class="font-label-caps text-label-caps uppercase text-secondary font-semibold">Threads Analysed</span>
+<span class="p-1 rounded-sm bg-surface-container text-secondary">
+<span class="material-symbols-outlined text-[16px]">folder_open</span>
+</span>
+</div>
+<div class="my-space-xs flex items-baseline gap-2">
+<span class="font-metric-stat text-metric-stat text-on-surface tracking-tight font-mono">{threads_analysed}</span>
+<span class="font-code-badge text-code-badge px-1.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-semibold">live queue</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+          Google Photos Community threads parsed
+        </p>
+</div>
+<!-- Metric 2: Retrieval Threads -->
+<div class="p-space-md bg-surface-container-lowest rounded-sm border border-[#E2E8F0] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-start justify-between">
+<span class="font-label-caps text-label-caps uppercase text-secondary font-semibold">Retrieval Threads</span>
+<span class="p-1 rounded-sm bg-surface-container text-secondary">
+<span class="material-symbols-outlined text-[16px]">search_check</span>
+</span>
+</div>
+<div class="my-space-xs flex items-baseline gap-2">
+<span class="font-metric-stat text-metric-stat text-on-surface tracking-tight font-mono">{retrieval_threads}</span>
+<span class="font-code-badge text-code-badge px-1.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-semibold">matched</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+          Explicit photo-finding failure episodes
+        </p>
+</div>
+<!-- Metric 3: Retrieval Yield -->
+<div class="p-space-md bg-surface-container-lowest rounded-sm border border-[#E2E8F0] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-start justify-between">
+<span class="font-label-caps text-label-caps uppercase text-secondary font-semibold">Retrieval Yield</span>
+<span class="p-1 rounded-sm bg-primary-container/20 text-[#0D9488]">
+<span class="material-symbols-outlined text-[16px]">percent</span>
+</span>
+</div>
+<div class="my-space-xs flex items-baseline gap-2">
+<span class="font-metric-stat text-metric-stat text-on-surface tracking-tight font-mono">{pct_retrieval}</span>
+<span class="font-code-badge text-code-badge px-1.5 py-0.5 rounded-full bg-surface-container-highest text-secondary font-semibold">ratio</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+          Retrieval vs general account troubleshooting
+        </p>
+</div>
+<!-- Metric 4: Top Failure Stage -->
+<div class="p-space-md bg-surface-container-lowest rounded-sm border border-[#E2E8F0] shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex items-start justify-between">
+<span class="font-label-caps text-label-caps uppercase text-secondary font-semibold">Top Failure Stage</span>
+<span class="p-1 rounded-sm bg-tertiary-container/20 text-tertiary">
+<span class="material-symbols-outlined text-[16px]">leaderboard</span>
+</span>
+</div>
+<div class="my-space-xs flex items-baseline gap-2">
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight font-mono truncate">{top_failure_stage}</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+          Most prevalent breakdown stage in corpus
+        </p>
+</div>
+</div>
+</section>
+<!-- Collection-to-Review Progress Pipeline Visualization -->
+<section class="p-space-lg bg-surface-container-lowest rounded-sm border border-[#E2E8F0] shadow-sm flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-sm bg-primary-fixed flex items-center justify-center text-on-primary-fixed">
+<span class="material-symbols-outlined text-[20px]">account_tree</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Collection-to-Review Pipeline</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Stepwise transformation from Google Photos Community threads to AI-tagged evaluation records</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-code-badge text-code-badge text-secondary bg-surface-container px-2.5 py-1 rounded-sm">
+          Source: Google Photos Community
+        </span>
+</div>
+</div>
+<!-- Stepper Pipeline Track -->
+<div class="grid grid-cols-1 md:grid-cols-5 gap-space-sm relative">
+<!-- Step 1 -->
+<div class="p-space-sm bg-surface-container-low rounded-sm border border-[#E2E8F0] flex flex-col gap-1 relative overflow-hidden">
+<div class="h-1 bg-secondary w-full rounded-full mb-1"></div>
+<div class="flex items-center justify-between">
+<span class="font-code-badge text-code-badge text-secondary uppercase font-semibold">Step 01</span>
+<span class="font-label-caps text-label-caps text-secondary font-bold">100%</span>
+</div>
+<span class="font-body-md text-body-md font-semibold text-on-surface">Community Fetch</span>
+<span class="font-metric-stat text-headline-sm text-on-surface font-mono">{threads_analysed} <span class="font-body-sm text-body-sm text-secondary font-normal font-sans">threads</span></span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Google Photos Community thread scraper</p>
+</div>
+<!-- Step 2 -->
+<div class="p-space-sm bg-surface-container-low rounded-sm border border-[#E2E8F0] flex flex-col gap-1 relative overflow-hidden">
+<div class="h-1 bg-secondary-container w-full rounded-full mb-1">
+<div class="h-full bg-secondary w-[91%] rounded-full"></div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-code-badge text-code-badge text-secondary uppercase font-semibold">Step 02</span>
+<span class="font-label-caps text-label-caps text-secondary font-bold">Dedup</span>
+</div>
+<span class="font-body-md text-body-md font-semibold text-on-surface">Dedup &amp; Cleanse</span>
+<span class="font-metric-stat text-headline-sm text-on-surface font-mono">{deduped_threads} <span class="font-body-sm text-body-sm text-secondary font-normal font-sans">threads</span></span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Original post extraction &amp; boilerplate strip</p>
+</div>
+<!-- Step 3 -->
+<div class="p-space-sm bg-surface-container-low rounded-sm border border-[#E2E8F0] flex flex-col gap-1 relative overflow-hidden">
+<div class="h-1 bg-secondary-container w-full rounded-full mb-1">
+<div class="h-full bg-secondary w-[83%] rounded-full"></div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-code-badge text-code-badge text-secondary uppercase font-semibold">Step 03</span>
+<span class="font-label-caps text-label-caps text-secondary font-bold">Relevance</span>
+</div>
+<span class="font-body-md text-body-md font-semibold text-on-surface">Retrieval Gate</span>
+<span class="font-metric-stat text-headline-sm text-on-surface font-mono">{filtered_threads} <span class="font-body-sm text-body-sm text-secondary font-normal font-sans">threads</span></span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Classification: photo finding vs storage issue</p>
+</div>
+<!-- Step 4 -->
+<div class="p-space-sm bg-surface-container-low rounded-sm border border-[#E2E8F0] flex flex-col gap-1 relative overflow-hidden">
+<div class="h-1 bg-secondary-container w-full rounded-full mb-1">
+<div class="h-full bg-tertiary w-[60%] rounded-full"></div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-code-badge text-code-badge text-tertiary uppercase font-semibold">Step 04</span>
+<span class="font-label-caps text-label-caps text-tertiary font-bold">Taxonomy</span>
+</div>
+<span class="font-body-md text-body-md font-semibold text-on-surface">AI Tagging</span>
+<span class="font-metric-stat text-headline-sm text-on-surface font-mono">{retrieval_threads} <span class="font-body-sm text-body-sm text-secondary font-normal font-sans">episodes</span></span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Failure stage, remembered vs forgotten tags</p>
+</div>
+<!-- Step 5 -->
+<div class="p-space-sm bg-surface-container rounded-sm border border-[#E2E8F0] flex flex-col gap-1 relative overflow-hidden">
+<div class="h-1 bg-primary-fixed-dim w-full rounded-full mb-1">
+<div class="h-full bg-primary w-[100%] rounded-full"></div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-code-badge text-code-badge text-primary uppercase font-bold">Step 05</span>
+<span class="font-label-caps text-label-caps text-primary font-bold">Ready</span>
+</div>
+<span class="font-body-md text-body-md font-semibold text-primary">Bench Registry</span>
+<span class="font-metric-stat text-headline-sm text-primary font-mono">{tagged_records} <span class="font-body-sm text-body-sm text-secondary font-normal font-sans">ready</span></span>
+<div class="flex items-center gap-1.5 mt-1 font-code-badge text-code-badge text-on-surface-variant">
+<span class="text-[#0D9488] font-medium">AI-tagged</span>
+<span>·</span>
+<span class="text-secondary font-medium">unreviewed</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Two-Column Workbench Layout: Single Source Distribution vs Diagnostics -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- Left Column: Source Distribution (7 Cols) -->
+<section class="lg:col-span-7 bg-surface-container-lowest rounded-sm border border-[#E2E8F0] p-space-lg shadow-sm flex flex-col justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">pie_chart</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Source Corpus Distribution</h3>
+</div>
+<span class="font-code-badge text-code-badge text-[#0D9488] bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-sm font-semibold">Single Source Focus</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Strictly targeted ingestion from Google Photos Community support threads to ensure pristine retrieval authenticity.
+        </p>
+</div>
+<!-- Segmented Visual Bar (100% Single Source) -->
+<div class="flex flex-col gap-2">
+<div class="w-full h-4 rounded-sm overflow-hidden flex bg-surface-container">
+<div class="h-full bg-[#0D9488] hover:opacity-90 transition-opacity" style="width: 100%" title="Google Photos Community: 100%"></div>
+</div>
+<div class="flex items-center justify-between font-code-badge text-code-badge text-secondary">
+<span>0%</span>
+<span>50%</span>
+<span>100% Google Photos Community</span>
+</div>
+</div>
+<!-- Source Legend / Single Source Card -->
+<div class="p-space-sm bg-surface-container-low rounded-sm border border-[#E2E8F0] flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-sm bg-[#0D9488]"></span>
+<span class="font-body-md text-body-md font-semibold text-on-surface">Google Photos Community</span>
+</div>
+<span class="font-code-badge text-code-badge font-bold text-[#0D9488]">100% Corpus</span>
+</div>
+<p class="font-body-sm text-body-sm text-secondary">
+  Public troubleshooting forum threads where users express spontaneous, unprompted photo retrieval difficulties.
+</p>
+<div class="flex items-center justify-between font-code-badge text-code-badge text-outline pt-1 border-t border-[#E2E8F0]">
+<span>Scope: support.google.com/photos</span>
+<span>Target: search &amp; library retrieval</span>
+</div>
+</div>
+<!-- Coverage Callout Footer -->
+<div class="p-space-sm bg-surface-container rounded-sm border border-[#E2E8F0] flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[#0D9488] text-[18px] shrink-0">check_circle</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+<span class="font-semibold text-on-surface">Source Integrity:</span> Eliminates multi-platform scraping noise. All records originate directly from the official Google Photos Community.
+</p>
+</div>
+</section>
+<!-- Right Column: Activity Stream & Ingestion Diagnostics (5 Cols) -->
+<section class="lg:col-span-5 bg-surface-container-lowest rounded-sm border border-[#E2E8F0] p-space-lg shadow-sm flex flex-col justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">bolt</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Activity &amp; Diagnostics</h3>
+</div>
+<span class="inline-flex items-center gap-1 font-code-badge text-code-badge text-[#0D9488] bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-[#0D9488]"></span> Live Ingest
+          </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Automated n8n webhook triggers, parser execution logs, and Groq LLM throughput.
+        </p>
+</div>
+<!-- Batch Execution Status Panel -->
+<div class="p-space-md bg-surface-container-low rounded-sm border border-[#E2E8F0] flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-secondary font-semibold">Daily Batch Execution</span>
+<span class="font-code-badge text-code-badge text-outline">09:00 IST Cron</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-sm bg-teal-50 border border-teal-200 flex items-center justify-center text-[#0D9488] shrink-0">
+<span class="material-symbols-outlined text-[20px]">sync</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-body-md text-body-md font-semibold text-on-surface truncate">Community Crawler Active</span>
+<span class="font-body-sm text-body-sm text-secondary">
+              Reads latest Google Photos Community posts · keeps photo-finding queries
+            </span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2 text-secondary font-code-badge text-code-badge border-t border-[#E2E8F0]">
+<span>Pipeline: n8n + Groq</span>
+<span class="text-on-surface font-medium">Status: Operational</span>
+</div>
+</div>
+<!-- Compact Diagnostics Metadata -->
+<div class="flex items-center justify-between p-2 rounded-sm bg-surface-container border border-[#E2E8F0] font-code-badge text-code-badge text-secondary">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px]">database</span>
+<span>Corpus: Google Photos Community</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px]">timer</span>
+<span>Next Cron: 09:00 IST</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Featured Reviewed Findings Section -->
+<section class="flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+<div>
+<div class="flex items-center gap-2">
+<span class="font-label-caps text-label-caps uppercase text-primary font-bold tracking-widest">Evidence Registry</span>
+<span class="font-code-badge text-code-badge text-secondary">st.expander &amp; quotes</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-bold">Featured Reviewed Findings</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Direct retrieval episodes demonstrating primary failure modes in naturalistic search memories from Google Photos Community.
+        </p>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-caps text-label-caps uppercase text-secondary font-medium">Source:</span>
+<span class="px-2 py-1 rounded-sm bg-surface-container-high border border-[#E2E8F0] font-code-badge text-code-badge text-on-surface font-semibold">Google Photos Community</span>
+</div>
+</div>
+<!-- Cards Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-md">
+<!-- Finding Card 1 -->
+<div class="bg-surface-container-lowest rounded-sm border border-[#E2E8F0] p-space-lg shadow-sm flex flex-col justify-between gap-space-md hover:shadow-md transition-shadow">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-code-badge text-code-badge px-2 py-0.5 rounded-sm bg-secondary-container text-on-secondary-container font-semibold">
+              Case #EV-108
+            </span>
+<span class="inline-flex items-center gap-1 font-label-caps text-label-caps uppercase font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-sm">
+<span class="material-symbols-outlined text-[14px]">psychology</span>
+              AI-tagged
+            </span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold pt-1">
+            "Searching by vague spatial memory ('living room fireplace Christmas') returns zero results despite photos existing."
+          </h4>
+<div class="flex flex-wrap items-center gap-1.5 pt-1">
+<span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-surface-container font-semibold text-secondary border border-[#E2E8F0]">
+              Retrieval Failure: Semantic Spatial
+            </span>
+<span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-surface-container font-semibold text-secondary border border-[#E2E8F0]">
+              Multi-Attribute Query
+            </span>
+</div>
+</div>
+<!-- Evidence Tracing Callout (Brand style rule) -->
+<div class="p-space-md bg-surface-container-low rounded-sm border border-[#E2E8F0] relative overflow-hidden flex flex-col gap-space-xs">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[16px]">format_quote</span>
+<span class="font-label-caps text-label-caps uppercase text-secondary font-bold">Verbatim Citation</span>
+</div>
+<blockquote class="font-body-md text-body-md text-on-surface italic pl-4">
+            “I know for a fact I have 20 pictures from 2018 in front of the brick fireplace, but searching fireplace shows zero. I had to scroll through 6 years manually.”
+          </blockquote>
+<div class="pt-2 flex flex-col sm:flex-row sm:items-center justify-between font-code-badge text-code-badge text-secondary gap-1">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">forum</span>
+              Google Photos Community · Nov 2024
+            </span>
+<a class="text-primary hover:underline inline-flex items-center gap-0.5" href="#">
+<span>View Original Source</span>
+<span class="material-symbols-outlined text-[12px]">open_in_new</span>
+</a>
+</div>
+</div>
+<!-- Diagnostic Footnote -->
+<div class="flex items-center justify-between pt-1 border-t border-[#E2E8F0] font-mono text-body-sm text-secondary">
+<span>Status: AI-tagged · unreviewed</span>
+<span class="text-outline">Schema: failure_stage::spatial_vague</span>
+</div>
+</div>
+<!-- Finding Card 2 -->
+<div class="bg-surface-container-lowest rounded-sm border border-[#E2E8F0] p-space-lg shadow-sm flex flex-col justify-between gap-space-md hover:shadow-md transition-shadow">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-code-badge text-code-badge px-2 py-0.5 rounded-sm bg-secondary-container text-on-secondary-container font-semibold">
+              Case #EV-142
+            </span>
+<span class="inline-flex items-center gap-1 font-label-caps text-label-caps uppercase font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-sm">
+<span class="material-symbols-outlined text-[14px]">psychology</span>
+              AI-tagged
+            </span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold pt-1">
+            "Temporal drift with scanned heritage photos dated to scan day instead of estimated era."
+          </h4>
+<div class="flex flex-wrap items-center gap-1.5 pt-1">
+<span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-surface-container font-semibold text-secondary border border-[#E2E8F0]">
+              Retrieval Failure: Temporal / EXIF
+            </span>
+<span class="font-label-caps text-label-caps px-2 py-0.5 rounded-sm bg-surface-container font-semibold text-secondary border border-[#E2E8F0]">
+              Heritage / Scanned Media
+            </span>
+</div>
+</div>
+<!-- Evidence Tracing Callout (Brand style rule) -->
+<div class="p-space-md bg-surface-container-low rounded-sm border border-[#E2E8F0] relative overflow-hidden flex flex-col gap-space-xs">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-tertiary"></div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[16px]">format_quote</span>
+<span class="font-label-caps text-label-caps uppercase text-secondary font-bold">Verbatim Citation</span>
+</div>
+<blockquote class="font-body-md text-body-md text-on-surface italic pl-4">
+            “Google Photos puts all my 1970s family slides under yesterday because of the scan EXIF date. Searching '1970s grandfather' finds nothing.”
+          </blockquote>
+<div class="pt-2 flex flex-col sm:flex-row sm:items-center justify-between font-code-badge text-code-badge text-secondary gap-1">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">forum</span>
+              Google Photos Community · Jan 2025
+            </span>
+<a class="text-primary hover:underline inline-flex items-center gap-0.5" href="#">
+<span>View Original Source</span>
+<span class="material-symbols-outlined text-[12px]">open_in_new</span>
+</a>
+</div>
+</div>
+<!-- Diagnostic Footnote -->
+<div class="flex items-center justify-between pt-1 border-t border-[#E2E8F0] font-mono text-body-sm text-secondary">
+<span>Status: AI-tagged · unreviewed</span>
+<span class="text-outline">Schema: failure_stage::temporal_exif</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Interactive Workbench Expander (st.expander Paradigm) -->
+<section class="bg-surface-container-lowest rounded-sm border border-[#E2E8F0] shadow-sm overflow-hidden">
+<button class="w-full p-space-md flex items-center justify-between bg-surface-container-lowest hover:bg-surface-container-low text-left transition-colors cursor-pointer" id="expander-trigger" type="button">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px] transition-transform" id="expander-icon">expand_more</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Inspect Collection Methodology &amp; Data Pipeline Architecture</span>
+</div>
+<span class="font-code-badge text-code-badge px-2 py-0.5 rounded-sm bg-surface-container text-secondary">
+        st.expander(expanded=False)
+      </span>
+</button>
+<div class="hidden p-space-lg bg-surface-container-low flex flex-col gap-space-md border-t border-[#E2E8F0]" id="expander-content">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps uppercase text-secondary font-bold">1. Ingestion Filter</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Posts are parsed via Google Photos Community connectors using query patterns targeting failure terms (e.g., "search can't find", "cannot retrieve", "zero results", "wrong date").
+          </p>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps uppercase text-secondary font-bold">2. Taxonomic Triage</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Zero-shot classification categorizes posts into Semantic-Object, Spatial-Vague, Temporal-Drift, Face-Clustering, or System-Index categories.
+          </p>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps uppercase text-secondary font-bold">3. Pipeline Gate</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Automated LLM pipeline verifies that the verbatim reflects genuine photo retrieval struggle rather than generic account access issues.
+          </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Corpus Metadata Footer & Sample Disclaimer -->
+<footer class="mt-space-xs p-space-md rounded-sm bg-surface-container border border-[#E2E8F0] text-secondary flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-sm font-body-sm text-body-sm">
+<div class="flex flex-col sm:flex-row sm:items-center gap-space-xs sm:gap-space-sm">
+<div class="flex items-center gap-1.5 font-code-badge text-code-badge text-on-surface font-semibold">
+<span class="material-symbols-outlined text-[16px] text-primary">forum</span>
+<span>Source: Google Photos Community</span>
+</div>
+<span class="hidden sm:inline text-outline-variant">•</span>
+<span class="text-on-surface-variant">
+<strong>Limitations:</strong> Public Google Photos Community posts only; strictly excludes private library analytics.
+      </span>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<span class="px-2 py-0.5 rounded-sm bg-surface-container-highest text-secondary font-code-badge text-code-badge font-medium">
+        AI-Tagged Corpus
+      </span>
+<span class="material-symbols-outlined text-[16px] text-outline cursor-help" title="Public evaluator mode uses synthetic sample identifiers to preserve community contributor privacy.">info</span>
+</div>
+</footer>
+</div>
+<script>
+  (function() {
+    const trigger = document.getElementById('expander-trigger');
+    const content = document.getElementById('expander-content');
+    const icon = document.getElementById('expander-icon');
+
+    if (trigger && content && icon) {
+      trigger.addEventListener('click', function() {
+        const isHidden = content.classList.contains('hidden');
+        if (isHidden) {
+          content.classList.remove('hidden');
+          icon.style.transform = 'rotate(180deg)';
+        } else {
+          content.classList.add('hidden');
+          icon.style.transform = 'rotate(0deg)';
+        }
+      });
+    }
+  })();
+</script></div></main><footer class="w-full bg-surface-container-low border-t border-[#E2E8F0] py-space-md px-space-lg flex flex-col sm:flex-row items-center justify-between text-secondary gap-2"><div class="flex items-center gap-space-sm"><span class="font-label-caps text-label-caps uppercase font-semibold text-on-surface">Photo Discovery Lab</span><span class="text-outline-variant">•</span><span class="font-body-sm text-body-sm">Qualitative Feedback Workbench</span></div><div class="flex items-center gap-space-md"><span class="font-code-badge text-code-badge">Source: Google Photos Community</span><span class="font-body-sm text-body-sm text-outline">© 2025 Research Operations</span></div></footer></div></body></html>

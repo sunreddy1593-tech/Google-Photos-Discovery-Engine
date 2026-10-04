@@ -19,6 +19,7 @@ requires-python = ">=3.12,<3.13"
 #            outside that bound and is not installed.
 #   Phase 7  google-api-python-client, praw
 #   Phase 8  pandas  ·  Phase 10  streamlit
+# The submission app uses Streamlit. That does not complete Phase 10 or deploy it.
 dependencies = [
     "pydantic>=2.7,<3",
     "pydantic-settings>=2.2,<3",
@@ -27,6 +28,7 @@ dependencies = [
     "openpyxl>=3.1,<4",
     "anthropic>=0.34,<1",
     "groq>=0.13,<1",
+    "streamlit>=1.37,<2",
 ]
 
 [project.optional-dependencies]

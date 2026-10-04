@@ -66,6 +66,26 @@ def _gateway(tmp_path, provider, **overrides) -> ModelGateway:
     return ModelGateway(**settings)
 
 
+def test_one_gateway_attempt_when_retries_are_disabled(tmp_path: Path) -> None:
+    from src.llm.providers.base import ProviderCallError
+
+    provider = FakeProvider(
+        failures=[
+            ProviderCallError("down", DecisionTechnicalState.provider_error),
+            ProviderCallError("down again", DecisionTechnicalState.provider_error),
+        ]
+    )
+    gateway = _gateway(
+        tmp_path,
+        provider,
+        max_retries=1,
+        call_budget=35,
+    )
+    result = _complete(gateway, unattempted_documents=20)
+    assert provider.calls == 1
+    assert result.technical_state is DecisionTechnicalState.provider_error
+
+
 def _complete(gateway: ModelGateway, content_hash: str = "hash-1", **overrides):
     args = dict(
         prompt="classify",

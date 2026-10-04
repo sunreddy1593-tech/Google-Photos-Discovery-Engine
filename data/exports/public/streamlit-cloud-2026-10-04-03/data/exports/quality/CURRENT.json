@@ -1,0 +1,100 @@
+{
+  "all_numeric_thresholds_passed": true,
+  "development_matched_cases": 2,
+  "development_reference_cases": 6,
+  "development_relevance_precision": 0.8333333333333334,
+  "development_relevance_precision_passed": false,
+  "holdout_documents": 25,
+  "matched_cases": 5,
+  "model_outputs_semantically_approved": false,
+  "reference_cases": 15,
+  "candidate_development_matched_cases": 4,
+  "candidate_development_reference_cases": 6,
+  "candidate_development_provider_calls": 6,
+  "candidate_development_authorization_consumed": true,
+  "status": "measured",
+  "numeric_gate_status": "numeric_thresholds_passed",
+  "m1_status": "complete",
+  "limitations": [
+    "Gold holdout was reserved from 35 previously processed Phase 4 development documents. Prior development exposure limits independence; this is not an untouched external test set. The original 15 Phase 4 holdout seats are separate.",
+    "Case coverage is 5/15; numeric gate passage is not extraction semantic approval.",
+    "AI-assisted labels approved by one human; gold size is 35 rather than the internal 75-100 target.",
+    "Schema/span rates are for accepted records; five failed extraction attempts remain excluded. This does not establish that every processed provider output passed validation."
+  ],
+  "splits": [
+    {
+      "documents": 10,
+      "excluded_technical_failures": 1,
+      "matched_cases": 2,
+      "prefilter_recall": 1.0,
+      "quality_gate_status": "development_only",
+      "reference_cases": 6,
+      "relevance_precision": 0.8333333333333334,
+      "relevance_recall": 1.0,
+      "schema_validation_rate": 1.0,
+      "span_validation_rate": 1.0,
+      "split": "development",
+      "configuration": "relevance/v5 + extract/v3"
+    },
+    {
+      "documents": 25,
+      "excluded_technical_failures": 0,
+      "matched_cases": 5,
+      "prefilter_recall": 1.0,
+      "quality_gate_status": "numeric_thresholds_passed",
+      "reference_cases": 15,
+      "relevance_precision": 0.9285714285714286,
+      "relevance_recall": 0.9285714285714286,
+      "schema_validation_rate": 1.0,
+      "span_validation_rate": 1.0,
+      "split": "holdout",
+      "configuration": "relevance/v5 + extract/v3"
+    },
+    {
+      "split": "development",
+      "configuration": "relevance/v5 + extract/v4 (separate experiment)",
+      "documents": 10,
+      "matched_cases": 4,
+      "reference_cases": 6,
+      "accepted_model_cases": 5,
+      "schema_validation_rate": 1.0,
+      "span_validation_rate": 1.0,
+      "prefilter_recall": 1.0,
+      "relevance_precision": 0.8333333333333334,
+      "relevance_recall": 1.0,
+      "delivered_relevance_recall": 0.8333333333333334,
+      "quality_gate_status": "development_only",
+      "excluded_technical_failures": 1,
+      "provider_calls": 6,
+      "input_tokens": 76079,
+      "output_tokens": 25338,
+      "estimated_cost_usd": 0.026115
+    }
+  ],
+  "accepted_limitations": [
+    {
+      "split": "development",
+      "text": "extract/v3 recovered 2 of 6 reference cases. Three calls were accepted-empty and the cat case was blocked by a spliced relevance quote. Coverage was not raised by editing labels or saved output."
+    },
+    {
+      "split": "development",
+      "text": "Relevance precision is 5/6 (0.8333), below 0.85, because one out-of-scope document was predicted core. The threshold was not lowered."
+    },
+    {
+      "split": "holdout",
+      "text": "Five numeric thresholds passed and extraction recovered 5 of 15 reference cases. Schema and span rates use accepted records. These 25 seats had prior development exposure. The original 15 Phase 4 holdout documents were not measured, and this measurement cannot be repeated."
+    },
+    {
+      "split": "both",
+      "text": "No model case is semantically approved. One human reviewer approved the reference labels; agreement is null. Official gold is 35 documents, short of the internal 75-100 target."
+    },
+    {
+      "split": "development",
+      "text": "Separate extract/v4 experiment matches 4/6, with five accepted cases. Poodle evidence remains in the illustrative setup; cat is blocked by cached relevance evidence. Trigger, date, subject and summary interpretations still require semantic decisions. No model case is approved."
+    },
+    {
+      "split": "submission",
+      "text": "A development-only reviewed-reference export, field comparisons and Cloud package are prepared. Six approved reference cases are not model extraction results. Public deployment and the new n8n Cloud workflow connection remain pending; no new taxonomy or opportunity score is claimed."
+    }
+  ]
+}

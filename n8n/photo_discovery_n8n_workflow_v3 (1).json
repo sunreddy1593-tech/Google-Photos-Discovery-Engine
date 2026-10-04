@@ -1,0 +1,701 @@
+{
+  "name": "Photo Retrieval Discovery – Community Scraper (v3: live)",
+  "nodes": [
+    {
+      "parameters": {
+        "amount": 25,
+        "unit": "seconds"
+      },
+      "name": "Wait 25s (Groq rate limit)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4288,
+        1008
+      ],
+      "webhookId": "db1e0494-411c-439e-82ca-09975f65e7b1",
+      "id": "982cc950-2d78-4b97-acbb-763ffae5369b"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "groqApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "name": "Tag with Groq",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5168,
+        1008
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "id": "484718c8-faf8-48ed-9a49-4c9611dc683c",
+      "credentials": {
+        "groqApi": {
+          "id": "pgJPS8G5HSo2HluJ",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "photo-discovery",
+        "options": {}
+      },
+      "name": "Webhook (from Streamlit)1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        3328,
+        1024
+      ],
+      "webhookId": "3de88b26-69ee-4941-998d-79e9297f2612",
+      "id": "7b892b83-ba94-4c6d-81cf-777c75121552"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1si9lDQWS6ktLQ3OJ9IKkdUtc20eZFbP8g3RO5sJGqUU/edit?gid=192728460#gid=192728460",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "thread_urls",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "name": "Read thread_urls1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3568,
+        912
+      ],
+      "alwaysOutputData": false,
+      "id": "3a633eaf-5b5f-4a63-a491-5c09bca747dc",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0XCSzCIRnrTrpvgU",
+          "name": "Google Sheets account"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Decides WHICH threads to process, for 3 ways of starting the workflow:\n//  1. Streamlit \"Analyse a thread\": webhook body {url}  -> just that thread\n//  2. Streamlit \"Fetch\" button:     webhook body {limit} -> pending rows in thread_urls\n//  3. Daily schedule: newly listed community threads (keyword pre-filtered), max 8\n//  (4. Manual run in n8n -> pending rows, default limit)\nconst RE = /support\\.google\\.com\\/photos\\/thread\\/(\\d+)/;\nlet limit = 50, direct = null;\ntry {\n  const w = $('Webhook (from Streamlit)1').first();\n  const body = (w && w.json && w.json.body) || {};\n  if (body.limit) limit = Number(body.limit);\n  if (body.url) direct = [String(body.url).trim()];\n} catch (e) { /* not started by the webhook */ }\ntry {\n  const s = $('Extract listing links').first();\n  if (s && s.json && s.json._trigger === 'schedule') { direct = s.json.candidates || []; limit = 8; }\n} catch (e) { /* not started by the schedule */ }\n\nconst rows = $input.all().map(i => i.json);\nconst done = new Set();\nfor (const r of rows) {\n  const m = String(r.url || '').match(RE);\n  if (m && String(r.status || '').trim().toLowerCase() === 'done') done.add(m[1]);\n}\nconst source = direct !== null ? direct.map(u => ({ url: u, status: '' })) : rows;\nconst seen = new Set();\nconst out = [];\nfor (const r of source) {\n  const sheetUrl = String(r.url || '').trim();\n  const status = String(r.status || '').trim().toLowerCase();\n  const m = sheetUrl.match(RE);\n  if (!m || status === 'done' || done.has(m[1]) || seen.has(m[1])) continue;   // skip invalid, done, duplicates\n  seen.add(m[1]);\n  out.push({ json: { sheet_url: sheetUrl, thread_id: m[1], url: `https://support.google.com/photos/thread/${m[1]}` } });\n  if (out.length >= limit) break;\n}\nreturn out;\n"
+      },
+      "name": "Pick pending URLs1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3808,
+        912
+      ],
+      "id": "c05301ae-9349-4a5e-917a-ff8ad35a5139"
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "name": "Loop Over Threads1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        4048,
+        912
+      ],
+      "id": "f422b841-2106-4cce-8aba-a093f47735a4"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}?hl=en",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (student research project)"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "name": "Fetch thread page1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4512,
+        1008
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "id": "46fbb356-7c84-422e-8305-e93f1d633f5a"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Builds the Groq request for one thread. Groq uses the OpenAI-compatible format.\n// Models: 'openai/gpt-oss-120b' (best quality) | 'llama-3.3-70b-versatile' | 'llama-3.1-8b-instant' (fastest, biggest daily quota)\nconst MODEL = 'openai/gpt-oss-120b';\n\nconst loop = $('Loop Over Threads1').item.json;\nconst title = String($json.title || '').replace(/\\s*-\\s*Google Photos Community\\s*$/i, '').trim();\nlet text = String($json.page_text || '').replace(/\\s+/g, ' ').trim();\ntext = text.slice(0, 8000);    // ~3K tokens per call keeps us under Groq's free-tier per-minute limit\n\nconst SYSTEM = \"You are a UX researcher analysing public posts from the Google Photos Help Community.\\nResearch question: why do people fail to retrieve an old photo they remember but cannot precisely describe?\\n\\nYou get one thread (question + replies, with page boilerplate mixed in). Focus on the ORIGINAL POSTER's problem.\\nReturn ONLY a JSON object with exactly these keys:\\n{\\n  \\\"is_retrieval_problem\\\": true/false,   // true ONLY if the user is trying to FIND/LOCATE an existing photo or video. Backup, sync, deletion/recovery, storage, editing, sharing settings = false\\n  \\\"photo_type\\\": \\\"people_event | place_trip | screenshot | document | product_item | food | other | unknown\\\",\\n  \\\"intent\\\": \\\"share | practical_info | nostalgia | work | unknown\\\",\\n  \\\"cues_remembered\\\": [\\\"what the user DID remember, in their words: e.g. 'trip to Goa', 'my cousin', 'last winter'\\\"],\\n  \\\"cues_forgotten\\\": [\\\"what they did NOT know: e.g. 'exact date', 'place name'\\\"],\\n  \\\"query_tried\\\": [\\\"exact search terms or methods they tried, verbatim where possible\\\"],\\n  \\\"failure_stage\\\": \\\"expression | understanding | evaluation | refinement | not_applicable\\\",\\n  \\\"workaround\\\": [\\\"anything they or repliers did instead: scrolling, WhatsApp, albums, asking friends\\\"],\\n  \\\"key_quote\\\": \\\"the single most telling sentence from the original poster, verbatim, max 30 words\\\",\\n  \\\"summary\\\": \\\"one line, max 20 words\\\"\\n}\\nfailure_stage definitions:\\n- expression: user cannot turn what they remember into a search (does not know what words/filters to use)\\n- understanding: user gave clues but search returned nothing or the wrong things\\n- evaluation: results came back but too many / too similar to spot the right photo\\n- refinement: first search failed and the user did not know how to adjust it\\n- not_applicable: not a retrieval problem\\nUse [] or \\\"unknown\\\" when the thread does not say. Never invent details.\";\n\nreturn { json: {\n  url: loop.url,\n  sheet_url: loop.sheet_url,\n  title,\n  chars: text.length,\n  payload: {\n    model: MODEL,\n    temperature: 0,\n    max_completion_tokens: 1500,\n    response_format: { type: 'json_object' },\n    ...(MODEL.startsWith('openai/gpt-oss') ? { reasoning_effort: 'low' } : {}),\n    messages: [\n      { role: 'system', content: SYSTEM },\n      { role: 'user', content: `Thread title: ${title}\\n\\nThread text:\\n${text}` },\n    ],\n  },\n}};\n"
+      },
+      "name": "Build AI request1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4960,
+        1008
+      ],
+      "id": "7d81c16d-2bfb-4211-b3b9-9eb3b9f1375c"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Turns the Grok answer into one flat row for the `insights` tab.\nconst prev = $('Build AI request1').item.json;\nlet t = {};\ntry {\n  t = JSON.parse($json.choices[0].message.content);\n} catch (e) {\n  t = { summary: 'PARSE_ERROR: ' + String(e).slice(0, 100) };\n}\nconst list = (v) => Array.isArray(v) ? v.join('; ') : (v ?? '');\n\nreturn { json: {\n  source: 'google_photos_community',\n  url: prev.url,\n  title: prev.title,\n  is_retrieval_problem: t.is_retrieval_problem === true ? 'TRUE' : 'FALSE',\n  photo_type: t.photo_type || 'unknown',\n  intent: t.intent || 'unknown',\n  cues_remembered: list(t.cues_remembered),\n  cues_forgotten: list(t.cues_forgotten),\n  query_tried: list(t.query_tried),\n  failure_stage: t.failure_stage || 'not_applicable',\n  workaround: list(t.workaround),\n  key_quote: t.key_quote || '',\n  summary: t.summary || '',\n  scraped_at: new Date().toISOString(),\n}};\n"
+      },
+      "name": "Parse tags1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5392,
+        1008
+      ],
+      "id": "8924eaad-4608-4573-b294-79b29bb4efc9"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1si9lDQWS6ktLQ3OJ9IKkdUtc20eZFbP8g3RO5sJGqUU/edit?gid=192728460#gid=192728460",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "insights",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "is_retrieval_problem",
+              "displayName": "is_retrieval_problem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "photo_type",
+              "displayName": "photo_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "intent",
+              "displayName": "intent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cues_remembered",
+              "displayName": "cues_remembered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cues_forgotten",
+              "displayName": "cues_forgotten",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "query_tried",
+              "displayName": "query_tried",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "failure_stage",
+              "displayName": "failure_stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workaround",
+              "displayName": "workaround",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "key_quote",
+              "displayName": "key_quote",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scraped_at",
+              "displayName": "scraped_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "name": "Save to insights1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        5616,
+        1008
+      ],
+      "id": "38e95d21-ac8f-4487-bcf8-dd2a1ad9bb59",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0XCSzCIRnrTrpvgU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1si9lDQWS6ktLQ3OJ9IKkdUtc20eZFbP8g3RO5sJGqUU/edit?gid=1575787970#gid=1575787970",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "thread_urls"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "url": "={{ $('Loop Over Threads1').item.json.sheet_url }}",
+            "status": "done"
+          },
+          "matchingColumns": [
+            "url"
+          ],
+          "schema": [
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Mark URL done1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        5840,
+        1008
+      ],
+      "id": "75d5a6f5-96bc-4498-bd08-1acec57f22f7",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "0XCSzCIRnrTrpvgU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "name": "Run manually (test)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        3328,
+        784
+      ],
+      "id": "50bdd6f3-6fdf-4ce9-b24a-ccf5ddb8bfbd"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Extracts ONLY the original poster's question (no replies, no author name).\n// 1) schema.org QAPage data  2) the page's thread_view data  3) fallback: plain body text.\n// Never executes page scripts; only parses saved data.\nconst html = String($json.data || '');\nconst id = $('Loop Over Threads1').item.json.thread_id;\nconst plain = t => typeof t === 'string' && t.trim().length > 0 && !/<\\/?[A-Za-z][^>]*>/.test(t);\nconst idFromUrl = v => { if (typeof v !== 'string') return null;\n  const m = /^https:\\/\\/support\\.google\\.com\\/photos\\/thread\\/(\\d+)(?:\\/[^/?#]*)?\\/?(?:\\?[^#]*)?(?:#.*)?$/.exec(v); return m ? m[1] : null; };\nfunction decodeLiteral(s) {\n  let r = ''; const esc = {n:'\\n', r:'\\r', t:'\\t', b:'\\b', f:'\\f', '\\\\':'\\\\', \"'\":\"'\", '\"':'\"', '/':'/'};\n  for (let i = 0; i < s.length; i++) {\n    if (s[i] !== '\\\\') { r += s[i]; continue; }\n    const e = s[++i];\n    if (e === 'x' || e === 'u') { const w = e === 'x' ? 2 : 4; const d = s.slice(i + 1, i + 1 + w);\n      if (d.length !== w || !/^[0-9a-f]+$/i.test(d)) throw Error('bad literal'); r += String.fromCharCode(parseInt(d, 16)); i += w; }\n    else if (Object.prototype.hasOwnProperty.call(esc, e)) r += esc[e]; else throw Error('bad literal');\n  }\n  return r;\n}\nlet title = null, text = null, kind = null;\n// 1) QAPage structured data\nconst qs = [];\nconst visit = v => { if (!v || typeof v !== 'object') return; if (Array.isArray(v)) { v.forEach(visit); return; }\n  if ([].concat(v['@type'] || []).includes('QAPage') && v.mainEntity && !Array.isArray(v.mainEntity)) qs.push(v.mainEntity);\n  if (v['@graph']) visit(v['@graph']); };\nfor (const m of html.matchAll(/<script\\b[^>]*type\\s*=\\s*[\"']application\\/ld\\+json[\"'][^>]*>([\\s\\S]*?)<\\/script\\s*>/gi)) {\n  try { visit(JSON.parse(m[1])); } catch (_) {}\n}\nif (qs.length === 1 && plain(qs[0].text) && (!qs[0].url || idFromUrl(qs[0].url) === id)) {\n  title = typeof qs[0].name === 'string' ? qs[0].name : null; text = qs[0].text; kind = 'original_post';\n}\n// 2) thread_view bootstrap data\nif (!text) {\n  const decl = [];\n  for (const s of html.matchAll(/<script\\b([^>]*)>([\\s\\S]*?)<\\/script\\s*>/gi)) {\n    if (/\\bsrc\\s*=/i.test(s[1])) continue;\n    for (const m of s[2].matchAll(/\\bvar\\s+thread_view\\s*=\\s*'((?:\\\\[\\s\\S]|[^'\\\\])*)'\\s*;/g)) decl.push(m[1]);\n  }\n  if (decl.length === 1) {\n    try {\n      const view = JSON.parse(decodeLiteral(decl[0]));\n      const thread = Array.isArray(view) ? view[1] : null;\n      const info = Array.isArray(thread) ? thread[0] : null;\n      if (Array.isArray(info) && String(info[0]) === id && Array.isArray(thread) && thread.length >= 14 &&\n          typeof thread[8] === 'string' && thread[8].trim() && plain(thread[12])) {\n        title = thread[8]; text = thread[12]; kind = 'original_post';\n      }\n    } catch (_) {}\n  }\n}\n// 3) Fallback: visible body text (question + replies)\nif (!text) {\n  const t = /<title[^>]*>([\\s\\S]*?)<\\/title>/i.exec(html);\n  title = t ? t[1] : '';\n  const body = (/<body[^>]*>([\\s\\S]*)<\\/body>/i.exec(html) || [null, html])[1];\n  text = body.replace(/<(script|style|noscript|svg|header|footer|nav)\\b[\\s\\S]*?<\\/\\1>/gi, ' ')\n             .replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&#39;/g, \"'\").replace(/&quot;/g, '\"');\n  kind = 'page_text_fallback';\n}\nreturn { json: { title: String(title || '').trim(), page_text: String(text || '').replace(/\\s+/g, ' ').trim(), text_kind: kind } };\n"
+      },
+      "name": "Extract original post",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4736,
+        1008
+      ],
+      "id": "2a0c2fae-70cb-49f9-a8e0-c123448d577f"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "name": "Daily discovery (schedule)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        3328,
+        1232
+      ],
+      "id": "5993149f-6fa3-45d7-b8c1-bc781e917ea8"
+    },
+    {
+      "parameters": {
+        "url": "https://support.google.com/photos/threads?hl=en",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (student research project)"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "name": "Fetch latest threads",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3568,
+        1232
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "id": "4f8e93cc-9f75-42d9-a5da-5992fbc96084"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Daily discovery: reads the community's latest-threads page and keeps likely\n// retrieval threads, judged by the URL slug (cheap pre-filter before the AI tags them).\nconst html = String($input.first().json.data || '');\nconst KEEP = /(find|search|locat|looking-for|where-(is|are)|cant-see|can-t-see|not-show|show-up|face|people|place|map|old-photo|memor)/i;\nconst DROP = /(delet|recover|restor|trash|backup|back-up|storage|sync|locked-folder|refund|subscription|payment)/i;\nconst seen = new Set(); const candidates = []; let listed = 0;\nfor (const m of html.matchAll(/\\/photos\\/thread\\/(\\d+)(?:\\/([a-z0-9-]+))?/gi)) {\n  const id = m[1], slug = (m[2] || '').toLowerCase();\n  if (seen.has(id)) continue; seen.add(id); listed++;\n  if (!slug || DROP.test(slug) || !KEEP.test(slug)) continue;\n  candidates.push(`https://support.google.com/photos/thread/${id}/${slug}`);\n}\nreturn [{ json: { _trigger: 'schedule', listed, kept: candidates.length, candidates } }];\n"
+      },
+      "name": "Extract listing links",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3808,
+        1232
+      ],
+      "id": "f5ad888c-4d80-466e-b0cf-4cfe0da33871"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Wait 25s (Groq rate limit)": {
+      "main": [
+        [
+          {
+            "node": "Fetch thread page1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tag with Groq": {
+      "main": [
+        [
+          {
+            "node": "Parse tags1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook (from Streamlit)1": {
+      "main": [
+        [
+          {
+            "node": "Read thread_urls1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read thread_urls1": {
+      "main": [
+        [
+          {
+            "node": "Pick pending URLs1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick pending URLs1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Threads1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Threads1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait 25s (Groq rate limit)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch thread page1": {
+      "main": [
+        [
+          {
+            "node": "Extract original post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build AI request1": {
+      "main": [
+        [
+          {
+            "node": "Tag with Groq",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse tags1": {
+      "main": [
+        [
+          {
+            "node": "Save to insights1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to insights1": {
+      "main": [
+        [
+          {
+            "node": "Mark URL done1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark URL done1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Threads1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run manually (test)": {
+      "main": [
+        [
+          {
+            "node": "Read thread_urls1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract original post": {
+      "main": [
+        [
+          {
+            "node": "Build AI request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily discovery (schedule)": {
+      "main": [
+        [
+          {
+            "node": "Fetch latest threads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch latest threads": {
+      "main": [
+        [
+          {
+            "node": "Extract listing links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract listing links": {
+      "main": [
+        [
+          {
+            "node": "Read thread_urls1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "nodeGroups": [],
+  "tags": []
+}

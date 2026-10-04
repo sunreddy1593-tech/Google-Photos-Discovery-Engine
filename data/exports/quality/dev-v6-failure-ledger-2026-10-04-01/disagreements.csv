@@ -1,0 +1,6 @@
+doc_id,gold_scope_class,gold_reason_code,predicted_scope_class,predicted_reason_code,document_text
+google_support-2a080da4b930,core_incomplete_recall,known_item_retrieval_journey_described,adjacent_known_item_retrieval,known_item_with_precise_recall_failure,"I'm trying to search for one of my family in a Google photos album. It is not a shared album. It seems you can't search for a face within a specific album, which means I have to scroll through hundreds of photos to find the one I want. Any tips?"
+google_support-5b2ec98df32b,adjacent_known_item_retrieval,known_item_retrieval_journey_described,core_incomplete_recall,known_item_with_incomplete_recall,My photo memories come up and I can see randomly but how do I go back to view them?
+google_support-8c6ab430fbee,out_of_scope,storage_backup_or_sync,adjacent_known_item_retrieval,known_item_retrieval_journey_described,"I backed up new photos for my google account and when they finished backing up i opened the google photos app and 90% of my old photos were not there and I can't find them in the trash section or anywhere in the google account
+
+I tried many thing and still can't find them, i need help because these photos are so important to me and they disappeared suddenly."

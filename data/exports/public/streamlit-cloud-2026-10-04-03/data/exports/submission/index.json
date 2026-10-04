@@ -1,0 +1,27 @@
+{
+  "submission_id": "public-demo-2026-10-04",
+  "approved_reference_export": "approved-reference",
+  "datasets": [
+    {
+      "dataset_id": "reviewed-development-reference",
+      "description": "Ten reviewed development documents and six human-approved reference cases. Model predictions are not included; separate quality aggregates retain actual measured coverage.",
+      "run_id": "reference-02",
+      "split_policy": "development_only",
+      "limitations": [
+        "Six reviewed development reference cases; not model extraction recovery or population prevalence.",
+        "AI-assisted drafting and sole-human review; no independent second coder.",
+        "Scope exceptions remain disclosed; the family-album core label is an owner-directed exception.",
+        "Evidence fragments are not additional cases. Null/unstated fields are not filled by inference."
+      ]
+    }
+  ],
+  "not_combined": [
+    "Reference labels are not model outputs. Quality aggregates use separate measurements."
+  ],
+  "semantic_risks": [
+    "retrieval_trigger must be the stated reason the item was needed, not the search method",
+    "impact and severity need a quote that states that impact or severity",
+    "problem_summary evidence must support every factual clause",
+    "quotes must be one continuous span; invented, abbreviated, or spliced text is invalid"
+  ]
+}

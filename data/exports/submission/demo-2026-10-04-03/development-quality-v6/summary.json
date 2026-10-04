@@ -1,0 +1,43 @@
+{
+  "dataset_id": "development-quality-v6",
+  "run_id": "d7581cf180be",
+  "description": "Gold-dev quality run relevance/v6 + extract/v4. Sunayana approved the five stored cases. The cat summary-quote rejection and the schema failure were accepted and were not repaired.",
+  "split_policy": "development_only",
+  "documents": 35,
+  "withheld_evaluation_documents": 15,
+  "frozen_split_overlap_excluded": 0,
+  "analysis_documents": 35,
+  "confirmed_duplicate_links": 0,
+  "pending_duplicate_links": 0,
+  "human_relevance_labels": 35,
+  "human_labeled_out_of_scope": 16,
+  "model_relevance_attempts": 10,
+  "model_relevance_out_of_scope": 3,
+  "model_relevance_by_scope": {
+    "adjacent_known_item_retrieval": 4,
+    "core_incomplete_recall": 3,
+    "out_of_scope": 3
+  },
+  "extraction_attempts": 10,
+  "extraction_by_state": {
+    "ok": 5,
+    "evidence_validation_failed": 4,
+    "provider_error": 1
+  },
+  "stored_cases": 5,
+  "exported_cases": 5,
+  "automatically_valid_cases": 5,
+  "semantically_approved_cases": 5,
+  "failed_attempts": 5,
+  "empty_responses": 0,
+  "unresolved_review_items": 2,
+  "recorded_semantic_findings": 0,
+  "corrections": 10,
+  "missing_inputs": [],
+  "limitations": [
+    "This dataset is the gold-dev quality run, not the five-document pilot.",
+    "Five stored cases have a recorded owner approval. Coverage stays 4 of 6: the poodle case still does not overlap its reference, and the cat quote stays rejected.",
+    "Holdout source text is not included."
+  ],
+  "counts_are_this_dataset_only": true
+}
