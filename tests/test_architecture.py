@@ -266,6 +266,25 @@ def test_collect_imports_only_core_models_and_itself() -> None:
     )
 
 
+def _pipeline_import_allowed(
+    package: str,
+    path: Path,
+    module: str,
+    prefixes: tuple[str, ...],
+) -> bool:
+    """Stage packages stay isolated. The scheduled runner may call collectors.
+
+    ``scheduled_run.py`` is the orchestrator for the existing YouTube collector
+    and the public snapshot writer. Other pipeline modules do not gain those
+    imports.
+    """
+    if module.startswith(prefixes):
+        return True
+    if package != "pipeline" or path.name != "scheduled_run.py":
+        return False
+    return module.startswith("src.collect") or module == "src.export.scheduled_status"
+
+
 def test_phase3_stages_do_not_import_each_other() -> None:
     """Normalization, dedupe, and review are separate stages.
 
@@ -295,7 +314,7 @@ def test_phase3_stages_do_not_import_each_other() -> None:
         for name, prefixes in allowed.items()
         for path in _python_files(SRC / name)
         for module in _imported_modules(path)
-        if _is_internal(module) and not module.startswith(prefixes)
+        if _is_internal(module) and not _pipeline_import_allowed(name, path, module, prefixes)
     ]
     assert not offenders, "phase 3 import boundary:\n" + "\n".join(offenders)
 

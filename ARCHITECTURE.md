@@ -1092,6 +1092,51 @@ timestamps; those values do not establish actual wall-clock execution time. Use 
 execution logs when establishing when an attempt occurred. Current extraction manifests
 also leave `output_hashes` empty; final artifact-hash/rebuild verification remains pending.
 
+### Scheduled non-n8n batch
+
+`src/pipeline/scheduled_run.py` is the only pipeline module allowed to import
+`src.collect` and `src.export.scheduled_status`. It does not raise
+`research_batch.MAX_DOCUMENTS`. A normal run selects 50 new unique documents and
+calls the existing research-batch runner three times, with limits 20, 20 and 10.
+Fewer available documents produce fewer sub-batches and a partial report. The
+runner still refuses a limit above 20, synthetic padding and frozen-split
+documents. Holdout text is not read.
+
+Collection uses the existing YouTube comment collector and
+`config/youtube_seed_videos.txt`. The collector itself is unchanged:
+`commentThreads.list` and one-level `comments.list`, no `search.list`. Reddit,
+Google support, Play Store and App Store are reported unavailable. Documents
+whose collector is n8n, or whose ingest batch id starts with `n8n-`, are
+excluded. Seen source ids and processed text hashes live under
+`data/interim/scheduler/` so an unchanged item is not collected or modelled
+again.
+
+Each run reserves at most 20 collection requests and 100 model attempts before
+sending them. The daily ledger allows 60 and 300. A new process reads the same
+ledger. Cache hits are not reserved. Gateway `max_retries` for these runs is 1.
+The Groq adapter keeps SDK `max_retries` at 0. There is no repair call. Active
+pins remain Groq `openai/gpt-oss-120b`, prompts `relevance/v5` and `extract/v2`,
+schema 1.0.0, temperature 0.0 and `max_tokens` 4096. Missing usage stays
+unknown. List-price estimates use the configured per-million rates and are not
+invoices.
+
+A lock file prevents a second live run. A live process younger than six hours
+is an overlap and makes no request. A dead process lock is removed without
+releasing reservations already recorded. Output for each run is a new directory
+under `data/interim/scheduled-runs/`. The public snapshot is written under
+`data/exports/public/scheduled-snapshot/versions/{run_id}/` and then
+`CURRENT.json` is replaced. A failed pointer replace leaves the previous
+`CURRENT.json`. New cases are marked awaiting semantic review.
+`human_approved_cases` is forced to 0. They do not enter the approved
+comparison dataset.
+
+`main.py schedule --dry-run` returns before the lock and writes nothing. The
+Windows tasks run `scripts/run_scheduled_discovery.cmd`, which sets the project
+directory and calls the project virtualenv with `main.py schedule`. On
+2026-10-05 the dry-run `df6cfde5ae72` made zero requests. The tasks
+`GooglePhotosDiscovery-0800`, `GooglePhotosDiscovery-1400` and
+`GooglePhotosDiscovery-2000` are enabled and had not run.
+
 ### Synthetic extraction diagnostic
 
 `src/pipeline/extraction_diagnostic.py` wraps `run_extraction` for the fixed synthetic
@@ -1438,6 +1483,23 @@ not scrape or tag. The rows stay outside `CollectedDocument`, the gold set,
 and the saved-run counts. Webhook and sheet URLs stay in
 `.streamlit/secrets.toml`, which is gitignored.
 
+Scheduled processing is a separate reader, `src/export/scheduled_status.py`.
+`app.py` imports that reader and does not import `pipeline`, `collect`, `llm`,
+`relevance` or `extract`. The Scheduled runs section, and a compact caption on
+the other sections, read `data/exports/public/scheduled-snapshot/CURRENT.json`.
+The cache key includes the snapshot version read outside the cache. Installed
+Streamlit refreshes an open session through `st.fragment(run_every=60)`. A
+Refresh button clears that cache and reruns. The page shows last and next run
+times, source counts, new documents, duplicates, in-scope, adjacent and
+out-of-scope counts, extracted cases, automatically valid cases and
+human-approved cases as separate numbers, plus stage failures, incomplete work,
+shortfall, requests and estimated cost. Unreviewed cases stay on this section,
+with stored quotes, offsets and source links, and with the existing review
+checks for unsupported retrieval trigger, impact or severity, incomplete
+summary evidence, and invented or spliced quotes. They are not added to Problem
+comparison. The snapshot directory is gitignored. No credential, raw private
+file, or collection or model control is on this page.
+
 ---
 
 ## 16. Configuration and observability
@@ -1530,7 +1592,10 @@ google-photos-retrieval-engine/
 Implemented extraction/review additions to that target map are
 `src/extract/schema.py`, `src/pipeline/extraction.py`,
 `src/pipeline/extraction_pilot.py`, `src/pipeline/extraction_diagnostic.py`,
-`src/pipeline/human_relevance.py`, and `src/pipeline/research_batch.py`.
+`src/pipeline/human_relevance.py`, `src/pipeline/research_batch.py`, and
+`src/pipeline/scheduled_run.py`. `src/export/scheduled_status.py` publishes the
+scheduled snapshot. `scripts/run_scheduled_discovery.cmd` is the Task Scheduler
+launcher.
 Manual collection currently lives in `src/collect/workbook.py` and `cli.py`.
 `src/collect/youtube.py` is the read-only comment collector. Tests mock the
 API. A bounded live run on 2026-10-04 wrote 266 documents; `youtube.enabled`
@@ -1573,6 +1638,9 @@ browse      ← imports nothing internal outside src.browse; no Streamlit, no da
 imports a provider SDK, that `app.py` does not import the research pipeline or
 read `data/raw/`, and that `src/browse/`
 has no path to `collect`, `extract`, `llm`, `relevance`, or `data/raw/`.
+`scheduled_run.py` is the one pipeline exception: it may import `src.collect`
+and `src.export.scheduled_status`. `app.py` may import
+`src.export.scheduled_status` because that module reads JSON only.
 Layering that is only documented erodes; layering that fails a test does not.
 
 ---

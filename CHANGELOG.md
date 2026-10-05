@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-10-05 - Bounded scheduler for non-n8n sources
+
+Added `main.py schedule` and Windows Task Scheduler entries for 08:00, 14:00
+and 20:00 Asia/Kolkata. A 50-document batch is processed as existing
+research-batch sub-batches of 20, 20 and 10. The 20-document runner guard is
+unchanged. YouTube comments are the only collected source. Reddit, store and
+support collectors stay unavailable, and n8n is not called. Unchanged source
+items are tracked so they are not reprocessed. Per-run limits are 20 collection
+requests and 100 model attempts; daily limits are 60 and 300. Reservations are
+durable. Overlapping runs are refused. Snapshots publish atomically and the
+Streamlit page separates automatic validity from semantic approval.
+
+Dry-run `df6cfde5ae72` made zero requests and wrote zero records. The three
+tasks are enabled and have not run. Focused tests: 12 passed. Full suite:
+1263 passed, 5 skipped, 2 pre-existing failures
+(`test_collect_imports_only_core_models_and_itself` and
+`test_reference_app_and_saved_search`). Git diff --check passed with
+line-ending warnings only. No prompt, schema, token, gold, holdout or n8n
+change. No commit, push or deploy.
+
 ## 2026-10-04 - Reddit collection skipped
 
 The owner directed the project not to exercise Reddit. Self-service API keys

@@ -1,5 +1,58 @@
 # Status
 
+Scheduled non-n8n runs, 2026-10-05: three Windows tasks are enabled and have
+not run. Each launches
+`C:\Users\sunayana\Downloads\Google Photos discovery engine\scripts\run_scheduled_discovery.cmd`,
+which changes to the project directory and runs
+`C:\Users\sunayana\Downloads\Google Photos discovery engine\.venv\Scripts\python.exe`
+on `main.py schedule`. Local times are 08:00, 14:00 and 20:00; the machine
+timezone is India Standard Time, so those times are Asia/Kolkata. Next runs
+are 05-10-2026 08:00:00, 14:00:00 and 20:00:00. Logon mode is interactive only.
+A missed slot does not start later. Battery start and stop restrictions are
+off. The first registration split the path at the space in `Google Photos`;
+that registration was replaced before any task ran. The verified command is
+the full `.cmd` path, with working directory
+`C:\Users\sunayana\Downloads\Google Photos discovery engine`.
+
+Pause one task with `schtasks /Change /TN "GooglePhotosDiscovery-0800" /DISABLE`
+(same form for `GooglePhotosDiscovery-1400` and `GooglePhotosDiscovery-2000`).
+`/ENABLE` turns it back on. `schtasks /End /TN "..."` stops a running task.
+`schtasks /Delete /TN "..." /F` removes it. The computer must be awake and
+Sunayana logged on, with network access. `.env` must still contain
+`YOUTUBE_API_KEY`, `AUTHOR_SALT` and `GROQ_API_KEY`. The seed file
+`config/youtube_seed_videos.txt` and frozen split
+`data/interim/phase4/relevance_split_manifest.csv` must remain. Those inputs
+were present for the dry-run. No credential value is recorded here.
+
+Bounds for each run: 50 new unique documents, split 20/20/10, 20 collection
+requests and 100 model attempts. Across the three daily runs: 60 collection
+requests and 300 model attempts. One gateway attempt per uncached document per
+stage. SDK retries stay off. Cache hits consume no request budget. The ledger
+is `data/interim/scheduler/budget-ledger.json`. Run output is
+`data/interim/scheduled-runs/{run_id}/`. The public snapshot is
+`data/exports/public/scheduled-snapshot/CURRENT.json` and is gitignored.
+Active pins stay Groq `openai/gpt-oss-120b`, `relevance/v5`, `extract/v2`,
+schema 1.0.0, temperature 0.0 and max_tokens 4096. Only the existing YouTube
+comment collector is scheduled. Reddit, Google support, Play Store and App
+Store are reported unavailable. n8n is excluded. `youtube.enabled` stays false.
+
+Dry-run `df6cfde5ae72` at 2026-10-05T00:03:13+05:30 made 0 collection requests,
+0 model attempts and wrote 0 records. Estimated cost was 0.000000. No
+scheduler, run or snapshot directory was created. No manual live collection or
+model call was made; the three scheduled times are the authorized live runs.
+Focused scheduler tests: 12 passed. Full suite: 1263 passed, 5 skipped, 2
+failed. Both failures are outside this change: `src/collect/scaled.py` imports
+`src.analyze.funnel`, and `tests/test_reference_demo.py` looks up a
+`segmented_control` named `section` while `app.py` uses `st.radio`. Git diff
+--check passed with line-ending warnings only. AppTest covers snapshot refresh
+and the separation of automatic validity from semantic approval. A local
+Streamlit session on port 8502 showed Overview with the unpublished-snapshot
+caption and Documents still at 35, then Scheduled runs with the heading
+"Scheduled processing", the message "No scheduled processing snapshot has been
+published.", a Refresh button, and the read-only notice. No snapshot exists
+yet, so the populated metrics were not shown in the browser. No commit, push
+or deploy.
+
 Phase 7 collection, 2026-10-04: YouTube comment collection was exercised with
 40 `commentThreads.list` / `comments.list` requests and wrote 266 new documents.
 The deduped corpus is 318 documents across five platforms (YouTube 272, Google

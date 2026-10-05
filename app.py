@@ -22,11 +22,13 @@ from src.export.load import (
 )
 from src.export.present import highlight_excerpt
 from src.export.reference import load_reference, reference_comparison
+from src.export.scheduled_status import load_snapshot, read_snapshot_version
 
 LOCAL_DEMO = Path(__file__).parent / "data/exports/submission/demo-2026-10-04-03"
 DEFAULT_EXPORT = LOCAL_DEMO if (LOCAL_DEMO / "index.json").is_file() else Path(__file__).parent / "data/exports/submission"
 SECTIONS = (
     "Overview",
+    "Scheduled runs",
     "Evidence browser",
     "Problem comparison",
     "Reviewed reference evidence",
@@ -39,6 +41,7 @@ SECTIONS = (
 ASK_QUESTION_CAP = 8
 NAV_LABELS = {
     "Overview": "Overview",
+    "Scheduled runs": "Scheduled runs",
     "Evidence browser": "Explore evidence",
     "Problem comparison": "Compare problems",
     "Reviewed reference evidence": "Reviewed reference",
@@ -80,6 +83,137 @@ def _pairs(rows: tuple[tuple[str, object], ...]) -> None:
     """Render label-value rows without importing a dataframe library."""
     for label, value in rows:
         st.markdown(f"- **{label}:** {value}")
+
+
+def _scheduled_root() -> Path:
+    selected = st.session_state.get("scheduled_snapshot_root")
+    if isinstance(selected, str) and selected.strip():
+        return Path(selected)
+    return Path(__file__).resolve().parent / "data" / "exports" / "public" / "scheduled-snapshot"
+
+
+def _scheduled_refresh_seconds() -> int | None:
+    if st.session_state.get("scheduled_autorefresh") is False:
+        return None
+    return 60
+
+
+@st.cache_data(show_spinner=False)
+def _load_scheduled_cached(root: str, version: str) -> dict:
+    """Cache key includes the published snapshot version."""
+    del version
+    return load_snapshot(Path(root))
+
+
+def _paint_scheduled_status() -> None:
+    root = _scheduled_root()
+    version = read_snapshot_version(root)
+    snapshot = _load_scheduled_cached(str(root), version)
+    full = st.session_state.get("section") == "Scheduled runs"
+    with st.container(border=True):
+        if not full:
+            if not snapshot.get("ok"):
+                st.caption(snapshot.get("message") or "No scheduled processing snapshot has been published.")
+            else:
+                st.caption(
+                    f"Last scheduled run {snapshot.get('last_run_at')}. "
+                    f"Next {snapshot.get('next_run_at')}. "
+                    f"New documents {snapshot.get('new_documents', 0)}. "
+                    f"Shortfall {snapshot.get('shortfall', 0)}."
+                )
+        else:
+            st.subheader("Scheduled processing")
+            if not snapshot.get("ok"):
+                st.info(snapshot.get("message") or "No scheduled processing snapshot has been published.")
+            else:
+                if snapshot.get("partial") or snapshot.get("shortfall"):
+                    st.warning(
+                        f"Batch shortfall: {snapshot.get('shortfall', 0)} of "
+                        f"{snapshot.get('target_documents', 50)} new documents. "
+                        f"Status: {snapshot.get('status')}."
+                    )
+                _scheduled_metrics(snapshot)
+                if snapshot.get("stage_failures") or snapshot.get("incomplete_work"):
+                    st.error("Stage failures or incomplete work")
+                    for item in list(snapshot.get("stage_failures") or []) + list(
+                        snapshot.get("incomplete_work") or []
+                    ):
+                        st.write("- " + str(item))
+                _scheduled_detail(snapshot)
+        if st.button("Refresh", key="refresh_scheduled", icon=":material/refresh:"):
+            _load_scheduled_cached.clear()
+            st.rerun()
+
+
+def _render_scheduled_status() -> None:
+    seconds = _scheduled_refresh_seconds()
+    st.fragment(run_every=seconds)(_paint_scheduled_status)()
+
+
+def _scheduled_metrics(snapshot: dict) -> None:
+    cost = snapshot.get("estimated_cost_usd")
+    cost_label = "unknown" if cost is None or snapshot.get("usage_known") is False else f"${float(cost):.6f}"
+    rows = (
+        ("Last run", snapshot.get("last_run_at") or "", "Finished time of the published snapshot."),
+        ("Next run", snapshot.get("next_run_at") or "", "Next 08:00, 14:00, or 20:00 Asia/Kolkata."),
+        ("New documents", snapshot.get("new_documents", 0), "Unique documents selected for this batch."),
+        ("Duplicates", snapshot.get("duplicates", 0), "Already collected items and duplicate links."),
+        ("In scope", snapshot.get("in_scope", 0), "Core incomplete-recall decisions."),
+        ("Adjacent", snapshot.get("adjacent", 0), "Adjacent known-item decisions."),
+        ("Out of scope", snapshot.get("out_of_scope", 0), "Out-of-scope decisions."),
+        ("Extracted cases", snapshot.get("extracted_cases", 0), "Assembled model cases, including invalid ones."),
+        ("Automatically valid", snapshot.get("automatically_valid_cases", 0), "Evidence gate passed. Not approval."),
+        ("Human approved", snapshot.get("human_approved_cases", 0), "Semantic approval. New cases stay at zero."),
+        ("Collection requests", snapshot.get("collection_requests_used", 0), "External collection requests in this run."),
+        ("Estimated cost", cost_label, "Recorded list-price estimate. Missing usage stays unknown."),
+    )
+    for start in range(0, len(rows), 4):
+        columns = st.columns(4)
+        for column, (label, value, note) in zip(columns, rows[start : start + 4], strict=False):
+            column.metric(label, value, help=note, border=True)
+
+
+def _scheduled_detail(snapshot: dict) -> None:
+    st.markdown("**Sources**")
+    for source in snapshot.get("sources") or []:
+        st.write(
+            f"- {source.get('source')}: {source.get('status')}, "
+            f"requests {source.get('requests', 0)}, "
+            f"new documents {source.get('documents_written', 0)}. "
+            f"{source.get('reason') or ''}"
+        )
+    for source in snapshot.get("excluded_sources") or []:
+        st.write(f"- {source.get('source')}: {source.get('status')}. {source.get('reason') or ''}")
+    st.caption(
+        f"Sub-batches {snapshot.get('sub_batches') or []}. "
+        f"Model attempts {snapshot.get('model_attempts_used', 0)} "
+        f"of {snapshot.get('model_attempt_limit_per_run', 100)} this run and "
+        f"{snapshot.get('model_attempt_limit_per_day', 300)} per day."
+    )
+    st.markdown("**Unreviewed model cases**")
+    st.caption("These cases are awaiting semantic review. They are not approved findings and do not enter approved comparisons.")
+    cases = snapshot.get("unreviewed_cases") or []
+    if not cases:
+        st.info("No model case was extracted in this snapshot.")
+    for case in cases:
+        with st.container(border=True):
+            st.markdown(f"**{case.get('case_id') or case.get('doc_id')}**")
+            st.caption("Awaiting semantic review")
+            if case.get("source_url"):
+                st.link_button("Open source", case["source_url"])
+            st.write(
+                f"Automatically valid: {case.get('automatically_valid')}. "
+                "Semantically approved: false."
+            )
+            for span in case.get("evidence") or []:
+                st.write(
+                    f"`{span.get('field_name')}` "
+                    f"[{span.get('start_char')}:{span.get('end_char')}] "
+                    f"{span.get('quote')}"
+                )
+    st.markdown("**Review checks**")
+    for check in snapshot.get("review_checks") or []:
+        st.write("- " + str(check))
 
 
 def _metrics(summary: dict) -> None:
@@ -664,7 +798,10 @@ with st.sidebar:
     st.caption(f"Extraction run {chosen.get('run_id')}")
 
 dataset = bundle["datasets"][dataset_id]
-if section == "Evidence browser":
+_render_scheduled_status()
+if section == "Scheduled runs":
+    st.caption("Read-only status for the bounded non-n8n scheduler. This page cannot start collection or a model.")
+elif section == "Evidence browser":
     _evidence(dataset)
 elif section == "Problem comparison":
     _comparison(dataset)

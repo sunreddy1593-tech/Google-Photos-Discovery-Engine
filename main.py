@@ -456,7 +456,31 @@ def build_parser() -> argparse.ArgumentParser:
     )
     check.set_defaults(handler=_check_config)
 
+    schedule = subparsers.add_parser(
+        "schedule",
+        help="Run one bounded non-n8n collection and processing batch",
+        description=(
+            "Collect new YouTube comments and run the existing research stages "
+            "for up to 50 documents, in sub-batches of at most 20. "
+            "Dry-run makes no request and writes no record. "
+            "n8n workflows are not called."
+        ),
+    )
+    schedule.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Check prerequisites and print the plan. No request and no output record.",
+    )
+    schedule.set_defaults(handler=_schedule)
+
     return parser
+
+
+def _schedule(args: argparse.Namespace) -> int:
+    """One scheduled batch. Secrets stay in configuration and are not printed."""
+    from src.pipeline.scheduled_run import run_scheduled_cli
+
+    return run_scheduled_cli(dry_run=bool(args.dry_run))
 
 
 def _collect(args: argparse.Namespace) -> int:

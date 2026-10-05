@@ -30,6 +30,9 @@ data/manual/*
 # data/gold/ and data/exports/ ARE committed: gold labels key on doc_id and
 # carry no raw text, and exports/public/ is the redacted public profile that
 # Section 12.1 requires the repository to ship.
+# The scheduled snapshot is local evaluator state. It refreshes three times a
+# day and is not part of the curated submission export.
+data/exports/public/scheduled-snapshot/
 
 # Rebuildable SQLite projection (ADR-1: the database is not precious)
 *.db

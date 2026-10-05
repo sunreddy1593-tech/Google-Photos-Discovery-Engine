@@ -43,6 +43,21 @@ four source types and the larger gold set remain internal ambitions. Optional
 embeddings, chat synthesis, scoring, additional collectors and refactoring stay
 deferred. No unfinished research checkbox or broader Phase 10 is closed here.
 
+Scheduled non-n8n runs, 2026-10-05: `main.py schedule` orchestrates the existing
+YouTube collector, normalization, privacy, dedupe, relevance, extraction and
+review queue, then publishes
+`data/exports/public/scheduled-snapshot/CURRENT.json`. A full batch is 50 new
+documents in sub-batches of 20, 20 and 10. The research-batch cap stays 20.
+Per run, 20 collection requests and 100 model attempts. Per day, 60 and 300.
+Pins stay `relevance/v5`, `extract/v2` and Groq `openai/gpt-oss-120b`. n8n,
+gold, holdout text and historical runs are not modified. Reddit and the closed
+store/support collectors are reported unavailable. Dry-run `df6cfde5ae72` made
+zero requests and wrote zero records. Tasks `GooglePhotosDiscovery-0800`,
+`GooglePhotosDiscovery-1400` and `GooglePhotosDiscovery-2000` are enabled for
+08:00, 14:00 and 20:00 India Standard Time and have not run. Focused tests: 12
+passed. Full suite: 1263 passed, 5 skipped, 2 pre-existing failures. See
+`STATUS.md` for the registered command, pause commands and output paths.
+
 Current quality measurement, 2026-10-04: `relevance/v6` + `extract/v4` on the
 gold-dev seats recovered 4 of 6 reference cases in run `d7581cf180be`, with
 precision 0.8571. The consumed `relevance/v5` + `extract/v3` holdout measurement
