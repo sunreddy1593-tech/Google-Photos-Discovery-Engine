@@ -35,29 +35,29 @@ LOCAL_DEMO = Path(__file__).parent / "data/exports/submission/demo-2026-10-04-03
 DEFAULT_EXPORT = LOCAL_DEMO if (LOCAL_DEMO / "index.json").is_file() else Path(__file__).parent / "data/exports/submission"
 SECTIONS = (
     "Overview",
-    "Scheduled runs",
     "Evidence browser",
     "Problem comparison",
+    "Methodology and limitations",
+    "Scheduled runs",
+    "Quality report",
     "Reviewed reference evidence",
     "Reference standard",
     "Memory map and journeys",
-    "Quality report",
     "Ask the evidence",
-    "Methodology and limitations",
     "Community insights",
 )
 ASK_QUESTION_CAP = 8
 NAV_LABELS = {
     "Overview": "Overview",
-    "Scheduled runs": "Scheduled runs",
-    "Evidence browser": "Explore evidence",
-    "Problem comparison": "Compare problems",
+    "Evidence browser": "Explore Evidence",
+    "Problem comparison": "Compare Problems",
+    "Methodology and limitations": "Methodology & Quality",
+    "Scheduled runs": "Collection",
+    "Quality report": "Review",
     "Reviewed reference evidence": "Reviewed reference",
     "Reference standard": "Reference standard",
     "Memory map and journeys": "Memory map",
-    "Quality report": "Quality report",
     "Ask the evidence": "Ask the evidence",
-    "Methodology and limitations": "Methodology and quality",
     "Community insights": "Community insights",
 }
 
@@ -67,8 +67,98 @@ def _open_section(name: str) -> None:
 
 
 st.set_page_config(page_title="Photo Discovery Lab", layout="wide", initial_sidebar_state="expanded")
-st.title("Photo Discovery Lab")
-st.caption("Qualitative feedback workbench. These counts describe this sample only.")
+
+
+def _apply_stitch_shell() -> None:
+    """Chrome from the Photo Discovery Lab Stitch screens.
+
+    Colors and type already live in ``.streamlit/config.toml``. This only
+    shapes the sidebar, metrics, and page banner to that layout.
+    """
+    st.html(
+        """
+<style>
+[data-testid="stSidebar"] {
+  border-right: 1px solid #E2E8F0;
+}
+[data-testid="stSidebar"] [data-testid="stRadioGroup"] {
+  gap: 0.2rem;
+}
+[data-testid="stSidebar"] [data-testid="stRadioOption"] {
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.25rem;
+  border: 1px solid transparent;
+  border-left: 3px solid transparent;
+}
+[data-testid="stSidebar"] [data-selected="true"] [data-testid="stRadioOption"] {
+  background: #ffffff;
+  border-color: #E2E8F0;
+  border-left-color: #0D9488;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+[data-testid="stSidebar"] [data-testid="stRadioOption"] > div > div:first-child {
+  display: none;
+}
+[data-testid="stMetric"] {
+  background: #ffffff;
+  border: 1px solid #E2E8F0;
+  border-radius: 0.25rem;
+  padding: 0.85rem 1rem;
+}
+[data-testid="stMetricLabel"] p {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.6875rem;
+  color: #64748B;
+}
+[data-testid="stMetricValue"] {
+  font-family: "Plus Jakarta Sans", Inter, sans-serif;
+  letter-spacing: -0.02em;
+}
+.pdl-banner {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.55rem 0.8rem;
+  margin-bottom: 0.8rem;
+  background: #f4f3ef;
+  border: 1px solid #E2E8F0;
+  border-radius: 0.25rem;
+  color: #334155;
+  font-family: Inter, sans-serif;
+  font-size: 0.75rem;
+}
+.pdl-banner strong {
+  color: #0F172A;
+  font-family: "Plus Jakarta Sans", Inter, sans-serif;
+  font-size: 0.95rem;
+}
+.pdl-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+</style>
+        """
+    )
+    st.html(
+        """
+<div class="pdl-banner">
+  <div><strong>Photo Retrieval &amp; Discovery Analysis Engine</strong><br>
+  Qualitative pain points and query breakdowns, grounded in saved public excerpts.</div>
+  <span class="pdl-pill">Evaluator view</span>
+</div>
+        """
+    )
 
 
 @st.cache_data(show_spinner=False)
@@ -244,12 +334,14 @@ def _metrics(summary: dict) -> None:
 
 def _overview(dataset: dict, index: dict) -> None:
     summary = dataset["summary"]
-    st.subheader("Overview")
     with st.container(border=True):
-        st.markdown("**Photo retrieval and discovery analysis**")
+        st.caption("ACTIVE SYNTHESIS ENGINE")
+        st.markdown(
+            "### Discover how people struggle to find remembered photos and videos, and inspect the evidence behind each finding."
+        )
         st.write(
             summary.get("description")
-            or "Qualitative pain points and query breakdowns from remembered-photo retrieval, grounded in saved community excerpts."
+            or "Grounded in saved community excerpts. These counts describe this sample only."
         )
         st.caption("Automatic validity is not semantic approval. Public visitors cannot start collection or a model.")
         actions = st.container(horizontal=True)
@@ -275,6 +367,18 @@ def _overview(dataset: dict, index: dict) -> None:
         "Other datasets are not added to these numbers."
     )
     _metrics(summary)
+    steps = st.container(horizontal=True)
+    with steps:
+        for label, value in (
+            ("Collection", summary.get("documents", 0)),
+            ("Deduped analysis", summary.get("analysis_documents", 0)),
+            ("Relevance", summary.get("model_relevance_attempts", 0)),
+            ("Stored cases", summary.get("stored_cases", 0)),
+            ("Human approved", summary.get("semantically_approved_cases", 0)),
+        ):
+            with st.container(border=True):
+                st.caption(label)
+                st.markdown(f"**{value}**")
     reference, _records = _reference_bundle()
     if reference:
         st.info(f"Separate approved development reference: {reference['documents']} documents and {reference['cases']} cases. Open Reviewed reference evidence or Problem comparison. These are human reference labels, not successful model extractions.")
@@ -388,7 +492,10 @@ def _card(card: dict) -> None:
 
 def _evidence(dataset: dict) -> None:
     _reference_evidence()
-    st.subheader("Evidence browser")
+    st.markdown("### Explore Evidence")
+    st.write(
+        "Search filters saved source excerpts only. No generative rewrite is performed on this screen."
+    )
     st.caption(
         "Failed attempts and empty responses stay visible here and stay out of conclusions. "
         "Human relevance labels are not extraction approval."
@@ -434,8 +541,28 @@ def _evidence(dataset: dict) -> None:
     if not shown:
         st.info("No records match these filters.")
         return
-    for card in shown:
-        _card(card)
+    labels = [str(card.get("case_id") or card.get("doc_id") or "record") for card in shown]
+    dataset_key = str(dataset["summary"].get("dataset_id") or "dataset")
+    picked = st.selectbox("Evidence dossier", labels, key=f"dossier_{dataset_key}")
+    feed, dossier = st.columns([1.15, 0.85])
+    with feed:
+        st.markdown("**Filtered evidence**")
+        for card in shown:
+            title = card.get("case_id") or card.get("doc_id")
+            spans = card.get("evidence_spans") or []
+            quote = spans[0].get("quote") if spans else (card.get("excerpt") or "")
+            st.markdown(f"**{title}**")
+            st.caption(
+                f"{card.get('source_platform') or 'source'} · {card.get('review_status') or card.get('record_label')}"
+            )
+            if quote:
+                st.markdown("> " + str(quote)[:280])
+    with dossier:
+        match = next(
+            card for card in shown if str(card.get("case_id") or card.get("doc_id") or "record") == picked
+        )
+        st.markdown("**Evidence dossier**")
+        _card(match)
 
 
 def _dimension_table(bucket: dict) -> None:
@@ -454,7 +581,8 @@ def _dimension_table(bucket: dict) -> None:
 
 
 def _comparison(dataset: dict) -> None:
-    st.subheader("Problem comparison")
+    st.markdown("### Compare Problems")
+    st.write("Approved problem groups stay separate from stored model output. Core and adjacent are not merged.")
     _reference_analysis()
     cards = browser_cards(dataset)
     approved = comparison(cards, approved_only=True)
@@ -640,8 +768,23 @@ def _ask(cards: list[dict]) -> None:
 
 
 def _methodology(dataset: dict, index: dict) -> None:
-    st.subheader("Methodology and limitations")
+    st.markdown("### How this lab works")
     summary = dataset["summary"]
+    stages = (
+        ("Collection", summary.get("documents", 0), "Saved documents in this export."),
+        ("Normalization", summary.get("analysis_documents", 0), "Documents after confirmed duplicates."),
+        ("Deduplication", summary.get("confirmed_duplicate_links", 0), "Confirmed duplicate links."),
+        ("Relevance", summary.get("model_relevance_attempts", 0), "Model relevance attempts."),
+        ("Case extraction", summary.get("stored_cases", 0), "Stored extraction cases."),
+        ("Human review", summary.get("semantically_approved_cases", 0), "Semantically approved cases."),
+    )
+    row = st.container(horizontal=True)
+    with row:
+        for label, value, note in stages:
+            with st.container(border=True):
+                st.caption(label)
+                st.markdown(f"**{value}**")
+                st.caption(note)
     st.markdown(
         """
 This view reads a prepared export of saved runs. It does not call a model,
@@ -996,9 +1139,11 @@ index = bundle["index"]
 dataset_ids = [item["dataset_id"] for item in index.get("datasets") or []]
 quality_dataset = "development-quality-v6"
 default_index = dataset_ids.index(quality_dataset) if quality_dataset in dataset_ids else 0
+_apply_stitch_shell()
 with st.sidebar:
     st.markdown("**Photo Discovery Lab**")
     st.caption("RESEARCH ENGINE")
+    st.caption("PERSPECTIVE · Evaluator view. Counts on each page are this sample only.")
     section = st.radio(
         "Navigation",
         SECTIONS,
@@ -1014,6 +1159,8 @@ with st.sidebar:
         key="dataset_quality",
     )
     chosen = next(item for item in index["datasets"] if item["dataset_id"] == dataset_id)
+    snapshot_summary = bundle["datasets"][dataset_id]["summary"]
+    st.caption(f"{snapshot_summary.get('documents', 0)} documents in this export")
     st.caption(chosen.get("description") or "")
     st.caption(f"Extraction run {chosen.get('run_id')}")
 
@@ -1042,4 +1189,4 @@ elif section == "Community insights":
 else:
     _overview(dataset, index)
 st.divider()
-st.caption("Photo Discovery Lab · Qualitative feedback workbench · Google Photos")
+st.caption("Photo Discovery Lab · Qualitative feedback workbench · Google Photos · Evaluator view")
