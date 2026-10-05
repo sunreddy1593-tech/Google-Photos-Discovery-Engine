@@ -33,6 +33,11 @@ data/manual/*
 # The scheduled snapshot is local evaluator state. It refreshes three times a
 # day and is not part of the curated submission export.
 data/exports/public/scheduled-snapshot/
+# The automated comparison snapshot is rebuilt from saved outputs after each
+# scheduled run and by scripts/build_reference_standard_snapshot.py.
+data/exports/public/reference-standard-snapshot/
+# Working copy of the scheduled sub-batch export used to build that snapshot.
+data/interim/reference-standard/
 
 # Rebuildable SQLite projection (ADR-1: the database is not precious)
 *.db

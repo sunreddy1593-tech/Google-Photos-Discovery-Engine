@@ -1,0 +1,247 @@
+{
+  "reference_version": "n8n-reviewed-reference/01",
+  "label": "Human-reviewed reference",
+  "created_at": "2026-10-05T05:35:52.984953+00:00",
+  "created_at_note": "Artifact build time. The owner's review date was not stated and is not inferred.",
+  "primary_input": "n8n/discovery_sheet_template - insights.csv",
+  "input_sha256": {
+    "n8n/discovery_sheet_template - insights.csv": "22f1463584509c5590985129c4271757954338cfd98f9e2e83f2f2db94f2f848",
+    "data/insights_seed.csv": "24797e10de8937b71311aaf6bdb0aff0dcf5ed3e4acffcb59d543a35e05d18fc"
+  },
+  "records_sha256": "7d8ddc7ee0c9757d6af7c5c55523f95961af6b82d89b1dad654670deb1e21e29",
+  "records": 48,
+  "distinct_source_urls": 48,
+  "distinct_thread_ids": 48,
+  "expected_records": 48,
+  "count_matches_owner_statement": true,
+  "count_discrepancy": null,
+  "record_ids": [
+    "n8n-reviewed-reference/01#434862129",
+    "n8n-reviewed-reference/01#17502895",
+    "n8n-reviewed-reference/01#272383406",
+    "n8n-reviewed-reference/01#339698626",
+    "n8n-reviewed-reference/01#132985708",
+    "n8n-reviewed-reference/01#121969251",
+    "n8n-reviewed-reference/01#166960436",
+    "n8n-reviewed-reference/01#129501",
+    "n8n-reviewed-reference/01#272006073",
+    "n8n-reviewed-reference/01#231765990",
+    "n8n-reviewed-reference/01#345133284",
+    "n8n-reviewed-reference/01#11921760",
+    "n8n-reviewed-reference/01#10777932",
+    "n8n-reviewed-reference/01#90257222",
+    "n8n-reviewed-reference/01#104859854",
+    "n8n-reviewed-reference/01#368298",
+    "n8n-reviewed-reference/01#97271754",
+    "n8n-reviewed-reference/01#3478886",
+    "n8n-reviewed-reference/01#253014",
+    "n8n-reviewed-reference/01#45450416",
+    "n8n-reviewed-reference/01#5601252",
+    "n8n-reviewed-reference/01#402241473",
+    "n8n-reviewed-reference/01#153355203",
+    "n8n-reviewed-reference/01#113048585",
+    "n8n-reviewed-reference/01#262569183",
+    "n8n-reviewed-reference/01#339761382",
+    "n8n-reviewed-reference/01#301466833",
+    "n8n-reviewed-reference/01#95753487",
+    "n8n-reviewed-reference/01#106011362",
+    "n8n-reviewed-reference/01#112733447",
+    "n8n-reviewed-reference/01#57527826",
+    "n8n-reviewed-reference/01#111566397",
+    "n8n-reviewed-reference/01#309146796",
+    "n8n-reviewed-reference/01#124696022",
+    "n8n-reviewed-reference/01#95339",
+    "n8n-reviewed-reference/01#88651366",
+    "n8n-reviewed-reference/01#4486739",
+    "n8n-reviewed-reference/01#115587351",
+    "n8n-reviewed-reference/01#254129406",
+    "n8n-reviewed-reference/01#125435826",
+    "n8n-reviewed-reference/01#408539531",
+    "n8n-reviewed-reference/01#206052189",
+    "n8n-reviewed-reference/01#436067825",
+    "n8n-reviewed-reference/01#348117640",
+    "n8n-reviewed-reference/01#18475280",
+    "n8n-reviewed-reference/01#357476",
+    "n8n-reviewed-reference/01#232263870",
+    "n8n-reviewed-reference/01#138712907"
+  ],
+  "cross_check": {
+    "performed": true,
+    "snapshot": "data/insights_seed.csv",
+    "snapshot_rows": 51,
+    "covered_rows_present_in_snapshot": 48,
+    "covered_rows_missing_from_snapshot": [],
+    "snapshot_rows_not_covered_by_review": [
+      "106429666",
+      "471259711",
+      "471279651"
+    ],
+    "field_differences_for_covered_rows": {
+      "is_retrieval_problem": {
+        "boolean_case_only": 48
+      }
+    }
+  },
+  "approval": {
+    "owner": "Sunayana",
+    "statement": "I have personally reviewed the existing 48 n8n threads in detail, including their relevance, classifications, summaries and evidence quotes. Record that review as the approval basis for those exact records. Future records should be classified using that standard without requiring individual human approval before appearing in a clearly labelled automated comparison.",
+    "given_in": "implementation conversation of 2026-10-05 authorising the reviewed n8n reference standard",
+    "recorded_on": "2026-10-05",
+    "basis": "owner review statement recorded 2026-10-05",
+    "applies_to": "exactly the records listed in record_ids",
+    "extends_to_future_records": false,
+    "review_date": "not stated by the owner"
+  },
+  "fields_reviewed": {
+    "named_by_owner": [
+      "relevance",
+      "classifications",
+      "summaries",
+      "evidence quotes"
+    ],
+    "relevance": [
+      "is_retrieval_problem"
+    ],
+    "classifications": [
+      "photo_type",
+      "intent",
+      "failure_stage"
+    ],
+    "summaries": [
+      "summary"
+    ],
+    "evidence_quotes": [
+      "key_quote"
+    ],
+    "present_in_record_not_separately_named": [
+      "title",
+      "cues_remembered",
+      "cues_forgotten",
+      "query_tried",
+      "workaround",
+      "scraped_at"
+    ]
+  },
+  "fields_unavailable": [
+    "original_post_text",
+    "author",
+    "published_at",
+    "quote_offsets",
+    "severity",
+    "impact_signals",
+    "scope_class_core_or_adjacent",
+    "reason_code",
+    "replies",
+    "review_date"
+  ],
+  "field_mappings": [
+    {
+      "n8n_field": "source",
+      "application_field": "source_platform",
+      "status": "supported",
+      "rule": "google_photos_community -> google_support; any other value is refused."
+    },
+    {
+      "n8n_field": "url",
+      "application_field": "source_url, source_url_key, source_item_id, expected_doc_id",
+      "status": "supported",
+      "rule": "Copied exactly. The numeric thread id is the source item id. expected_doc_id is the existing deterministic doc_id for google_support and that thread id, so a later collected document can be recognised."
+    },
+    {
+      "n8n_field": "title",
+      "application_field": "title",
+      "status": "supported",
+      "rule": "Copied exactly. Not treated as the original post body."
+    },
+    {
+      "n8n_field": "is_retrieval_problem",
+      "application_field": "reviewed_relevance",
+      "status": "supported",
+      "rule": "TRUE -> retrieval_problem, FALSE -> not_retrieval_problem. The n8n schema does not distinguish core_incomplete_recall from adjacent_known_item_retrieval, so no scope class or reason code is assigned. Application scope classes collapse onto this binary in the other direction only: core and adjacent -> retrieval_problem, out_of_scope -> not_retrieval_problem."
+    },
+    {
+      "n8n_field": "photo_type",
+      "application_field": "target_asset_type",
+      "status": "partial",
+      "rule": "screenshot -> screenshot only. unknown -> not stated. people_event and other stay preserved as n8n values because the vocabularies differ."
+    },
+    {
+      "n8n_field": "intent",
+      "application_field": "",
+      "status": "preserved",
+      "rule": "No application field. Shown as an n8n dimension; unknown -> not stated."
+    },
+    {
+      "n8n_field": "cues_remembered",
+      "application_field": "remembered_cues",
+      "status": "unsupported",
+      "rule": "Free text split on ';' versus a controlled vocabulary. Preserved as n8n text; the application vocabulary is not assigned."
+    },
+    {
+      "n8n_field": "cues_forgotten",
+      "application_field": "forgotten_information",
+      "status": "unsupported",
+      "rule": "Free text versus a controlled vocabulary. Preserved as n8n text."
+    },
+    {
+      "n8n_field": "query_tried",
+      "application_field": "exact_query, query_strategies",
+      "status": "unsupported",
+      "rule": "Mixed query text and observations. Preserved as n8n text without classification."
+    },
+    {
+      "n8n_field": "failure_stage",
+      "application_field": "",
+      "status": "preserved",
+      "rule": "expression, understanding, evaluation and refinement are the n8n workflow's stages. No application field. not_applicable and unknown -> not stated."
+    },
+    {
+      "n8n_field": "workaround",
+      "application_field": "workarounds",
+      "status": "unsupported",
+      "rule": "Free text versus a controlled vocabulary. Preserved as n8n text."
+    },
+    {
+      "n8n_field": "key_quote",
+      "application_field": "evidence quote",
+      "status": "supported",
+      "rule": "Kept as the reviewed evidence quote. The export has no original post text and no offsets, so the quote cannot be verified against source text here."
+    },
+    {
+      "n8n_field": "summary",
+      "application_field": "problem_summary",
+      "status": "supported",
+      "rule": "Kept as a paraphrase. Never displayed as a quotation."
+    },
+    {
+      "n8n_field": "scraped_at",
+      "application_field": "collected_at",
+      "status": "supported",
+      "rule": "Copied exactly. This is the workflow's collection time, not the publication time."
+    }
+  ],
+  "verification": {
+    "records_with_quote": 22,
+    "records_without_quote": 26,
+    "quotes_verified_against_original_text": 0,
+    "quote_verification_unavailable": 48,
+    "quotes_equal_to_saved_title": 18,
+    "quotes_within_saved_title": 20,
+    "records_with_summary": 47,
+    "records_without_summary": 1,
+    "note": "Title containment is a weak consistency check on saved sheet text. It is not verification against the original post, which the export does not include."
+  },
+  "counts": {
+    "retrieval_problem": 23,
+    "not_retrieval_problem": 25,
+    "target_asset_type_screenshot": 6,
+    "photo_type_unmapped": 1
+  },
+  "limitations": [
+    "The n8n export carries titles, workflow tags, a key quote and a summary. It does not carry the original post text, so no quote is verified against source text here.",
+    "The n8n schema records a binary retrieval-problem flag. It does not distinguish core incomplete recall from adjacent known-item retrieval, and no scope class is inferred.",
+    "Cues, queries and workarounds are free text and are not mapped onto the application vocabularies.",
+    "Severity, impact, offsets, publication dates and authors are unavailable and are not inferred.",
+    "The owner's review is the approval basis for these exact records only. It does not approve later records."
+  ]
+}

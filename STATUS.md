@@ -1,5 +1,26 @@
 # Status
 
+Human-reviewed n8n reference standard, 2026-10-05: the 48 n8n threads that
+Sunayana reviewed in detail are recorded as an immutable reference,
+`data/exports/reference/n8n-reviewed-reference-01/` (version
+`n8n-reviewed-reference/01`, built from the saved export
+`n8n/discovery_sheet_template - insights.csv`, 48 records, 23 retrieval
+problems, 25 not; her statement in the implementation conversation is the
+approval basis; review date not stated). The three later threads in
+`data/insights_seed.csv` are listed as not covered. Future records are
+assessed against that standard by `src/export/reference_standard.py` with
+deterministic evidence checks and published atomically to the gitignored
+`data/exports/public/reference-standard-snapshot/`. The Streamlit "Reference
+standard" section shows "Human-reviewed reference" and "Automatically
+classified using the human-reviewed standard" as separate views with separate
+counts; the automated view never sets semantic approval and claims no
+accuracy. Current snapshot `d92016973f6e0260`: 16 cases assessed, 5 eligible,
+2 flagged, 9 failed or incomplete, 0 scheduled sub-batches yet. The scheduler
+refreshes the snapshot best-effort after publishing its own; budgets, prompts,
+schema and model are unchanged. No n8n workflow, webhook, sheet or integration
+file was touched or called. Full suite: 1302 passed, 5 skipped, 0 failed.
+Details: `docs/n8n-reviewed-reference-standard-2026-10-05.md`.
+
 Bug fixes, 2026-10-05: collection no longer refetches replies whose stored
 count is already complete and unchanged. The scheduler passes that reply state
 into the collector, and the parent manifest is written after the run status is

@@ -274,15 +274,18 @@ def _pipeline_import_allowed(
 ) -> bool:
     """Stage packages stay isolated. The scheduled runner may call collectors.
 
-    ``scheduled_run.py`` is the orchestrator for the existing YouTube collector
-    and the public snapshot writer. Other pipeline modules do not gain those
-    imports.
+    ``scheduled_run.py`` is the orchestrator for the existing YouTube collector,
+    the public snapshot writer, and the saved-output refresh of the automated
+    comparison. Other pipeline modules do not gain those imports.
     """
     if module.startswith(prefixes):
         return True
     if package != "pipeline" or path.name != "scheduled_run.py":
         return False
-    return module.startswith("src.collect") or module == "src.export.scheduled_status"
+    return module.startswith("src.collect") or module in {
+        "src.export.scheduled_status",
+        "src.export.reference_standard_build",
+    }
 
 
 def test_phase3_stages_do_not_import_each_other() -> None:

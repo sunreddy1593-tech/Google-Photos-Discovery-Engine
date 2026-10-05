@@ -27,7 +27,8 @@ def prepare(root: Path, output: Path, package: Path) -> dict:
     files=['app.py','community_insights.py','src/__init__.py','src/core/__init__.py',
            'src/core/versions.py','src/core/ids.py','src/export/__init__.py',
            'src/export/load.py','src/export/compare.py','src/export/present.py',
-           'src/export/privacy.py','src/export/reference.py']
+           'src/export/privacy.py','src/export/reference.py','src/export/scheduled_status.py',
+           'src/export/reviewed_reference.py','src/export/reference_standard.py']
     files += [p.relative_to(root).as_posix() for p in (root/'src/models').glob('*.py')]
     if (root/'.streamlit/config.toml').is_file(): files.append('.streamlit/config.toml')
     for name in files:
@@ -36,6 +37,14 @@ def prepare(root: Path, output: Path, package: Path) -> dict:
         shutil.copyfile(root/name,target)
     (package/'requirements.txt').write_text('streamlit==1.65.0\npydantic>=2.8,<3\n',encoding='utf-8')
     shutil.copytree(output/'approved-reference',package/'data/exports/submission/approved-reference')
+    # Human-reviewed n8n reference (immutable artifact) and the published automated
+    # comparison snapshot. Both are already public-profile files; neither carries raw text.
+    reviewed=root/'data/exports/reference/n8n-reviewed-reference-01'
+    if reviewed.is_dir():
+        shutil.copytree(reviewed,package/'data/exports/reference/n8n-reviewed-reference-01')
+    standard=root/'data/exports/public/reference-standard-snapshot'
+    if (standard/'CURRENT.json').is_file():
+        shutil.copytree(standard,package/'data/exports/public/reference-standard-snapshot')
     folder=package/'data/exports/submission/reviewed-development-reference'
     folder.mkdir()
     description='Ten reviewed development documents and six human-approved reference cases. Model predictions are not included; separate quality aggregates retain actual measured coverage.'
@@ -81,11 +90,17 @@ def prepare(root: Path, output: Path, package: Path) -> dict:
         if path.suffix=='.json' and leak_findings(json.loads(path.read_text(encoding='utf-8'))):
             raise ValueError('Public metadata failed privacy scan')
         if path.suffix=='.jsonl':
+            reviewed_reference='data/exports/reference/' in path.relative_to(package).as_posix()
             for line in path.read_text(encoding='utf-8').splitlines():
-                if line.strip():
-                    record=PublicExportRecord.model_validate_json(line)
-                    if leak_findings(record.model_dump(mode='json')):
-                        raise ValueError('Public evidence failed privacy scan')
+                if not line.strip(): continue
+                if reviewed_reference:
+                    # n8n reviewed records are not PublicExportRecord rows; scan them for leaks only.
+                    if leak_findings(json.loads(line)):
+                        raise ValueError('Reviewed reference record failed privacy scan')
+                    continue
+                record=PublicExportRecord.model_validate_json(line)
+                if leak_findings(record.model_dump(mode='json')):
+                    raise ValueError('Public evidence failed privacy scan')
     audit={'public_records':reference['evidence_fragments'],'unique_reference_cases':reference['cases'],
            'holdout_text_included':False,'provider_calls':0,'requires_secrets':False,'file_sha256':hashes}
     (package/'package-audit.json').write_text(json.dumps(audit,indent=2)+'\n',encoding='utf-8')

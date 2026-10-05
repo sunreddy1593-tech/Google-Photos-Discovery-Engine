@@ -22,6 +22,13 @@ from src.export.load import (
 )
 from src.export.present import highlight_excerpt
 from src.export.reference import load_reference, reference_comparison
+from src.export.reference_standard import AUTOMATED_LABEL, AUTOMATED_NOTE, load_standard_snapshot
+from src.export.reviewed_reference import (
+    HUMAN_REVIEWED_LABEL,
+    REFERENCE_VERSION,
+    load_reviewed_reference,
+    reviewed_reference_comparison,
+)
 from src.export.scheduled_status import load_snapshot, read_snapshot_version
 
 LOCAL_DEMO = Path(__file__).parent / "data/exports/submission/demo-2026-10-04-03"
@@ -32,6 +39,7 @@ SECTIONS = (
     "Evidence browser",
     "Problem comparison",
     "Reviewed reference evidence",
+    "Reference standard",
     "Memory map and journeys",
     "Quality report",
     "Ask the evidence",
@@ -45,6 +53,7 @@ NAV_LABELS = {
     "Evidence browser": "Explore evidence",
     "Problem comparison": "Compare problems",
     "Reviewed reference evidence": "Reviewed reference",
+    "Reference standard": "Reference standard",
     "Memory map and journeys": "Memory map",
     "Quality report": "Quality report",
     "Ask the evidence": "Ask the evidence",
@@ -691,6 +700,217 @@ Quality measurement is reported separately from these prepared sample counts.
     )
 
 
+def _standard_reference_dir() -> Path:
+    selected = st.session_state.get("reference_standard_dir")
+    if isinstance(selected, str) and selected.strip():
+        return Path(selected)
+    return Path(__file__).resolve().parent / "data" / "exports" / "reference" / REFERENCE_VERSION.replace("/", "-")
+
+
+def _standard_snapshot_root() -> Path:
+    selected = st.session_state.get("reference_standard_snapshot_root")
+    if isinstance(selected, str) and selected.strip():
+        return Path(selected)
+    return Path(__file__).resolve().parent / "data" / "exports" / "public" / "reference-standard-snapshot"
+
+
+@st.cache_data(show_spinner=False)
+def _load_reviewed_reference_cached(path: str) -> dict:
+    return load_reviewed_reference(Path(path))
+
+
+@st.cache_data(show_spinner=False)
+def _load_standard_cached(root: str, version: str, reference_version: str) -> dict:
+    """Cache key includes the published snapshot version and the reference version."""
+    del version, reference_version
+    return load_standard_snapshot(Path(root))
+
+
+def _paint_reference_standard() -> None:
+    reference = _load_reviewed_reference_cached(str(_standard_reference_dir()))
+    root = _standard_snapshot_root()
+    version = read_snapshot_version(root)
+    snapshot = _load_standard_cached(str(root), version, REFERENCE_VERSION)
+    st.subheader("Reference standard")
+    st.caption(
+        "Two separate views. The first is the owner's reviewed n8n reference. The second is "
+        "automatic classification assessed against that reference. Neither view measures accuracy."
+    )
+    human_tab, automated_tab = st.tabs([HUMAN_REVIEWED_LABEL, AUTOMATED_LABEL])
+    with human_tab:
+        _human_reviewed_view(reference)
+    with automated_tab:
+        _automated_view(snapshot, reference)
+    if st.button("Refresh", key="refresh_reference_standard", icon=":material/refresh:"):
+        _load_standard_cached.clear()
+        _load_reviewed_reference_cached.clear()
+        st.rerun()
+
+
+def _render_reference_standard() -> None:
+    st.fragment(run_every=_scheduled_refresh_seconds())(_paint_reference_standard)()
+
+
+def _human_reviewed_view(reference: dict) -> None:
+    if not reference.get("ok"):
+        st.info(reference.get("message") or "The human-reviewed reference is not included in this bundle.")
+        return
+    metadata = reference["metadata"]
+    records = reference["records"]
+    st.markdown(f"**{HUMAN_REVIEWED_LABEL}** · version `{metadata['reference_version']}`")
+    st.write(
+        f"{len(records)} records reviewed in detail by {metadata['approval']['owner']}: relevance, "
+        "classifications, summaries and evidence quotes. The review date was not stated."
+    )
+    if not metadata.get("count_matches_owner_statement"):
+        st.warning(metadata.get("count_discrepancy") or "Record count differs from the owner's statement.")
+    counts = metadata.get("counts") or {}
+    verification = metadata.get("verification") or {}
+    columns = st.columns(4)
+    columns[0].metric("Human-reviewed records", len(records), border=True)
+    columns[1].metric("Retrieval problem", counts.get("retrieval_problem", 0), border=True)
+    columns[2].metric("Not a retrieval problem", counts.get("not_retrieval_problem", 0), border=True)
+    columns[3].metric(
+        "Quotes verified against original text",
+        verification.get("quotes_verified_against_original_text", 0),
+        help="The saved export has no original post text, so no quote can be verified here.",
+        border=True,
+    )
+    st.caption(
+        f"Records with a quote: {verification.get('records_with_quote', 0)}. "
+        f"Quote verification unavailable: {verification.get('quote_verification_unavailable', 0)}. "
+        f"Records with a summary: {verification.get('records_with_summary', 0)}."
+    )
+    analysis = reviewed_reference_comparison(records)
+    st.markdown("**Comparison across reviewed records**")
+    st.caption("Only supported mappings are shown. Core and adjacent are not inferred from the reviewed binary flag.")
+    for dimension in analysis["dimensions"]:
+        with st.expander(f"{dimension['label']} ({dimension['mapping_status']})"):
+            for row in dimension["rows"]:
+                st.write(f"{row['value']}: {row['count']} record(s)")
+            st.caption(f"Not stated: {len(dimension['unstated_records'])} record(s). {dimension.get('limitation') or ''}")
+    st.markdown("**Records**")
+    wanted = st.selectbox(
+        "Reviewed record",
+        [row["reference_record_id"] for row in records],
+        key="reviewed_reference_record",
+        format_func=lambda key: next((r["mapped"]["title"] or key for r in records if r["reference_record_id"] == key), key),
+    )
+    record = next(row for row in records if row["reference_record_id"] == wanted)
+    st.caption(f"{HUMAN_REVIEWED_LABEL} · {record['reference_record_id']}")
+    mapped = record["mapped"]
+    _pairs(
+        (
+            ("Reviewed relevance", mapped["reviewed_relevance"]),
+            ("Summary", mapped["problem_summary"] or "not stated"),
+            ("Evidence quote", mapped["evidence_quote"] or "not stated"),
+            ("Quote verification", record["quote_check"]["verified_against_original_text"]),
+            ("Target asset type", mapped["target_asset_type"] or "not stated"),
+            ("Failure stage (n8n)", record["preserved_n8n"]["failure_stage"] or "not stated"),
+            ("Intent (n8n)", record["preserved_n8n"]["intent"] or "not stated"),
+            ("Collected at", mapped["collected_at"]),
+        )
+    )
+    if record["source_url"]:
+        st.link_button("Open public source", record["source_url"])
+    st.caption("Unavailable in the saved export: " + ", ".join(record["unavailable"]))
+    for limitation in metadata.get("limitations", []):
+        st.caption(limitation)
+
+
+def _automated_view(snapshot: dict, reference: dict) -> None:
+    st.markdown(f"**{AUTOMATED_LABEL}**")
+    st.caption(AUTOMATED_NOTE)
+    if not snapshot.get("ok"):
+        st.info(snapshot.get("message") or "No automated comparison snapshot has been published.")
+        return
+    if reference.get("ok") and snapshot.get("reference_version") != reference.get("reference_version"):
+        st.warning(
+            f"Snapshot reference version {snapshot.get('reference_version')} differs from the loaded "
+            f"reference {reference.get('reference_version')}."
+        )
+    counts = snapshot.get("counts") or {}
+    st.caption(
+        f"Snapshot {snapshot.get('snapshot_version')} built {snapshot.get('built_at')} against reference "
+        f"`{snapshot.get('reference_version')}`. Semantic approval set by this layer: 0."
+    )
+    rows = (
+        ("Human-reviewed records", counts.get("human_reviewed_records", 0), "Separate human-reviewed view. Not part of the automated counts."),
+        ("Automatically valid", counts.get("automatically_valid_cases", 0), "Evidence gate passed. Not approval."),
+        ("Eligible for comparison", counts.get("eligible_cases", 0), "Passed every automatic check below."),
+        ("Flagged", counts.get("flagged_cases", 0), "Valid but at least one check objected."),
+        ("Failed or incomplete", counts.get("failed_or_incomplete_cases", 0), "Failed or empty attempts and invalid cases."),
+        ("Unverifiable", counts.get("unverifiable_cases", 0), "No exported source context to check quotes."),
+        ("Reference overlap excluded", counts.get("reference_overlap_excluded", 0), "Documents that are human-reviewed records."),
+        ("Duplicates skipped", counts.get("duplicates_skipped", 0), "Same case id seen in more than one export."),
+    )
+    for start in range(0, len(rows), 4):
+        columns = st.columns(4)
+        for column, (label, value, note) in zip(columns, rows[start : start + 4], strict=False):
+            column.metric(label, value, help=note, border=True)
+    relevance = counts.get("relevance_decisions_by_scope") or {}
+    st.caption(
+        "Relevance decisions in the assessed exports: "
+        f"core {relevance.get(CORE, 0)}, adjacent {relevance.get(ADJACENT, 0)}, "
+        f"out of scope {relevance.get('out_of_scope', 0)}, invalid or failed {relevance.get('invalid_or_failed', 0)}."
+    )
+    comparison_payload = snapshot.get("comparison") or {}
+    st.markdown("**Automated comparison**")
+    if not comparison_payload.get("case_count"):
+        st.info("No automatically classified case is eligible for the comparison in this snapshot.")
+    else:
+        st.caption(comparison_payload.get("mapping_note") or "")
+        for bucket_key, title in ((CORE, "Core incomplete recall"), (ADJACENT, "Adjacent known-item retrieval")):
+            bucket = comparison_payload.get(bucket_key) or {}
+            with st.expander(f"{title}: {bucket.get('case_count', 0)} case(s)", expanded=bool(bucket.get("case_count"))):
+                if not bucket.get("case_count"):
+                    st.write("No eligible case in this bucket.")
+                for dimension in bucket.get("dimensions") or []:
+                    if not dimension.get("rows"):
+                        continue
+                    st.markdown(f"*{dimension['label']}*")
+                    for row in dimension["rows"]:
+                        st.write(f"{row['value']}: {row['count']} — " + ", ".join(row["cases"]))
+    st.markdown("**Cases**")
+    included = list(snapshot.get("included") or [])
+    excluded = list(snapshot.get("excluded") or [])
+    choice = st.radio(
+        "Show",
+        ("Included", "Flagged, failed or excluded"),
+        horizontal=True,
+        key="reference_standard_show",
+    )
+    shown = included if choice == "Included" else excluded
+    if not shown:
+        st.info("No case in this group.")
+    for row in shown:
+        _automated_case(row)
+    with st.expander("Eligibility rules"):
+        for rule in snapshot.get("eligibility_rules") or []:
+            st.write("- " + str(rule))
+
+
+def _automated_case(row: dict) -> None:
+    with st.container(border=True):
+        st.markdown(f"**{row.get('case_id') or row.get('doc_id')}**")
+        st.caption(f"{AUTOMATED_LABEL} · {row.get('verdict')} · scope {row.get('model_scope_class') or 'none'}")
+        versions = row.get("versions") or {}
+        st.caption(
+            f"Reference {versions.get('reference_version')} · relevance {versions.get('relevance_prompt')} · "
+            f"extraction {versions.get('extraction_prompt')} · schema {versions.get('schema_version')} · "
+            f"model {versions.get('model')} · dataset {row.get('dataset_id')}/{row.get('run_id')}"
+        )
+        st.write("Automatically valid: " + str(bool(row.get("automatically_valid"))).lower() + ". Semantically approved: false. Human reviewed: false.")
+        for reason in row.get("reasons") or []:
+            st.write("- " + str(reason))
+        if row.get("source_url"):
+            st.link_button("Open source", row["source_url"])
+        if row.get("excerpt"):
+            st.html(highlight_excerpt(row["excerpt"], row.get("evidence_spans") or []))
+        for span in row.get("evidence_excerpts") or []:
+            st.write(f"`{span.get('field_name')}` {span.get('quote')}")
+
+
 def _reference_bundle() -> tuple[dict, list[dict]]:
     folder = st.session_state.get("reference_export_dir")
     if not folder:
@@ -807,6 +1027,8 @@ elif section == "Problem comparison":
     _comparison(dataset)
 elif section == "Reviewed reference evidence":
     _reference_evidence()
+elif section == "Reference standard":
+    _render_reference_standard()
 elif section == "Memory map and journeys":
     _reference_journeys()
 elif section == "Quality report":

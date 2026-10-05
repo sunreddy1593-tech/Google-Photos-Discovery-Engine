@@ -19,7 +19,12 @@ from src.collect.youtube import YoutubeCollectionError, collect_youtube_comments
 from src.core.config import Settings, load_settings
 from src.core.errors import ConfigError
 from src.core.ids import cache_key, sha1_short
-from src.core.versions import RULESET_VERSION, SCHEMA_VERSION, prompt_version
+from src.core.versions import (
+    REFERENCE_STANDARD_VERSION,
+    RULESET_VERSION,
+    SCHEMA_VERSION,
+    prompt_version,
+)
 from src.export.scheduled_status import publish_snapshot
 from src.llm.cache import ResponseCache
 from src.models.collected_document import CollectedDocument
@@ -99,6 +104,7 @@ class ScheduleReport:
     missing_inputs: list[str] = field(default_factory=list)
     pins: dict[str, Any] = field(default_factory=dict)
     unreviewed_cases: list[dict[str, Any]] = field(default_factory=list)
+    automated_comparison: dict[str, Any] = field(default_factory=dict)
     output_dir: str = ""
     message: str = ""
 
@@ -163,8 +169,14 @@ def run_scheduled(
     process_batch: Callable[..., dict[str, Any]] | None = None,
     pid: int | None = None,
     pid_alive: Callable[[int], bool] | None = None,
+    comparison_refresh: Callable[[Path], dict[str, Any]] | None = None,
 ) -> ScheduleReport:
-    """Plan or run one bounded batch. Dry-run writes nothing and calls nothing."""
+    """Plan or run one bounded batch. Dry-run writes nothing and calls nothing.
+
+    ``comparison_refresh`` rebuilds the automated comparison snapshot from
+    saved outputs after the run's own snapshot is published. It makes no
+    request and cannot change the run status; its outcome is recorded only.
+    """
     moment = now or datetime.now(SCHEDULE_ZONE)
     if moment.tzinfo is None:
         raise ScheduleError("scheduled time must be timezone-aware")
@@ -216,7 +228,25 @@ def run_scheduled(
         report.finished_at = datetime.now(SCHEDULE_ZONE).isoformat()
         if report.status != "missing_inputs":
             _publish(paths, report)
+            _refresh_automated_comparison(paths, report, comparison_refresh)
     return report
+
+
+def _refresh_automated_comparison(
+    paths: SchedulePaths,
+    report: ScheduleReport,
+    refresh: Callable[[Path], dict[str, Any]] | None,
+) -> None:
+    """Rebuild the automated comparison from saved files. Never raises."""
+    try:
+        if refresh is None:
+            from src.export.reference_standard_build import refresh_after_scheduled_run
+
+            refresh = refresh_after_scheduled_run
+        outcome = refresh(paths.project_root)
+    except Exception as exc:
+        outcome = {"ok": False, "published": False, "message": exc.__class__.__name__}
+    report.automated_comparison = dict(outcome or {})
 
 
 def format_schedule_report(report: ScheduleReport) -> str:
@@ -250,6 +280,14 @@ def format_schedule_report(report: ScheduleReport) -> str:
             f"  output                 {report.output_dir or 'none'}",
         ]
     )
+    if report.automated_comparison:
+        comparison = report.automated_comparison
+        lines.append(
+            "  automated comparison   {state} {version}".format(
+                state="published" if comparison.get("published") else ("unchanged" if comparison.get("ok") else "not refreshed"),
+                version=comparison.get("snapshot_version") or comparison.get("message") or "",
+            ).rstrip()
+        )
     if report.missing_inputs:
         lines.append("Missing inputs")
         lines.extend(f"  - {name}" for name in report.missing_inputs)
@@ -1051,6 +1089,7 @@ def _pins(settings: Settings) -> dict[str, Any]:
         "gateway_attempts": GATEWAY_ATTEMPTS,
         "sdk_max_retries": 0,
         "configured_max_retries": settings.models.max_retries,
+        "reference_standard_version": REFERENCE_STANDARD_VERSION,
     }
 
 

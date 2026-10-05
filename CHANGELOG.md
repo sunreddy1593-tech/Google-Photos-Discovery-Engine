@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026-10-05 - Human-reviewed n8n reference and automated comparison
+
+Recorded the owner's detailed review of the 48 saved n8n threads as an
+immutable, hash-verified reference (`n8n-reviewed-reference/01`,
+`data/exports/reference/n8n-reviewed-reference-01/`), built from the saved
+export only, with explicit field mappings, explicit unknowns and no inferred
+fields. Added `REFERENCE_STANDARD_VERSION` to the version registry and to
+scheduler pins. Added `src/export/reviewed_reference.py`,
+`src/export/reference_standard.py` and `src/export/reference_standard_build.py`:
+future public records are assessed with deterministic evidence checks
+(supported retrieval trigger, impact and summary; continuous quotes at valid
+offsets; no rejected text; no recorded finding; source link; not a reviewed
+document; no duplicate case) and published atomically to
+`data/exports/public/reference-standard-snapshot/`. Each case records the
+reference, prompt, schema and model versions and `semantically_approved:
+false`. Separate counts for human-reviewed records, automatically valid,
+eligible, flagged, unverifiable, failed or incomplete and reference-overlap
+cases. The scheduler refreshes that snapshot best-effort after its own publish;
+the refresh cannot fail a run and makes no request. The Streamlit "Reference
+standard" section shows the two labelled views with the snapshot and reference
+versions in the cache key, fragment refresh and a Refresh button. Scheduled
+sub-batches are exported through the existing builder when they exist. Cloud
+package allowlist now ships the reader modules and the reference artifact.
+Prompts, schema, model, token settings, budgets, gold data and frozen splits
+are unchanged; no n8n or Google Sheets file was edited or called. Focused
+tests: 29 new, 313 passed with related suites. Full suite: 1302 passed, 5
+skipped, 0 failed. `git diff --check` clean apart from line-ending warnings.
+No commit, push, deploy or live run.
+
 ## 2026-10-05 - Fix duplicate YouTube reply collection and two test failures
 
 Unchanged complete reply threads are no longer requested again. The scheduled

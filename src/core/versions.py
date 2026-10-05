@@ -86,6 +86,14 @@ PROMPT_VERSIONS: Final[dict[str, str]] = {
     "extract": EXTRACTION_PROMPT_VERSION,
 }
 
+#: Human-reviewed n8n community-thread reference used as the comparison
+#: standard for automatically classified records. It names an immutable
+#: artifact under ``data/exports/reference/``. It is not a prompt and it does
+#: not enter a provider cache key: the model request is unchanged by it. It
+#: enters the assessment identity and the Streamlit snapshot cache key, so a
+#: new reference version never reuses an assessment made under the old one.
+REFERENCE_STANDARD_VERSION: Final[str] = "n8n-reviewed-reference/01"
+
 
 def prompt_version(prompt_id: str) -> str:
     """Return the registered version for ``prompt_id``.
@@ -105,4 +113,5 @@ def version_summary() -> dict[str, object]:
         "normalizer_version": NORMALIZER_VERSION,
         "taxonomy_version": TAXONOMY_VERSION,
         "prompt_versions": dict(PROMPT_VERSIONS),
+        "reference_standard_version": REFERENCE_STANDARD_VERSION,
     }

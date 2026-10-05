@@ -1500,6 +1500,23 @@ summary evidence, and invented or spliced quotes. They are not added to Problem
 comparison. The snapshot directory is gitignored. No credential, raw private
 file, or collection or model control is on this page.
 
+The Reference standard section has two separate views. The first,
+"Human-reviewed reference", reads the immutable artifact in
+`data/exports/reference/n8n-reviewed-reference-01/` through
+`src/export/reviewed_reference.py`, which verifies the recorded hashes on every
+load. The second, "Automatically classified using the human-reviewed
+standard", reads `data/exports/public/reference-standard-snapshot/CURRENT.json`
+through `src/export/reference_standard.py`. That snapshot is built offline from
+prepared public exports and saved scheduled sub-batches by
+`src/export/reference_standard_build.py` (reusing the export builder and the
+same privacy scan), published atomically by the scheduled-status writer, and
+refreshed best-effort after each scheduled run. The Streamlit cache key
+includes the snapshot version and the reference version. The automated layer
+never sets semantic approval; it records the reference, prompt, schema and
+model versions on each case and separates eligible, flagged, unverifiable,
+failed and reference-overlap counts. See
+`docs/n8n-reviewed-reference-standard-2026-10-05.md`.
+
 ---
 
 ## 16. Configuration and observability
@@ -1638,9 +1655,11 @@ browse      ← imports nothing internal outside src.browse; no Streamlit, no da
 imports a provider SDK, that `app.py` does not import the research pipeline or
 read `data/raw/`, and that `src/browse/`
 has no path to `collect`, `extract`, `llm`, `relevance`, or `data/raw/`.
-`scheduled_run.py` is the one pipeline exception: it may import `src.collect`
-and `src.export.scheduled_status`. `app.py` may import
-`src.export.scheduled_status` because that module reads JSON only.
+`scheduled_run.py` is the one pipeline exception: it may import `src.collect`,
+`src.export.scheduled_status` and `src.export.reference_standard_build` (the
+last only inside a guarded post-publish refresh that reads saved files).
+`app.py` may import `src.export.scheduled_status`, `src.export.reviewed_reference`
+and `src.export.reference_standard` because those modules read JSON only.
 Layering that is only documented erodes; layering that fails a test does not.
 
 ---
