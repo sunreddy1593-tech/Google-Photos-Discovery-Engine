@@ -2,3 +2,4 @@ streamlit>=1.50
 st-gsheets-connection
 pandas
 requests
+pydantic>=2.8,<3

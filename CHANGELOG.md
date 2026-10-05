@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-05 - Install pydantic for the Streamlit Cloud app
+
+Community Cloud installs `requirements.txt` and was missing `pydantic`, so
+`app.py` failed at import with `ModuleNotFoundError`. The bound matches the
+curated cloud package (`pydantic>=2.8,<3`).
+
 ## 2026-10-05 - Human-reviewed n8n reference and automated comparison
 
 Recorded the owner's detailed review of the 48 saved n8n threads as an

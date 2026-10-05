@@ -1,5 +1,10 @@
 # Status
 
+Streamlit Cloud, 2026-10-05: the live app failed at import with
+`ModuleNotFoundError: No module named 'pydantic'`. Community Cloud installs
+`requirements.txt`, which did not list pydantic. `pydantic>=2.8,<3` is now in
+that file. Reboot the app if the push does not start a rebuild on its own.
+
 Human-reviewed n8n reference standard, 2026-10-05: the 48 n8n threads that
 Sunayana reviewed in detail are recorded as an immutable reference,
 `data/exports/reference/n8n-reviewed-reference-01/` (version

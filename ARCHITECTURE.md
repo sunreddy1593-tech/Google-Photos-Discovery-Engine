@@ -1568,7 +1568,7 @@ approval.
 google-photos-retrieval-engine/
 ├── app.py                    submission Streamlit view over prepared exports
 ├── community_insights.py     n8n insights sheet, one-thread live analyse, CSV fallback
-├── requirements.txt          streamlit, sheet connection, pandas, requests
+├── requirements.txt          streamlit, sheet connection, pandas, requests, pydantic
 ├── main.py                   CLI over the stage runner
 ├── pyproject.toml            pinned/bounded deps (replaces prototype requirements.txt)
 ├── problem-statement.md      specification (authoritative)
