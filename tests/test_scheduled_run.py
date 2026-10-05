@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 from datetime import datetime
+from dataclasses import replace
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -192,6 +193,7 @@ def test_fifty_documents_use_three_bounded_sub_batches(tmp_path: Path) -> None:
     assert [len(batch) for batch in seen] == [20, 20, 10]
     manifest = json.loads((Path(report.output_dir) / "parent_manifest.json").read_text(encoding="utf-8"))
     assert manifest["sub_batches"] == [20, 20, 10]
+    assert manifest["status"] == "completed"
     assert "extraction_pilot" not in Path("src/pipeline/scheduled_run.py").read_text(encoding="utf-8")
 
 
@@ -215,12 +217,65 @@ def test_shortfall_is_reported_without_padding(tmp_path: Path) -> None:
     assert report.shortfall == 38
     assert report.status == "partial"
     assert "shortfall 38" in report.message
+    manifest = json.loads((Path(report.output_dir) / "parent_manifest.json").read_text(encoding="utf-8"))
+    assert manifest["status"] == "partial"
     assert sum(len(batch) for batch in seen) == 12
     snapshot = load_snapshot(tmp_path / "snapshot")
     assert snapshot["shortfall"] == 38
     assert snapshot["human_approved_cases"] == 0
     assert snapshot["unreviewed_cases"][0]["semantically_approved"] is False
     assert snapshot["unreviewed_cases"][0]["automatically_valid"] is True
+
+
+@pytest.mark.synthetic
+def test_known_complete_replies_are_passed_to_the_collector(tmp_path: Path) -> None:
+    corpus = tmp_path / "known.jsonl"
+    corpus.write_text(
+        json.dumps(
+            {
+                "source_platform": "youtube",
+                "source_item_id": "thread-1",
+                "metadata": {
+                    "thread_id": "thread-1",
+                    "total_reply_count": 2,
+                    "replies_complete": True,
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    seen_text: list[str] = []
+
+    def collect(video_file: Path, output_dir: Path, **kwargs: object):
+        del video_file, kwargs
+        seen_text.append((Path(output_dir) / "collected_documents.jsonl").read_text(encoding="utf-8"))
+        (Path(output_dir) / "collected_documents.jsonl").write_text("", encoding="utf-8")
+
+        class _Report:
+            requests_made = 1
+            documents_written = 0
+            documents_already_present = 1
+
+        class _Result:
+            report = _Report()
+
+        return _Result()
+
+    run_scheduled(
+        replace(_paths(tmp_path), known_corpus=(corpus,)),
+        dry_run=False,
+        now=WHEN,
+        settings=_settings(),
+        collector=collect,
+        process_batch=_processor([]),
+        pid=1202,
+        pid_alive=lambda pid: pid == 1202,
+    )
+    row = json.loads(seen_text[0].splitlines()[0])
+    assert row["source_item_id"] == "thread-1"
+    assert row["metadata"]["replies_complete"] is True
+    assert row["metadata"]["total_reply_count"] == 2
 
 
 @pytest.mark.synthetic

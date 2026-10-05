@@ -1,0 +1,157 @@
+{
+  "role": "selection_record_not_a_gold_label",
+  "phase4_development_documents": 35,
+  "phase4_holdout_documents": 15,
+  "phase4_holdout_text_copied": false,
+  "gold_rule": "gold-split/v1",
+  "stratified_by": [
+    "source_platform",
+    "existing_human_scope_class"
+  ],
+  "gold_dev_copied": 10,
+  "gold_holdout_reserved_without_text": 25,
+  "reserved_development_doc_ids": [
+    "app_store-5e60a403ce06",
+    "app_store-b42c080472ee",
+    "google_support-3d15a7ae4cd0",
+    "google_support-6087d1606587",
+    "google_support-6e0c9880d0be",
+    "google_support-808ba579f266",
+    "google_support-95f0f4a503cd",
+    "google_support-b14e652a35b2",
+    "google_support-d7f386f347b7",
+    "google_support-e1e5277da7e8",
+    "google_support-eb83c5e6d607",
+    "play_store-321631e15c3f",
+    "play_store-67e5929b847a",
+    "play_store-9b3244ad1dc4",
+    "reddit-21ac300ee872",
+    "reddit-23be97c93709",
+    "reddit-56c5da916186",
+    "reddit-5d2319de9083",
+    "reddit-62cf55f96c5d",
+    "reddit-c49086caf891",
+    "reddit-e9c3986acf79",
+    "reddit-fdeac02973d1",
+    "youtube-4158afc62e53",
+    "youtube-47f8e3664c6e",
+    "youtube-d1590d87dedb"
+  ],
+  "documents": [
+    {
+      "doc_id": "google_support-2a080da4b930",
+      "source_platform": "google_support",
+      "source_type": "support_thread",
+      "seating_scope_class": "adjacent_known_item_retrieval",
+      "seating_reason_code": "known_item_with_precise_recall_failure",
+      "model_scope_class": "adjacent_known_item_retrieval",
+      "model_technical_state": "ok",
+      "double_code": false,
+      "seating_labels_copied_into_packet": false
+    },
+    {
+      "doc_id": "google_support-4f34e2312ca6",
+      "source_platform": "google_support",
+      "source_type": "support_thread",
+      "seating_scope_class": "out_of_scope",
+      "seating_reason_code": "storage_backup_or_sync",
+      "model_scope_class": "out_of_scope",
+      "model_technical_state": "ok",
+      "double_code": false,
+      "seating_labels_copied_into_packet": false
+    },
+    {
+      "doc_id": "google_support-5b2ec98df32b",
+      "source_platform": "google_support",
+      "source_type": "support_thread",
+      "seating_scope_class": "adjacent_known_item_retrieval",
+      "seating_reason_code": "known_item_with_precise_recall_failure",
+      "model_scope_class": "core_incomplete_recall",
+      "model_technical_state": "ok",
+      "double_code": true,
+      "seating_labels_copied_into_packet": false
+    },
+    {
+      "doc_id": "google_support-8c6ab430fbee",
+      "source_platform": "google_support",
+      "source_type": "support_thread",
+      "seating_scope_class": "out_of_scope",
+      "seating_reason_code": "storage_backup_or_sync",
+      "model_scope_class": "out_of_scope",
+      "model_technical_state": "ok",
+      "double_code": false,
+      "seating_labels_copied_into_packet": false
+    },
+    {
+      "doc_id": "play_store-fb8c41525287",
+      "source_platform": "play_store",
+      "source_type": "review",
+      "seating_scope_class": "out_of_scope",
+      "seating_reason_code": "editing_sharing_or_printing",
+      "model_scope_class": "out_of_scope",
+      "model_technical_state": "ok",
+      "double_code": false,
+      "seating_labels_copied_into_packet": false
+    },
+    {
+      "doc_id": "reddit-0d477b54fb9b",
+      "source_platform": "reddit",
+      "source_type": "post",
+      "seating_scope_class": "core_incomplete_recall",
+      "seating_reason_code": "known_item_query_unformulable",
+      "model_scope_class": "core_incomplete_recall",
+      "model_technical_state": "ok",
+      "double_code": false,
+      "seating_labels_copied_into_packet": false
+    },
+    {
+      "doc_id": "reddit-87311c2633df",
+      "source_platform": "reddit",
+      "source_type": "comment",
+      "seating_scope_class": "adjacent_known_item_retrieval",
+      "seating_reason_code": "known_item_with_precise_recall_failure",
+      "model_scope_class": "adjacent_known_item_retrieval",
+      "model_technical_state": "ok",
+      "double_code": false,
+      "seating_labels_copied_into_packet": false
+    },
+    {
+      "doc_id": "reddit-bde62ddef9b5",
+      "source_platform": "reddit",
+      "source_type": "comment",
+      "seating_scope_class": "core_incomplete_recall",
+      "seating_reason_code": "known_item_with_incomplete_recall",
+      "model_scope_class": "core_incomplete_recall",
+      "model_technical_state": "ok",
+      "double_code": false,
+      "seating_labels_copied_into_packet": false
+    },
+    {
+      "doc_id": "reddit-c2c00b25a88b",
+      "source_platform": "reddit",
+      "source_type": "comment",
+      "seating_scope_class": "adjacent_known_item_retrieval",
+      "seating_reason_code": "known_item_with_precise_recall_failure",
+      "model_scope_class": "adjacent_known_item_retrieval",
+      "model_technical_state": "ok",
+      "double_code": false,
+      "seating_labels_copied_into_packet": false
+    },
+    {
+      "doc_id": "youtube-17fd27447275",
+      "source_platform": "youtube",
+      "source_type": "video_comment",
+      "seating_scope_class": "out_of_scope",
+      "seating_reason_code": "insufficient_evidence_for_a_case",
+      "model_scope_class": "core_incomplete_recall",
+      "model_technical_state": "ok",
+      "double_code": true,
+      "seating_labels_copied_into_packet": false
+    }
+  ],
+  "limitations": [
+    "Strata of one or two documents receive no gold-dev seat, so some platforms and scope classes are absent.",
+    "The existing human scope seated the split. It is not the gold label and it is not written into the packets.",
+    "Ten documents do not complete the 75\u2013100 document gold set."
+  ]
+}

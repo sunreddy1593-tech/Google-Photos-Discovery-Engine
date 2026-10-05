@@ -1,5 +1,17 @@
 # Status
 
+Bug fixes, 2026-10-05: collection no longer refetches replies whose stored
+count is already complete and unchanged. The scheduler passes that reply state
+into the collector, and the parent manifest is written after the run status is
+final. `src/collect/scaled.py` no longer imports `src.analyze`. The reference
+app test uses the radio control the app actually renders. Full suite: 1267
+passed, 5 skipped, 0 failed.
+
+The 08:00 task `1f80baf403e0` finished before this fix. It used 20 collection
+requests, wrote 0 new documents, and recorded 87 comments already present.
+Status was partial, shortfall 50. Those 20 requests stay consumed. The 14:00
+and 20:00 tasks will use the corrected collector. No extra live run was started.
+
 Scheduled non-n8n runs, 2026-10-05: three Windows tasks are enabled and have
 not run. Each launches
 `C:\Users\sunayana\Downloads\Google Photos discovery engine\scripts\run_scheduled_discovery.cmd`,

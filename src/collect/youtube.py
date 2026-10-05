@@ -157,6 +157,7 @@ class _Pending:
 class _Run:
     client: _Client
     known: set[str]
+    complete_replies: dict[str, int]
     documents_path: Path
     document_limit: int
     author_salt: str
@@ -279,8 +280,15 @@ class _Run:
         self._hold(top, is_reply=False)
         already_at_replies = self.already
         complete = total == 0
+        stored_total = self.complete_replies.get(parent_id)
+        unchanged_replies = (
+            parent_id in self.known and stored_total is not None and stored_total == total
+        )
         try:
-            if total > 0:
+            if unchanged_replies:
+                self.already += total
+                complete = True
+            elif total > 0:
                 self._hold_replies(parent_id)
                 complete = True
         except _Stop:
@@ -592,13 +600,15 @@ def collect_youtube_comments(
     destination = Path(output_dir)
     destination.mkdir(parents=True, exist_ok=True)
     documents_path = destination / "collected_documents.jsonl"
+    known, complete_replies = _existing_collection_state(documents_path)
     run = _Run(
         client=_Client(
             api_key=api_key,
             transport=transport or default_transport,
             request_budget=request_budget,
         ),
-        known=_existing_source_ids(documents_path),
+        known=known,
+        complete_replies=complete_replies,
         documents_path=documents_path,
         document_limit=document_limit,
         author_salt=author_salt,
@@ -709,10 +719,12 @@ def _video_id(url: str) -> str:
     return candidate
 
 
-def _existing_source_ids(path: Path) -> set[str]:
+def _existing_collection_state(path: Path) -> tuple[set[str], dict[str, int]]:
+    """Known comment ids, plus reply totals already stored as complete."""
     if not path.is_file():
-        return set()
+        return set(), {}
     found: set[str] = set()
+    complete: dict[str, int] = {}
     for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         if not line.strip():
             continue
@@ -729,7 +741,20 @@ def _existing_source_ids(path: Path) -> set[str]:
         item_id = payload.get("source_item_id")
         if isinstance(item_id, str) and item_id:
             found.add(item_id)
-    return found
+        metadata = payload.get("metadata")
+        if not isinstance(metadata, dict) or metadata.get("replies_complete") is not True:
+            continue
+        total = metadata.get("total_reply_count")
+        thread_id = metadata.get("thread_id")
+        if (
+            isinstance(thread_id, str)
+            and thread_id
+            and isinstance(total, int)
+            and not isinstance(total, bool)
+            and total >= 0
+        ):
+            complete[thread_id] = max(complete.get(thread_id, 0), total)
+    return found, complete
 
 
 def _comment_id(comment: dict[str, Any]) -> str:

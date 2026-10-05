@@ -406,20 +406,22 @@ def _execute(
             report.stage_failures.extend(outcome.get("failures") or [])
             break
     _fold_outcomes(report, outcomes)
-    _write_parent_manifest(output, report)
-    _write_documents(
-        pending_path,
-        [document for document in pool if document.doc_id not in done],
-    )
     if report.status != "failed":
-        report.status = "partial" if report.partial or report.incomplete_work or report.stage_failures else "completed"
-        if report.stage_failures and report.status == "completed":
-            report.status = "partial"
+        report.status = (
+            "partial"
+            if report.partial or report.incomplete_work or report.stage_failures
+            else "completed"
+        )
     if report.partial:
         report.message = (
             f"Partial batch: {report.new_documents} new documents, "
             f"shortfall {report.shortfall}. Limits were not increased."
         )
+    _write_parent_manifest(output, report)
+    _write_documents(
+        pending_path,
+        [document for document in pool if document.doc_id not in done],
+    )
 
 
 def _collect(
@@ -449,7 +451,11 @@ def _collect(
     collection_dir = output / "collection"
     collection_dir.mkdir(parents=True, exist_ok=True)
     documents_path = collection_dir / "collected_documents.jsonl"
-    _write_stubs(documents_path, seen.source_ids())
+    _write_stubs(
+        documents_path,
+        seen.source_ids(),
+        _complete_reply_counts(paths.known_corpus),
+    )
     try:
         result = collector(
             paths.video_file,
@@ -1192,9 +1198,42 @@ def _write_documents(path: Path, documents: list[CollectedDocument]) -> None:
     )
 
 
-def _write_stubs(path: Path, source_ids: set[str]) -> None:
+def _complete_reply_counts(paths: tuple[Path, ...]) -> dict[str, int]:
+    """Reply totals already stored as complete, keyed by thread id."""
+    counts: dict[str, int] = {}
+    for path in paths:
+        if not path.is_file():
+            continue
+        for row in _read_jsonl(path):
+            metadata = row.get("metadata")
+            if not isinstance(metadata, dict) or metadata.get("replies_complete") is not True:
+                continue
+            total = metadata.get("total_reply_count")
+            thread_id = metadata.get("thread_id")
+            if (
+                isinstance(thread_id, str)
+                and thread_id
+                and isinstance(total, int)
+                and not isinstance(total, bool)
+                and total >= 0
+            ):
+                counts[thread_id] = max(counts.get(thread_id, 0), total)
+    return counts
+
+
+def _write_stubs(path: Path, source_ids: set[str], reply_counts: dict[str, int] | None = None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    lines = [json.dumps({"source_item_id": item_id}) + "\n" for item_id in sorted(source_ids)]
+    counts = reply_counts or {}
+    lines: list[str] = []
+    for item_id in sorted(source_ids):
+        payload: dict[str, object] = {"source_item_id": item_id}
+        if item_id in counts:
+            payload["metadata"] = {
+                "thread_id": item_id,
+                "total_reply_count": counts[item_id],
+                "replies_complete": True,
+            }
+        lines.append(json.dumps(payload, sort_keys=True) + "\n")
     path.write_text("".join(lines), encoding="utf-8")
 
 

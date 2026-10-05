@@ -1,0 +1,178 @@
+{
+  "doc_id": "google_support-2a080da4b930",
+  "split": "dev",
+  "scope_class": "core_incomplete_recall",
+  "reason_code": "known_item_retrieval_journey_described",
+  "prefilter_should_pass": true,
+  "expected_case_count": 1,
+  "labeler_id": "Sunayana",
+  "labeled_at": "2026-10-03T19:02:04.763138+00:00",
+  "adjudicated": false,
+  "pre_adjudication_labels": [],
+  "notes": "Approved AI-assisted annotation; sole human reviewer: Sunayana, 2026-10-04. Prepared from AI draft revision 03, reviewed/approved by the owner after scoped corrections. Not a blinded independent coding pass; no second reviewer, adjudication or agreement score. Historical drafting/review rationale follows: AI-assisted unapproved draft. Not an independent human label. The user wants a particular family photo inside an album and describes unavailable face search. No forgotten or approximate cue is stated. Sunayana directed core scope on 2026-10-04. This is a documented scope-criteria exception: the body does not demonstrate incomplete recall under spec Section 9.1. Existing known-item journey reason, case values and evidence are retained; forgotten information and trigger are not invented to justify the label. No classification rule or prompt changed.",
+  "cases": [
+    {
+      "ordinal": 1,
+      "expected_values": {
+        "known_item_status": {
+          "observation": "stated",
+          "value": "explicit"
+        },
+        "target_asset_type": {
+          "observation": "stated",
+          "value": "photo"
+        },
+        "outcome": {
+          "observation": "not_stated",
+          "value": null
+        },
+        "severity": {
+          "observation": "not_stated",
+          "value": null
+        },
+        "reformulation_count": {
+          "observation": "not_stated",
+          "value": null
+        },
+        "target_subjects": {
+          "observation": "stated",
+          "value": [
+            {
+              "value": "person",
+              "detail": "one of my family"
+            }
+          ]
+        },
+        "remembered_cues": {
+          "observation": "stated",
+          "value": [
+            {
+              "value": "relationship",
+              "detail": null
+            }
+          ]
+        },
+        "forgotten_information": {
+          "observation": "not_stated",
+          "value": []
+        },
+        "query_strategies": {
+          "observation": "stated",
+          "value": [
+            {
+              "value": "person_or_face_search",
+              "detail": null
+            }
+          ]
+        },
+        "system_responses": {
+          "observation": "uncertain",
+          "value": [
+            {
+              "value": "filter_or_scope_mismatch",
+              "detail": null
+            }
+          ]
+        },
+        "workarounds": {
+          "observation": "not_stated",
+          "value": []
+        },
+        "impact_signals": {
+          "observation": "not_stated",
+          "value": []
+        },
+        "retrieval_trigger": {
+          "observation": "not_stated",
+          "value": null
+        },
+        "exact_query": {
+          "observation": "not_stated",
+          "value": null
+        },
+        "query_paraphrase": {
+          "observation": "not_stated",
+          "value": null
+        }
+      },
+      "evidence": [
+        {
+          "field_name": "known_item_status",
+          "quote": "to find the one I want",
+          "start_char": 212,
+          "end_char": 234
+        },
+        {
+          "field_name": "target_asset_type",
+          "quote": "scroll through hundreds of photos to find the one I want",
+          "start_char": 178,
+          "end_char": 234
+        },
+        {
+          "field_name": "target_subjects",
+          "quote": "one of my family",
+          "start_char": 25,
+          "end_char": 41
+        },
+        {
+          "field_name": "remembered_cues",
+          "quote": "one of my family",
+          "start_char": 25,
+          "end_char": 41
+        },
+        {
+          "field_name": "query_strategies",
+          "quote": "It seems you can't search for a face within a specific album",
+          "start_char": 94,
+          "end_char": 154
+        },
+        {
+          "field_name": "system_responses",
+          "quote": "It seems you can't search for a face within a specific album",
+          "start_char": 94,
+          "end_char": 154
+        }
+      ],
+      "notes": "Approved AI-assisted case; sole human reviewer Sunayana. Prior proposal rationale (historical pending language superseded by the owner's blanket draft approval): Face search is the requested approach, not a reported exact query. 'Have to scroll' describes the required alternative; completed scrolling, time consumed and final outcome are not established. The trigger is not stated. The scope limitation is hedged ('It seems'), so the reported system behavior is uncertain.",
+      "labeler_id": "Sunayana",
+      "adjudicated": false
+    }
+  ],
+  "reviewer_checks": [
+    {
+      "check": "retrieval_trigger is the stated reason the item was needed, not the search method",
+      "passed": null,
+      "notes": "The owner approved the reviewed draft; no separate per-check answer was supplied. This does not represent independent second coding."
+    },
+    {
+      "check": "impact and severity need a quote that states that impact or severity",
+      "passed": null,
+      "notes": "The owner approved the reviewed draft; no separate per-check answer was supplied. This does not represent independent second coding."
+    },
+    {
+      "check": "problem_summary evidence must support every factual clause",
+      "passed": null,
+      "notes": "The owner approved the reviewed draft; no separate per-check answer was supplied. This does not represent independent second coding."
+    },
+    {
+      "check": "a quote must be one continuous span; invented, abbreviated, or spliced text is invalid",
+      "passed": null,
+      "notes": "The owner approved the reviewed draft; no separate per-check answer was supplied. This does not represent independent second coding."
+    },
+    {
+      "check": "an empty model response does not show that the source has no retrieval episode",
+      "passed": null,
+      "notes": "The owner approved the reviewed draft; no separate per-check answer was supplied. This does not represent independent second coding."
+    }
+  ],
+  "review_provenance": {
+    "human_reviewer": "Sunayana",
+    "draft_author": "Codex",
+    "ai_assisted": true,
+    "approved": true,
+    "approved_on": "2026-10-04",
+    "recorded_at": "2026-10-03T19:02:04.763138+00:00",
+    "source_revision": "C:\\Users\\sunayana\\Downloads\\Google Photos discovery engine\\data\\annotation\\dev-starter-2026-10-03\\ai-assisted-draft-03",
+    "review_policy": "single-reviewer-ai-assisted/v1"
+  }
+}

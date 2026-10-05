@@ -1,0 +1,57 @@
+{
+  "scope_class": [
+    "core_incomplete_recall",
+    "adjacent_known_item_retrieval",
+    "out_of_scope"
+  ],
+  "inclusion_reason_code": [
+    "known_item_cue_not_recognized",
+    "known_item_query_unformulable",
+    "known_item_retrieval_journey_described",
+    "known_item_with_incomplete_recall",
+    "known_item_with_precise_recall_failure"
+  ],
+  "exclusion_reason_code": [
+    "account_access",
+    "billing_or_subscription",
+    "casual_browsing_without_known_target",
+    "deletion_or_corruption",
+    "editing_sharing_or_printing",
+    "editorial_or_hypothetical_example",
+    "general_ai_objection_without_retrieval",
+    "insufficient_evidence_for_a_case",
+    "no_known_item_target",
+    "no_retrieval_need_or_attempt",
+    "organization_unrelated_to_retrieval",
+    "other_out_of_scope",
+    "out_of_scope_language",
+    "storage_backup_or_sync",
+    "web_search_not_user_library"
+  ],
+  "review_reason_codes_are_not_gold_labels": [
+    "different_authors_identical_text",
+    "evidence_offsets_unresolved",
+    "evidence_validation_failed",
+    "low_confidence",
+    "multi_case_offset_tie",
+    "near_duplicate_in_review_band",
+    "observation_status_conflict",
+    "prefilter_classifier_conflict",
+    "provider_unavailable",
+    "quoted_repeat_ambiguous",
+    "rate_limited",
+    "repair_ladder_exhausted",
+    "response_parse_failed",
+    "schema_validation_failed",
+    "severity_without_evidence",
+    "short_text_below_dedupe_minimum",
+    "source_blocked"
+  ],
+  "observation": [
+    "stated",
+    "not_stated",
+    "explicitly_none",
+    "uncertain",
+    "not_applicable"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "doc_id": "play_store-fb8c41525287",
+  "split": "dev",
+  "scope_class": "out_of_scope",
+  "reason_code": "editing_sharing_or_printing",
+  "prefilter_should_pass": false,
+  "expected_case_count": 0,
+  "labeler_id": "Sunayana",
+  "labeled_at": "2026-10-03T19:02:04.763138+00:00",
+  "adjudicated": false,
+  "pre_adjudication_labels": [],
+  "notes": "Approved AI-assisted annotation; sole human reviewer: Sunayana, 2026-10-04. Prepared from AI draft revision 03, reviewed/approved by the owner after scoped corrections. Not a blinded independent coding pass; no second reviewer, adjudication or agreement score. Historical drafting/review rationale follows: AI-assisted unapproved draft. Not an independent human label. Generic disappearing-after-editing and nonfunctional edit/share/ask controls, without a particular known target or a personal retrieval episode. The word 'find' does not establish a retrieval case.",
+  "cases": [],
+  "reviewer_checks": [
+    {
+      "check": "retrieval_trigger is the stated reason the item was needed, not the search method",
+      "passed": null,
+      "notes": "The owner approved the reviewed draft; no separate per-check answer was supplied. This does not represent independent second coding."
+    },
+    {
+      "check": "impact and severity need a quote that states that impact or severity",
+      "passed": null,
+      "notes": "The owner approved the reviewed draft; no separate per-check answer was supplied. This does not represent independent second coding."
+    },
+    {
+      "check": "problem_summary evidence must support every factual clause",
+      "passed": null,
+      "notes": "The owner approved the reviewed draft; no separate per-check answer was supplied. This does not represent independent second coding."
+    },
+    {
+      "check": "a quote must be one continuous span; invented, abbreviated, or spliced text is invalid",
+      "passed": null,
+      "notes": "The owner approved the reviewed draft; no separate per-check answer was supplied. This does not represent independent second coding."
+    },
+    {
+      "check": "an empty model response does not show that the source has no retrieval episode",
+      "passed": null,
+      "notes": "The owner approved the reviewed draft; no separate per-check answer was supplied. This does not represent independent second coding."
+    }
+  ],
+  "review_provenance": {
+    "human_reviewer": "Sunayana",
+    "draft_author": "Codex",
+    "ai_assisted": true,
+    "approved": true,
+    "approved_on": "2026-10-04",
+    "recorded_at": "2026-10-03T19:02:04.763138+00:00",
+    "source_revision": "C:\\Users\\sunayana\\Downloads\\Google Photos discovery engine\\data\\annotation\\dev-starter-2026-10-03\\ai-assisted-draft-03",
+    "review_policy": "single-reviewer-ai-assisted/v1"
+  }
+}

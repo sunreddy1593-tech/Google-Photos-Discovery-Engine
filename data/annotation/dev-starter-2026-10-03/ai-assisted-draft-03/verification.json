@@ -1,0 +1,9 @@
+{
+  "protected_files_unchanged": 69,
+  "case_values_unchanged": true,
+  "exact_spans_checked": 39,
+  "human_decisions_total": 6,
+  "new_scoped_decisions": 2,
+  "scope_criteria_exceptions": 1,
+  "official_gold_records_written": 0
+}

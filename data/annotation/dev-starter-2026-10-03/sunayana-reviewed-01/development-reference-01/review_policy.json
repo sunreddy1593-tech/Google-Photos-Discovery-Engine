@@ -1,0 +1,25 @@
+{
+  "version": "single-reviewer-ai-assisted/v1",
+  "human_reviewer": "Sunayana",
+  "approved_on": "2026-10-04",
+  "recorded_at": "2026-10-03T19:02:04.763138+00:00",
+  "client_timezone": "Asia/Calcutta",
+  "human_reviewer_count": 1,
+  "ai_assisted": true,
+  "blinded_independent_coding": false,
+  "second_human_review_required": false,
+  "adjudication_performed": false,
+  "inter_reviewer_agreement": {
+    "status": "not_performed_single_reviewer",
+    "raw_agreement": null,
+    "cohen_kappa": null
+  },
+  "authorization": "There is no second reviewer as such you can name the current files with my name as the reviewer. Its an individual project i cant involve more people in it",
+  "draft_approval": "I have reviewed both the documents in detail and approve the drafts",
+  "original_seating_and_split_unchanged": true,
+  "limitations": [
+    "AI-generated drafts were reviewed and corrected by one human; no independent inter-coder validation.",
+    "Ten development documents are a small diagnostic sample, not full quality certification.",
+    "The family-album core scope exception remains disclosed."
+  ]
+}

@@ -1,0 +1,262 @@
+{
+  "role": "model_prediction_not_a_gold_label",
+  "doc_id": "reddit-c2c00b25a88b",
+  "open_after_your_own_label_is_written": true,
+  "relevance": {
+    "scope_class": "adjacent_known_item_retrieval",
+    "reason_code": "known_item_with_precise_recall_failure",
+    "technical_state": "ok",
+    "validation_state": "valid",
+    "decided_by": "llm"
+  },
+  "extraction": {
+    "eligible": true,
+    "technical_state": "ok",
+    "scope_class_used": "adjacent_known_item_retrieval",
+    "stored_cases": 1,
+    "failure_error_class": null,
+    "invalid_fields": null,
+    "cases": [
+      {
+        "case_id": "reddit-c2c00b25a88b#c01",
+        "doc_id": "reddit-c2c00b25a88b",
+        "exact_query": null,
+        "exact_query_observation": "not_stated",
+        "extracted_at": "2026-10-03T15:17:07.060973Z",
+        "extractor_type": "llm",
+        "forgotten_information": [],
+        "forgotten_information_observation": "not_stated",
+        "impact_signals": [
+          {
+            "detail": null,
+            "evidence": {
+              "doc_id": "reddit-c2c00b25a88b",
+              "end_char": 360,
+              "evidence_id": "76ea974d7a60",
+              "field_name": "impact_signals",
+              "offset_state": "repaired_unique",
+              "owner_id": "reddit-c2c00b25a88b#c01",
+              "owner_type": "observed_value",
+              "quote": "forced to scroll down & look for the photos one-by-one",
+              "repair_applied": true,
+              "schema_version": "1.0.0",
+              "speaker": "author",
+              "start_char": 306,
+              "validation_state": "valid"
+            },
+            "value": "time_loss"
+          }
+        ],
+        "impact_signals_observation": "stated",
+        "known_item_status": "explicit",
+        "known_item_status_observation": "stated",
+        "model_name": "openai/gpt-oss-120b",
+        "needs_human_review": false,
+        "outcome": "not_found",
+        "outcome_observation": "stated",
+        "problem_summary": "Unable to find pictures of cats using search",
+        "prompt_version": "extract/v2",
+        "query_paraphrase": null,
+        "query_paraphrase_observation": "not_stated",
+        "query_strategies": [],
+        "query_strategies_observation": "not_stated",
+        "reformulation_count": null,
+        "reformulation_count_observation": "not_stated",
+        "remembered_cues": [
+          {
+            "detail": null,
+            "evidence": {
+              "doc_id": "reddit-c2c00b25a88b",
+              "end_char": 69,
+              "evidence_id": "38927849884b",
+              "field_name": "remembered_cues",
+              "offset_state": "supplied_exact",
+              "owner_id": "reddit-c2c00b25a88b#c01",
+              "owner_type": "observed_value",
+              "quote": "pictures of my cats",
+              "repair_applied": false,
+              "schema_version": "1.0.0",
+              "speaker": "author",
+              "start_char": 50,
+              "validation_state": "valid"
+            },
+            "value": "object_or_subject"
+          }
+        ],
+        "remembered_cues_observation": "stated",
+        "retrieval_trigger": "trying to show a friend some pictures",
+        "retrieval_trigger_observation": "stated",
+        "schema_version": "1.0.0",
+        "scope_class": "adjacent_known_item_retrieval",
+        "severity": 3,
+        "severity_evidence": [
+          {
+            "doc_id": "reddit-c2c00b25a88b",
+            "end_char": 360,
+            "evidence_id": "9232c8274161",
+            "field_name": "severity",
+            "offset_state": "repaired_unique",
+            "owner_id": "reddit-c2c00b25a88b#c01",
+            "owner_type": "severity",
+            "quote": "forced to scroll down & look for the photos one-by-one",
+            "repair_applied": true,
+            "schema_version": "1.0.0",
+            "speaker": "author",
+            "start_char": 306,
+            "validation_state": "valid"
+          }
+        ],
+        "severity_observation": "stated",
+        "system_responses": [
+          {
+            "detail": null,
+            "evidence": {
+              "doc_id": "reddit-c2c00b25a88b",
+              "end_char": 150,
+              "evidence_id": "307f449763bc",
+              "field_name": "system_responses",
+              "offset_state": "supplied_exact",
+              "owner_id": "reddit-c2c00b25a88b#c01",
+              "owner_type": "observed_value",
+              "quote": "got no results",
+              "repair_applied": false,
+              "schema_version": "1.0.0",
+              "speaker": "author",
+              "start_char": 136,
+              "validation_state": "valid"
+            },
+            "value": "no_results"
+          }
+        ],
+        "system_responses_observation": "stated",
+        "target_asset_type": "photo",
+        "target_asset_type_observation": "stated",
+        "target_subjects": [
+          {
+            "detail": null,
+            "evidence": {
+              "doc_id": "reddit-c2c00b25a88b",
+              "end_char": 69,
+              "evidence_id": "478ff6fb6ae8",
+              "field_name": "target_subjects",
+              "offset_state": "supplied_exact",
+              "owner_id": "reddit-c2c00b25a88b#c01",
+              "owner_type": "observed_value",
+              "quote": "my cats",
+              "repair_applied": false,
+              "schema_version": "1.0.0",
+              "speaker": "author",
+              "start_char": 62,
+              "validation_state": "valid"
+            },
+            "value": "pet_or_animal"
+          }
+        ],
+        "target_subjects_observation": "stated",
+        "uncertainty_notes": [],
+        "validation_state": "valid",
+        "workarounds": [
+          {
+            "detail": null,
+            "evidence": {
+              "doc_id": "reddit-c2c00b25a88b",
+              "end_char": 360,
+              "evidence_id": "0b0d68f887c4",
+              "field_name": "workarounds",
+              "offset_state": "repaired_unique",
+              "owner_id": "reddit-c2c00b25a88b#c01",
+              "owner_type": "observed_value",
+              "quote": "forced to scroll down & look for the photos one-by-one",
+              "repair_applied": true,
+              "schema_version": "1.0.0",
+              "speaker": "author",
+              "start_char": 306,
+              "validation_state": "valid"
+            },
+            "value": "manual_scrolling"
+          }
+        ],
+        "workarounds_observation": "stated",
+        "evidence_spans": [
+          {
+            "field_name": "workarounds",
+            "quote": "forced to scroll down & look for the photos one-by-one",
+            "start_char": 306,
+            "end_char": 360,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "outcome",
+            "quote": "got no results",
+            "start_char": 136,
+            "end_char": 150,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "system_responses",
+            "quote": "got no results",
+            "start_char": 136,
+            "end_char": 150,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "remembered_cues",
+            "quote": "pictures of my cats",
+            "start_char": 50,
+            "end_char": 69,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "target_subjects",
+            "quote": "my cats",
+            "start_char": 62,
+            "end_char": 69,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "target_asset_type",
+            "quote": "pictures of my cats",
+            "start_char": 50,
+            "end_char": 69,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "impact_signals",
+            "quote": "forced to scroll down & look for the photos one-by-one",
+            "start_char": 306,
+            "end_char": 360,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "severity",
+            "quote": "forced to scroll down & look for the photos one-by-one",
+            "start_char": 306,
+            "end_char": 360,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "retrieval_trigger",
+            "quote": "trying to show a friend some pictures",
+            "start_char": 77,
+            "end_char": 114,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "problem_summary",
+            "quote": "not be able to find pictures of my cats",
+            "start_char": 30,
+            "end_char": 69,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "known_item_status",
+            "quote": "I remember being able to find such straightforward pictures with ease",
+            "start_char": 152,
+            "end_char": 221,
+            "validation_state": "valid"
+          }
+        ]
+      }
+    ]
+  }
+}

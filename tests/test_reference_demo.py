@@ -72,11 +72,11 @@ def test_reference_app_and_saved_search(tmp_path):
     app.session_state['export_dir']=str(demo)
     app.session_state['reference_export_dir']=str(out)
     app.run()
-    app.segmented_control(key='section').set_value('Reviewed reference evidence').run()
+    app.radio(key='section').set_value('Reviewed reference evidence').run()
     assert not app.exception
     assert any('1 reviewed reference cases' in block.value for block in app.markdown)
     assert any(block.value=='I found it.' for block in app.text)
-    app.segmented_control(key='section').set_value('Ask the evidence').run()
+    app.radio(key='section').set_value('Ask the evidence').run()
     app.text_input(key='ask_question').set_value('found')
     app.button(key='ask_search').click().run()
     assert not app.exception

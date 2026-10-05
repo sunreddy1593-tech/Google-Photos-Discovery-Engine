@@ -1,0 +1,30 @@
+[
+  {
+    "item": 1,
+    "doc_id": "google_support-2a080da4b930",
+    "decision": "reviewer_directed_core_scope_exception",
+    "previous_scope_class": "adjacent_known_item_retrieval",
+    "approved_scope_class": "core_incomplete_recall",
+    "approval_scope": [
+      "scope_class override only"
+    ],
+    "user_statement": "this can be changed to core.",
+    "scope_criteria_exception": {
+      "rule": "problem-statement.md Section 9.1",
+      "missing_condition": "incomplete, approximate, uncertain or difficult-to-express memory cues are not demonstrated by the source",
+      "evidence_fields_changed_to_justify_override": false,
+      "rule_changed": false
+    },
+    "remaining": [
+      "case fields not blanket-approved by the scope override",
+      "scope exception must be disclosed in later analysis/evaluation methodology"
+    ],
+    "reviewer": "Sunayana",
+    "reviewed_on": "2026-10-04",
+    "recorded_at": "2026-10-03T18:49:16.139572+00:00",
+    "client_timezone": "Asia/Calcutta",
+    "ai_assisted": true,
+    "independent_human_double_coding": false,
+    "adjudicated": false
+  }
+]

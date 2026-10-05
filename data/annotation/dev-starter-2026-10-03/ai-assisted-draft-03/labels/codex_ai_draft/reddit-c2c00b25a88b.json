@@ -1,0 +1,218 @@
+{
+  "doc_id": "reddit-c2c00b25a88b",
+  "split": "dev",
+  "scope_class": "adjacent_known_item_retrieval",
+  "reason_code": "known_item_with_precise_recall_failure",
+  "prefilter_should_pass": true,
+  "expected_case_count": 1,
+  "labeler_id": "codex_ai_draft",
+  "labeled_at": "2026-10-03T18:22:28.849322+00:00",
+  "adjudicated": false,
+  "pre_adjudication_labels": [],
+  "notes": "AI-assisted unapproved draft. Not an independent human label. The user recalls their cat pictures, receives no results, tries Gallery and resorts to manual scrolling to show a friend. No incomplete recall is described. Human decision recorded 2026-10-04: approve_severity. This scoped approval does not represent blanket approval of all fields or independent double-coding.",
+  "cases": [
+    {
+      "ordinal": 1,
+      "expected_values": {
+        "known_item_status": {
+          "observation": "stated",
+          "value": "explicit"
+        },
+        "target_asset_type": {
+          "observation": "stated",
+          "value": "photo"
+        },
+        "outcome": {
+          "observation": "not_stated",
+          "value": null
+        },
+        "severity": {
+          "observation": "stated",
+          "value": 3
+        },
+        "reformulation_count": {
+          "observation": "not_stated",
+          "value": null
+        },
+        "target_subjects": {
+          "observation": "stated",
+          "value": [
+            {
+              "value": "pet_or_animal",
+              "detail": "cats"
+            }
+          ]
+        },
+        "remembered_cues": {
+          "observation": "stated",
+          "value": [
+            {
+              "value": "object_or_subject",
+              "detail": null
+            }
+          ]
+        },
+        "forgotten_information": {
+          "observation": "not_stated",
+          "value": []
+        },
+        "query_strategies": {
+          "observation": "stated",
+          "value": [
+            {
+              "value": "external_app_or_search",
+              "detail": null
+            },
+            {
+              "value": "manual_scrolling",
+              "detail": null
+            }
+          ]
+        },
+        "system_responses": {
+          "observation": "stated",
+          "value": [
+            {
+              "value": "no_results",
+              "detail": null
+            },
+            {
+              "value": "other",
+              "detail": null
+            }
+          ]
+        },
+        "workarounds": {
+          "observation": "stated",
+          "value": [
+            {
+              "value": "used_external_app",
+              "detail": null
+            },
+            {
+              "value": "manual_scrolling",
+              "detail": null
+            }
+          ]
+        },
+        "impact_signals": {
+          "observation": "stated",
+          "value": [
+            {
+              "value": "repeat_effort",
+              "detail": null
+            }
+          ]
+        },
+        "retrieval_trigger": {
+          "observation": "stated",
+          "value": "show a friend some pictures over the weekend"
+        },
+        "exact_query": {
+          "observation": "not_stated",
+          "value": null
+        },
+        "query_paraphrase": {
+          "observation": "not_stated",
+          "value": null
+        }
+      },
+      "evidence": [
+        {
+          "field_name": "known_item_status",
+          "quote": "I remember being able to find such straightforward pictures with ease.",
+          "start_char": 152,
+          "end_char": 222
+        },
+        {
+          "field_name": "target_asset_type",
+          "quote": "look for the photos one-by-one",
+          "start_char": 330,
+          "end_char": 360
+        },
+        {
+          "field_name": "target_subjects",
+          "quote": "pictures of my cats",
+          "start_char": 50,
+          "end_char": 69
+        },
+        {
+          "field_name": "remembered_cues",
+          "quote": "pictures of my cats",
+          "start_char": 50,
+          "end_char": 69
+        },
+        {
+          "field_name": "query_strategies",
+          "quote": "I also tried using the Gallery app but it also has no search function so I was now forced to scroll down & look for the photos one-by-one.",
+          "start_char": 223,
+          "end_char": 361
+        },
+        {
+          "field_name": "system_responses",
+          "quote": "but got no results",
+          "start_char": 132,
+          "end_char": 150
+        },
+        {
+          "field_name": "system_responses",
+          "quote": "Gallery app but it also has no search function",
+          "start_char": 246,
+          "end_char": 292
+        },
+        {
+          "field_name": "workarounds",
+          "quote": "I also tried using the Gallery app but it also has no search function so I was now forced to scroll down & look for the photos one-by-one.",
+          "start_char": 223,
+          "end_char": 361
+        },
+        {
+          "field_name": "impact_signals",
+          "quote": "I also tried using the Gallery app but it also has no search function so I was now forced to scroll down & look for the photos one-by-one.",
+          "start_char": 223,
+          "end_char": 361
+        },
+        {
+          "field_name": "severity",
+          "quote": "I also tried using the Gallery app but it also has no search function so I was now forced to scroll down & look for the photos one-by-one.",
+          "start_char": 223,
+          "end_char": 361
+        },
+        {
+          "field_name": "retrieval_trigger",
+          "quote": "I was trying to show a friend some pictures over the weekend",
+          "start_char": 71,
+          "end_char": 131
+        }
+      ],
+      "notes": "Multiple paths and forced item-by-item browsing support repeat_effort and rubric severity 3. No elapsed time is stated, so time_loss is absent. The initial exact query/keyword and eventual outcome are not stated. Frustration alone is not coded as distress."
+    }
+  ],
+  "reviewer_checks": [
+    {
+      "check": "retrieval_trigger is the stated reason the item was needed, not the search method",
+      "passed": null,
+      "notes": "Human confirmation remains pending; see case notes and evidence."
+    },
+    {
+      "check": "impact and severity need a quote that states that impact or severity",
+      "passed": null,
+      "notes": "Human confirmation remains pending; see case notes and evidence."
+    },
+    {
+      "check": "problem_summary evidence must support every factual clause",
+      "passed": null,
+      "notes": "Human confirmation remains pending; see case notes and evidence."
+    },
+    {
+      "check": "a quote must be one continuous span; invented, abbreviated, or spliced text is invalid",
+      "passed": null,
+      "notes": "Human confirmation remains pending; see case notes and evidence."
+    },
+    {
+      "check": "an empty model response does not show that the source has no retrieval episode",
+      "passed": null,
+      "notes": "Human confirmation remains pending; see case notes and evidence."
+    }
+  ]
+}

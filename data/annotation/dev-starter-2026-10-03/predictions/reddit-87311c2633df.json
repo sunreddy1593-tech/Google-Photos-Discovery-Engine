@@ -1,0 +1,26 @@
+{
+  "role": "model_prediction_not_a_gold_label",
+  "doc_id": "reddit-87311c2633df",
+  "open_after_your_own_label_is_written": true,
+  "relevance": {
+    "scope_class": "adjacent_known_item_retrieval",
+    "reason_code": "known_item_with_precise_recall_failure",
+    "technical_state": "ok",
+    "validation_state": "valid",
+    "decided_by": "llm"
+  },
+  "extraction": {
+    "eligible": true,
+    "technical_state": "evidence_validation_failed",
+    "scope_class_used": "adjacent_known_item_retrieval",
+    "stored_cases": 0,
+    "failure_error_class": "evidence_validation_failed",
+    "invalid_fields": [
+      "remembered_cues",
+      "system_responses",
+      "retrieval_trigger",
+      "outcome"
+    ],
+    "cases": []
+  }
+}

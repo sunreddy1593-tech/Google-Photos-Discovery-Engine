@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-05 - Fix duplicate YouTube reply collection and two test failures
+
+Unchanged complete reply threads are no longer requested again. The scheduled
+collector receives stored reply counts, and the parent manifest records the
+finished status. Collection no longer imports the analysis package. The
+reference UI test follows the radio navigation. Full suite: 1267 passed, 5
+skipped, 0 failed. The 08:00 run had already spent its 20 requests and was not
+repeated.
+
 ## 2026-10-05 - Bounded scheduler for non-n8n sources
 
 Added `main.py schedule` and Windows Task Scheduler entries for 08:00, 14:00

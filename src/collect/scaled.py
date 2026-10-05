@@ -13,7 +13,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 
-from src.analyze.funnel import build_funnel
 from src.core.ids import event_id
 from src.models.enums import ReasonCode, Stage, StageEventTargetType, StageStatus
 from src.models.stage_event import StageEvent
@@ -188,6 +187,30 @@ def _outcome_status(outcome: dict[str, object]) -> tuple[StageStatus, ReasonCode
     return StageStatus.succeeded, None
 
 
+_FUNNEL_STAGE_ORDER = (
+    Stage.import_.value,
+    Stage.normalize.value,
+    Stage.dedupe.value,
+    Stage.prefilter.value,
+    Stage.relevance.value,
+    Stage.extract.value,
+    Stage.validate.value,
+)
+
+
+def _stage_counts(events: list[StageEvent]) -> list[dict[str, object]]:
+    """Count distinct documents per stage without depending on analysis."""
+    reached: dict[str, set[str]] = {}
+    for event in events:
+        if event.target_id:
+            reached.setdefault(event.stage.value, set()).add(event.target_id)
+    return [
+        {"stage": name, "documents": len(reached[name])}
+        for name in _FUNNEL_STAGE_ORDER
+        if name in reached
+    ]
+
+
 def _report(
     rows: list[dict[str, object]],
     outcomes: list[dict[str, object]],
@@ -202,7 +225,6 @@ def _report(
     document_events = [
         event for event in events if event.target_type is StageEventTargetType.document
     ]
-    funnel = build_funnel(document_events)
     technical = sum(
         1
         for event in events
@@ -222,7 +244,7 @@ def _report(
         "corpus_target_met": total >= CORPUS_TARGET and len(platforms) >= SOURCE_TYPE_TARGET,
         "sources": outcomes,
         "funnel": {
-            "stages": funnel["stages"],
+            "stages": _stage_counts(document_events),
             "technical_failures": technical,
         },
         "model_stages_run": False,

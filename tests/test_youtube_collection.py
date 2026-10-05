@@ -217,12 +217,42 @@ def test_reimport_does_not_duplicate_or_rewrite_documents(tmp_path: Path) -> Non
     assert path.read_bytes() == before
     assert result.report.documents_written == 0
     assert result.report.documents_already_present == 4
+    assert result.report.requests_made == 2
+    assert all(not urlsplit(url).path.endswith("/comments") for url in second.calls)
     assert [json.loads(line)["source_item_id"] for line in before.decode().splitlines()] == [
         "thread-one",
         "reply-one",
         "reply-two",
         "thread-two",
     ]
+
+
+@pytest.mark.synthetic
+def test_changed_reply_count_is_fetched_again(tmp_path: Path) -> None:
+    _collect(tmp_path, FakeYouTube(_full_routes()))
+    routes = _full_routes()
+    routes[("commentThreads", "first")] = (
+        200,
+        {"items": [_thread("thread-one", "where is the backup photo", 3)], "nextPageToken": "T2"},
+    )
+    routes[("comments", "R2")] = (
+        200,
+        {
+            "items": [_comment("reply-two", "still cannot find it", parent="thread-one")],
+            "nextPageToken": "R3",
+        },
+    )
+    routes[("comments", "R3")] = (
+        200,
+        {"items": [_comment("reply-three", "a new reply arrived", parent="thread-one")]},
+    )
+    fake = FakeYouTube(routes)
+    result = _collect(tmp_path, fake)
+
+    assert any(urlsplit(url).path.endswith("/comments") for url in fake.calls)
+    assert result.report.documents_written == 1
+    documents = _documents(tmp_path / "out" / "collected_documents.jsonl")
+    assert documents[-1].source_item_id == "reply-three"
 
 
 @pytest.mark.synthetic

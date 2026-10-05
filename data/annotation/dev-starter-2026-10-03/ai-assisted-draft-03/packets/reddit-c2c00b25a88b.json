@@ -1,0 +1,142 @@
+{
+  "doc_id": "reddit-c2c00b25a88b",
+  "phase4_split": "development",
+  "gold_split": "dev",
+  "split_rule": "gold-split/v1",
+  "double_code": false,
+  "provenance": {
+    "source_platform": "reddit",
+    "source_type": "comment",
+    "evidence_tier": "direct_user",
+    "source_name": "Reddit r/googlephotos",
+    "title": "Google...if you're listening... your photos app is a complete and utter disaster. Please just start over.",
+    "source_url": "https://www.reddit.com/r/googlephotos/comments/1px47il/comment/nwjfax6/",
+    "canonical_url": "https://reddit.com/r/googlephotos/comments/1px47il/comment/nwjfax6",
+    "published_at": null,
+    "collected_at": "2026-09-27T17:13:00Z",
+    "collection_method": "manual_copy",
+    "collection_query": "site:reddit.com/r/googlephotos \"search\" \"photo\" \"remember\"",
+    "language_reported": "en",
+    "language_detected": "en",
+    "ingest_batch_id": "manual-ba662076c900"
+  },
+  "source_text_field": "raw_text_audit",
+  "source_text": "You know, I was so shocked to not be able to find pictures of my cats, I was trying to show a friend some pictures over the weekend but got no results. I remember being able to find such straightforward pictures with ease. I also tried using the Gallery app but it also has no search function so I was now forced to scroll down & look for the photos one-by-one. For the \"most smartest\" smartphone, this is so unnecessarily frustrating.",
+  "offset_note": "start_char is inclusive and end_char is exclusive. They index source_text. This audit text has the same length as raw_text and this document has no redaction spans.",
+  "gold_document": {
+    "doc_id": "reddit-c2c00b25a88b",
+    "split": "dev",
+    "scope_class": null,
+    "reason_code": null,
+    "prefilter_should_pass": null,
+    "expected_case_count": null,
+    "labeler_id": null,
+    "labeled_at": null,
+    "adjudicated": false,
+    "pre_adjudication_labels": [],
+    "notes": null
+  },
+  "gold_cases": [],
+  "case_template": {
+    "ordinal": null,
+    "expected_values": {
+      "known_item_status": {
+        "observation": null,
+        "value": null
+      },
+      "target_asset_type": {
+        "observation": null,
+        "value": null
+      },
+      "outcome": {
+        "observation": null,
+        "value": null
+      },
+      "severity": {
+        "observation": null,
+        "value": null
+      },
+      "reformulation_count": {
+        "observation": null,
+        "value": null
+      },
+      "target_subjects": {
+        "observation": null,
+        "value": null
+      },
+      "remembered_cues": {
+        "observation": null,
+        "value": null
+      },
+      "forgotten_information": {
+        "observation": null,
+        "value": null
+      },
+      "query_strategies": {
+        "observation": null,
+        "value": null
+      },
+      "system_responses": {
+        "observation": null,
+        "value": null
+      },
+      "workarounds": {
+        "observation": null,
+        "value": null
+      },
+      "impact_signals": {
+        "observation": null,
+        "value": null
+      },
+      "retrieval_trigger": {
+        "observation": null,
+        "value": null
+      },
+      "exact_query": {
+        "observation": null,
+        "value": null
+      },
+      "query_paraphrase": {
+        "observation": null,
+        "value": null
+      }
+    },
+    "evidence": [
+      {
+        "field_name": null,
+        "quote": null,
+        "start_char": null,
+        "end_char": null
+      }
+    ],
+    "notes": null,
+    "gold_case_id_form": "reddit-c2c00b25a88b#g01"
+  },
+  "reviewer_checks": [
+    {
+      "check": "retrieval_trigger is the stated reason the item was needed, not the search method",
+      "passed": null,
+      "notes": null
+    },
+    {
+      "check": "impact and severity need a quote that states that impact or severity",
+      "passed": null,
+      "notes": null
+    },
+    {
+      "check": "problem_summary evidence must support every factual clause",
+      "passed": null,
+      "notes": null
+    },
+    {
+      "check": "a quote must be one continuous span; invented, abbreviated, or spliced text is invalid",
+      "passed": null,
+      "notes": null
+    },
+    {
+      "check": "an empty model response does not show that the source has no retrieval episode",
+      "passed": null,
+      "notes": null
+    }
+  ]
+}

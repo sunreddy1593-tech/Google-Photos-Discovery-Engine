@@ -1,0 +1,122 @@
+{
+  "doc_id": "google_support-5b2ec98df32b",
+  "split": "dev",
+  "scope_class": "adjacent_known_item_retrieval",
+  "reason_code": "known_item_retrieval_journey_described",
+  "prefilter_should_pass": true,
+  "expected_case_count": 1,
+  "labeler_id": "codex_ai_draft",
+  "labeled_at": "2026-10-03T18:36:02.234089+00:00",
+  "adjudicated": false,
+  "pre_adjudication_labels": [],
+  "notes": "AI-assisted revision. Sunayana approved adjacent scope on 2026-10-04 after reviewing the draft. Revisiting already displayed photo Memories is treated as a known-target collection retrieval need. No incomplete recall is stated. The inclusion reason and new single-case details remain AI proposals pending confirmation. This is not an independent human label or adjudication.",
+  "cases": [
+    {
+      "ordinal": 1,
+      "expected_values": {
+        "known_item_status": {
+          "observation": "stated",
+          "value": "explicit"
+        },
+        "target_asset_type": {
+          "observation": "stated",
+          "value": "photo"
+        },
+        "outcome": {
+          "observation": "not_stated",
+          "value": null
+        },
+        "severity": {
+          "observation": "not_stated",
+          "value": null
+        },
+        "reformulation_count": {
+          "observation": "not_stated",
+          "value": null
+        },
+        "target_subjects": {
+          "observation": "not_stated",
+          "value": []
+        },
+        "remembered_cues": {
+          "observation": "not_stated",
+          "value": []
+        },
+        "forgotten_information": {
+          "observation": "not_stated",
+          "value": []
+        },
+        "query_strategies": {
+          "observation": "not_stated",
+          "value": []
+        },
+        "system_responses": {
+          "observation": "not_stated",
+          "value": []
+        },
+        "workarounds": {
+          "observation": "not_stated",
+          "value": []
+        },
+        "impact_signals": {
+          "observation": "not_stated",
+          "value": []
+        },
+        "retrieval_trigger": {
+          "observation": "not_stated",
+          "value": null
+        },
+        "exact_query": {
+          "observation": "not_stated",
+          "value": null
+        },
+        "query_paraphrase": {
+          "observation": "not_stated",
+          "value": null
+        }
+      },
+      "evidence": [
+        {
+          "field_name": "known_item_status",
+          "quote": "My photo memories come up and I can see randomly",
+          "start_char": 0,
+          "end_char": 48
+        },
+        {
+          "field_name": "target_asset_type",
+          "quote": "My photo memories",
+          "start_char": 0,
+          "end_char": 17
+        }
+      ],
+      "notes": "New AI-assisted case draft following Sunayana's approved adjacent scope. The known target is the previously displayed photo Memories collection, not an identified individual photo. The source asks how to revisit it. It states no incomplete recall, executed query, returned failure, workaround, final outcome, impact, severity or motive. These case-field judgments and expected_case_count=1 have not received blanket human approval. Independent second human review remains required."
+    }
+  ],
+  "reviewer_checks": [
+    {
+      "check": "retrieval_trigger is the stated reason the item was needed, not the search method",
+      "passed": null,
+      "notes": "Human confirmation remains pending; see case notes and evidence."
+    },
+    {
+      "check": "impact and severity need a quote that states that impact or severity",
+      "passed": null,
+      "notes": "Human confirmation remains pending; see case notes and evidence."
+    },
+    {
+      "check": "problem_summary evidence must support every factual clause",
+      "passed": null,
+      "notes": "Human confirmation remains pending; see case notes and evidence."
+    },
+    {
+      "check": "a quote must be one continuous span; invented, abbreviated, or spliced text is invalid",
+      "passed": null,
+      "notes": "Human confirmation remains pending; see case notes and evidence."
+    },
+    {
+      "check": "an empty model response does not show that the source has no retrieval episode",
+      "passed": null,
+      "notes": "Human confirmation remains pending; see case notes and evidence."
+    }
+  ]
+}

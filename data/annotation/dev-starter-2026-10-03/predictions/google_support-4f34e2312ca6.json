@@ -1,0 +1,21 @@
+{
+  "role": "model_prediction_not_a_gold_label",
+  "doc_id": "google_support-4f34e2312ca6",
+  "open_after_your_own_label_is_written": true,
+  "relevance": {
+    "scope_class": "out_of_scope",
+    "reason_code": "storage_backup_or_sync",
+    "technical_state": "ok",
+    "validation_state": "valid",
+    "decided_by": "llm"
+  },
+  "extraction": {
+    "eligible": false,
+    "technical_state": "evidence_validation_failed",
+    "scope_class_used": "out_of_scope",
+    "stored_cases": 0,
+    "failure_error_class": "evidence_validation_failed",
+    "invalid_fields": null,
+    "cases": []
+  }
+}

@@ -1,0 +1,211 @@
+{
+  "role": "model_prediction_not_a_gold_label",
+  "doc_id": "reddit-0d477b54fb9b",
+  "open_after_your_own_label_is_written": true,
+  "relevance": {
+    "scope_class": "core_incomplete_recall",
+    "reason_code": "known_item_with_incomplete_recall",
+    "technical_state": "ok",
+    "validation_state": "valid",
+    "decided_by": "llm"
+  },
+  "extraction": {
+    "eligible": true,
+    "technical_state": "ok",
+    "scope_class_used": "core_incomplete_recall",
+    "stored_cases": 1,
+    "failure_error_class": null,
+    "invalid_fields": null,
+    "cases": [
+      {
+        "case_id": "reddit-0d477b54fb9b#c01",
+        "doc_id": "reddit-0d477b54fb9b",
+        "exact_query": null,
+        "exact_query_observation": "not_stated",
+        "extracted_at": "2026-10-03T15:17:07.060973Z",
+        "extractor_type": "llm",
+        "forgotten_information": [
+          {
+            "detail": null,
+            "evidence": {
+              "doc_id": "reddit-0d477b54fb9b",
+              "end_char": 207,
+              "evidence_id": "ed54ff04d5d4",
+              "field_name": "forgotten_information",
+              "offset_state": "repaired_unique",
+              "owner_id": "reddit-0d477b54fb9b#c01",
+              "owner_type": "observed_value",
+              "quote": "I don't remember when I took the photo.",
+              "repair_applied": true,
+              "schema_version": "1.0.0",
+              "speaker": "author",
+              "start_char": 168,
+              "validation_state": "valid"
+            },
+            "value": "exact_date"
+          }
+        ],
+        "forgotten_information_observation": "stated",
+        "impact_signals": [],
+        "impact_signals_observation": "not_stated",
+        "known_item_status": "explicit",
+        "known_item_status_observation": "stated",
+        "model_name": "openai/gpt-oss-120b",
+        "needs_human_review": false,
+        "outcome": null,
+        "outcome_observation": "not_stated",
+        "problem_summary": "User wants to locate an older photo of the same item using Google Photos but cannot recall when it was taken.",
+        "prompt_version": "extract/v2",
+        "query_paraphrase": "search Google photos on my phone for a matching older photo",
+        "query_paraphrase_observation": "stated",
+        "query_strategies": [
+          {
+            "detail": null,
+            "evidence": {
+              "doc_id": "reddit-0d477b54fb9b",
+              "end_char": 312,
+              "evidence_id": "b7972011c5a0",
+              "field_name": "query_strategies",
+              "offset_state": "repaired_unique",
+              "owner_id": "reddit-0d477b54fb9b#c01",
+              "owner_type": "observed_value",
+              "quote": "I was wondering if I could search Google photos on my phone to try to find a match to the current photo.",
+              "repair_applied": true,
+              "schema_version": "1.0.0",
+              "speaker": "author",
+              "start_char": 208,
+              "validation_state": "valid"
+            },
+            "value": "natural_language_description"
+          }
+        ],
+        "query_strategies_observation": "stated",
+        "reformulation_count": null,
+        "reformulation_count_observation": "not_stated",
+        "remembered_cues": [
+          {
+            "detail": null,
+            "evidence": {
+              "doc_id": "reddit-0d477b54fb9b",
+              "end_char": 60,
+              "evidence_id": "bb890053e79a",
+              "field_name": "remembered_cues",
+              "offset_state": "repaired_unique",
+              "owner_id": "reddit-0d477b54fb9b#c01",
+              "owner_type": "observed_value",
+              "quote": "something very distinct in it",
+              "repair_applied": true,
+              "schema_version": "1.0.0",
+              "speaker": "author",
+              "start_char": 31,
+              "validation_state": "valid"
+            },
+            "value": "visual_appearance"
+          },
+          {
+            "detail": null,
+            "evidence": {
+              "doc_id": "reddit-0d477b54fb9b",
+              "end_char": 207,
+              "evidence_id": "9e53ef8bcf4f",
+              "field_name": "remembered_cues",
+              "offset_state": "repaired_unique",
+              "owner_id": "reddit-0d477b54fb9b#c01",
+              "owner_type": "observed_value",
+              "quote": "I don't remember when I took the photo.",
+              "repair_applied": true,
+              "schema_version": "1.0.0",
+              "speaker": "author",
+              "start_char": 168,
+              "validation_state": "valid"
+            },
+            "value": "approximate_time"
+          }
+        ],
+        "remembered_cues_observation": "stated",
+        "retrieval_trigger": "I have a recent photo that has something very distinct in it.",
+        "retrieval_trigger_observation": "stated",
+        "schema_version": "1.0.0",
+        "scope_class": "core_incomplete_recall",
+        "severity": null,
+        "severity_evidence": [],
+        "severity_observation": "not_stated",
+        "system_responses": [],
+        "system_responses_observation": "not_stated",
+        "target_asset_type": "photo",
+        "target_asset_type_observation": "stated",
+        "target_subjects": [],
+        "target_subjects_observation": "not_stated",
+        "uncertainty_notes": [],
+        "validation_state": "valid",
+        "workarounds": [],
+        "workarounds_observation": "not_stated",
+        "evidence_spans": [
+          {
+            "field_name": "target_asset_type",
+            "quote": "I have a recent photo that has something very distinct in it.",
+            "start_char": 0,
+            "end_char": 61,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "known_item_status",
+            "quote": "I have a recent photo that has something very distinct in it.",
+            "start_char": 0,
+            "end_char": 61,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "query_paraphrase",
+            "quote": "I was wondering if I could search Google photos on my phone to try to find a match to the current photo.",
+            "start_char": 208,
+            "end_char": 312,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "remembered_cues",
+            "quote": "I don't remember when I took the photo.",
+            "start_char": 168,
+            "end_char": 207,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "query_strategies",
+            "quote": "I was wondering if I could search Google photos on my phone to try to find a match to the current photo.",
+            "start_char": 208,
+            "end_char": 312,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "remembered_cues",
+            "quote": "something very distinct in it",
+            "start_char": 31,
+            "end_char": 60,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "retrieval_trigger",
+            "quote": "I have a recent photo that has something very distinct in it.",
+            "start_char": 0,
+            "end_char": 61,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "problem_summary",
+            "quote": "I have a recent photo that has something very distinct in it. I am Trying to find an older photo I have of that same item but I have so many photos I can't find it and I don't remember when I took the photo.",
+            "start_char": 0,
+            "end_char": 207,
+            "validation_state": "valid"
+          },
+          {
+            "field_name": "forgotten_information",
+            "quote": "I don't remember when I took the photo.",
+            "start_char": 168,
+            "end_char": 207,
+            "validation_state": "valid"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "doc_id": "google_support-8c6ab430fbee",
+  "split": "dev",
+  "scope_class": "out_of_scope",
+  "reason_code": "storage_backup_or_sync",
+  "prefilter_should_pass": false,
+  "expected_case_count": 0,
+  "labeler_id": "codex_ai_draft",
+  "labeled_at": "2026-10-03T18:22:28.849322+00:00",
+  "adjudicated": false,
+  "pre_adjudication_labels": [],
+  "notes": "AI-assisted unapproved draft. Not an independent human label. The source describes 90% of old photos disappearing after backup, including absence from trash/account. This is bulk backup/data availability, rather than retrieval of a particular remembered item. The source does not establish actual deletion.",
+  "cases": [],
+  "reviewer_checks": [
+    {
+      "check": "retrieval_trigger is the stated reason the item was needed, not the search method",
+      "passed": null,
+      "notes": "Human confirmation remains pending; see case notes and evidence."
+    },
+    {
+      "check": "impact and severity need a quote that states that impact or severity",
+      "passed": null,
+      "notes": "Human confirmation remains pending; see case notes and evidence."
+    },
+    {
+      "check": "problem_summary evidence must support every factual clause",
+      "passed": null,
+      "notes": "Human confirmation remains pending; see case notes and evidence."
+    },
+    {
+      "check": "a quote must be one continuous span; invented, abbreviated, or spliced text is invalid",
+      "passed": null,
+      "notes": "Human confirmation remains pending; see case notes and evidence."
+    },
+    {
+      "check": "an empty model response does not show that the source has no retrieval episode",
+      "passed": null,
+      "notes": "Human confirmation remains pending; see case notes and evidence."
+    }
+  ]
+}

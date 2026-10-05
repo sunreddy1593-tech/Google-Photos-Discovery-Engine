@@ -1,0 +1,19 @@
+{
+  "approved_documents": 10,
+  "approved_cases": 6,
+  "human_reviewer": "Sunayana",
+  "human_reviewer_count": 1,
+  "ai_assisted": true,
+  "adjudication_performed": false,
+  "inter_reviewer_agreement": {
+    "raw_agreement": null,
+    "cohen_kappa": null,
+    "pairs": 0
+  },
+  "agreement_status": "not_performed_single_reviewer",
+  "verified_spans": 39,
+  "original_files_unchanged": 98,
+  "focused_tests_passed": 22,
+  "official_gold_records_written": 0,
+  "provider_calls": 0
+}

@@ -1,0 +1,21 @@
+{
+  "role": "model_prediction_not_a_gold_label",
+  "doc_id": "google_support-2a080da4b930",
+  "open_after_your_own_label_is_written": true,
+  "relevance": {
+    "scope_class": "adjacent_known_item_retrieval",
+    "reason_code": "known_item_with_precise_recall_failure",
+    "technical_state": "ok",
+    "validation_state": "valid",
+    "decided_by": "llm"
+  },
+  "extraction": {
+    "eligible": true,
+    "technical_state": "ok",
+    "scope_class_used": "adjacent_known_item_retrieval",
+    "stored_cases": 0,
+    "failure_error_class": null,
+    "invalid_fields": null,
+    "cases": []
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "version": "single-reviewer-ai-assisted/v1",
+  "human_reviewer": "Sunayana",
+  "approved_on": "2026-10-04",
+  "recorded_at": "2026-10-03T19:02:04.763138+00:00",
+  "client_timezone": "Asia/Calcutta",
+  "human_reviewer_count": 1,
+  "ai_assisted": true,
+  "blinded_independent_coding": false,
+  "second_human_review_required": false,
+  "adjudication_performed": false,
+  "inter_reviewer_agreement": {
+    "status": "not_performed_single_reviewer",
+    "raw_agreement": null,
+    "cohen_kappa": null
+  },
+  "authorization": "There is no second reviewer as such you can name the current files with my name as the reviewer. Its an individual project i cant involve more people in it",
+  "draft_approval": "I have reviewed both the documents in detail and approve the drafts",
+  "original_seating_and_split_unchanged": true,
+  "limitations": [
+    "AI-generated drafts were reviewed and corrected by one human; no independent inter-coder validation.",
+    "Ten development documents are a small diagnostic sample, not full quality certification.",
+    "The family-album core scope exception remains disclosed."
+  ],
+  "reference_revision": {
+    "version": "development-reference-02",
+    "approved_on": "2026-10-04",
+    "recorded_at": "2026-10-04T06:00:47.030455+00:00",
+    "reviewer": "Sunayana",
+    "authorization": ". I recommend a **new reference version with impact unstated, retaining severity 3**.  - go ahead with this, I approve the rest",
+    "scope": "cat impact unstated; severity 3 retained; remaining review findings/correction proposals approved",
+    "previous_reference": "C:\\Users\\sunayana\\Downloads\\Google Photos discovery engine\\data\\annotation\\dev-starter-2026-10-03\\sunayana-reviewed-01\\development-reference-01"
+  }
+}
