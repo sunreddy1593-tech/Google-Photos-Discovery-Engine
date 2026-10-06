@@ -1,5 +1,17 @@
 # Status
 
+Automatic Cloud snapshot publication, 2026-10-06: the existing scheduled command
+now runs `scripts/publish_cloud_snapshots.py` after successful/partial research
+runs. Enabled for the existing GitHub remote/main in `config/cloud_publication.json`.
+Only privacy-scanned public snapshots are committed from an isolated sparse
+checkout; private and unrelated staged work stays local. Publication failure
+preserves the research exit code and the last Cloud snapshot. Status is recorded
+at `data/interim/cloud-publication/CURRENT.json`. No new scheduled task, n8n
+change, collection/model call or budget change. See `docs/cloud-snapshots.md`.
+Verification: full suite 1324 passed, 5 skipped; diff check clean. A live
+publication-only check authenticated to GitHub and returned `unchanged` for
+the already deployed snapshots, with no collection or model call.
+
 Streamlit Cloud snapshot fix, 2026-10-06: added privacy-scanned deployment copies
 of the current scheduled and automated-comparison snapshots under
 `data/exports/public/cloud-snapshots/`. The app prefers local snapshots and

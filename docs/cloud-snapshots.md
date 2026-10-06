@@ -18,10 +18,40 @@ Cache identities and Refresh buttons are unchanged. Cloud copies have a visible
 saved-deployment notice; recorded next-run times are historical schedule data,
 not proof that the scheduler is running on Cloud.
 
-To publish later results, run `.\.venv\Scripts\python.exe
-scripts\prepare_cloud_snapshots.py` locally, review the public files, then commit
-and push the updated deployment copies. Local runs do not upload themselves.
-No scheduler task registrations, budgets or integration behavior were changed.
+Automatic publication is enabled in `config/cloud_publication.json` for this
+repository's existing GitHub `origin` and `main` branch. The already registered
+`scripts/run_scheduled_discovery.cmd` runs the publication script after the
+research command returns successfully, including partial batches. No Windows
+task registrations or collection/model budgets were changed.
+
+The publisher fetches the latest remote branch into a temporary sparse Git
+checkout that contains only the public snapshot directory. It validates and
+commits the two current snapshots there, then performs one ordinary push. It
+never stages or commits in the user's working checkout. Unrelated uncommitted
+or staged work, credentials, private runs and frozen evaluation data are excluded.
+Unchanged snapshots produce no commit. Newer remote results and changed remote
+reference versions are preserved. Push rejection, including a concurrent remote
+edit, is recorded without a force push, repair call or retry.
+
+Publication status is saved atomically to the gitignored
+`data/interim/cloud-publication/CURRENT.json` and printed in command output.
+A publication failure does not alter the completed research command's exit code,
+rerun collection, or replace the deployed usable snapshot. A later scheduled
+invocation tries again with the then-current public results. Existing cached Git
+credentials are used with interactive prompts disabled; Streamlit needs no GitHub
+or Groq credential for this. The computer must be awake and the scheduled user
+logged in, with working network/GitHub access.
+
+To disable automatic publication, set `enabled` to `false` in the local
+publication configuration. For publication without a research run, use
+`.\.venv\Scripts\python.exe scripts\publish_cloud_snapshots.py`. The offline
+packaging script remains available for manual deployment copies. A direct
+`main.py schedule` invocation bypasses the Windows command's follow-up step.
+
+Streamlit Cloud updates after GitHub receives the snapshot commit; an app rebuild
+may take time. Refresh reloads the deployed version rather than reaching into the
+owner's computer. Automatic commits advance remote `main` without changing local
+HEAD; fetch and integrate remote changes before a later development push.
 
 The curated Cloud package builder includes both current snapshots and the reader
 module. Private data and the local scheduler directories remain excluded.

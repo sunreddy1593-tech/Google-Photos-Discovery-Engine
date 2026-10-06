@@ -398,3 +398,12 @@ def env_snapshot() -> dict[str, bool]:
             "YOUTUBE_API_KEY",
         )
     }
+
+
+def git_publication_environment() -> dict[str, str]:
+    """Inherited Git process environment with interactive prompts disabled.
+
+    Internal process configuration only: never put this dictionary in logs or
+    manifests. The publisher uses the existing Git credential manager.
+    """
+    return dict(os.environ, GIT_TERMINAL_PROMPT="0", GCM_INTERACTIVE="never")

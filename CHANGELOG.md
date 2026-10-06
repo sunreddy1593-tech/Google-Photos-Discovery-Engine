@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-06 - Publish snapshots automatically after scheduled batches
+
+The existing Windows command now publishes the current public scheduled and
+comparison snapshots to GitHub after successful or partial research runs.
+An isolated sparse checkout limits commits to snapshot pointers and version
+bodies, reuses the privacy/atomic snapshot contracts, and preserves unrelated
+local work. Unchanged snapshots, newer remote results and changed reference
+versions are skipped. One regular push; no force, retry or collection/model call.
+Local publication status is durable and failures preserve the research exit
+code and deployed snapshots. Existing Git credentials supply authentication.
+
 ## 2026-10-06 - Package public snapshots for Streamlit Cloud
 
 Cloud lacked the gitignored local scheduled and automated comparison snapshots.

@@ -10,8 +10,9 @@ KINDS = ("scheduled-snapshot", "reference-standard-snapshot")
 CLOUD_FOLDER = "cloud-snapshots"
 CLOUD_NOTE = (
     "Saved deployment snapshot. The scheduler runs on the owner's computer; "
-    "Refresh reloads published files. Later local runs appear here only after "
-    "updated public snapshots are deployed. Next-run times are those recorded in this snapshot."
+    "Public snapshots are published automatically after eligible scheduled runs. "
+    "Refresh reloads the most recent successful deployment; publication failures keep "
+    "this saved version. Next-run times are those recorded in this snapshot."
 )
 
 
