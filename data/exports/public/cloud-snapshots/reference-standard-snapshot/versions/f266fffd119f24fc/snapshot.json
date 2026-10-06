@@ -1,0 +1,1934 @@
+{
+  "label": "Automatically classified using the human-reviewed standard",
+  "note": "These results passed automatic checks and have not been individually reviewed by a person. They are not human-approved findings. No accuracy against the reference has been measured.",
+  "human_reviewed_label": "Human-reviewed reference",
+  "reference_version": "n8n-reviewed-reference/01",
+  "reference_records": 48,
+  "reference_records_sha256": "7d8ddc7ee0c9757d6af7c5c55523f95961af6b82d89b1dad654670deb1e21e29",
+  "reference_ok": true,
+  "built_at": "2026-10-05T08:51:36.908361+00:00",
+  "pins": {},
+  "eligibility_rules": [
+    "The record is an extraction case that passed the existing automatic evidence gate.",
+    "The model scope class is core_incomplete_recall or adjacent_known_item_retrieval; the two stay in separate buckets and out_of_scope decisions are counted separately.",
+    "Every evidence quote is one continuous span that equals the exported excerpt at its stored offsets, and the offsets reconcile with the document coordinates.",
+    "No rejected, invented, abbreviated or spliced model text is attached to the case.",
+    "A stated retrieval_trigger has its own evidence span and no recorded objection.",
+    "Stated impact signals or severity have their own evidence spans and no recorded objection.",
+    "A problem_summary has a supporting evidence span and no recorded objection.",
+    "No recorded semantic finding stands against the case.",
+    "The public source link is present.",
+    "The document is not one of the human-reviewed reference records; those stay in the human-reviewed view.",
+    "A case id already assessed in the same snapshot is skipped, not counted twice.",
+    "Semantic approval is never set by this layer. Passing these checks is not human approval."
+  ],
+  "sources": [
+    {
+      "dataset_id": "development-quality-v6",
+      "run_id": "d7581cf180be",
+      "cases_assessed": 10,
+      "eligible": 5,
+      "flagged": 0,
+      "failed_or_incomplete": 5,
+      "duplicates_skipped": 0,
+      "relevance_decisions": {
+        "core_incomplete_recall": 3,
+        "adjacent_known_item_retrieval": 4,
+        "out_of_scope": 3,
+        "invalid_or_failed": 0
+      }
+    },
+    {
+      "dataset_id": "development-pilot",
+      "run_id": "024f9b18b60f",
+      "cases_assessed": 5,
+      "eligible": 0,
+      "flagged": 2,
+      "failed_or_incomplete": 3,
+      "duplicates_skipped": 0,
+      "relevance_decisions": {
+        "core_incomplete_recall": 11,
+        "adjacent_known_item_retrieval": 8,
+        "out_of_scope": 15,
+        "invalid_or_failed": 1
+      }
+    },
+    {
+      "dataset_id": "youtube-discussion-2026-10-03",
+      "run_id": "ae60feaa840d",
+      "cases_assessed": 1,
+      "eligible": 0,
+      "flagged": 0,
+      "failed_or_incomplete": 1,
+      "duplicates_skipped": 0,
+      "relevance_decisions": {
+        "core_incomplete_recall": 0,
+        "adjacent_known_item_retrieval": 1,
+        "out_of_scope": 19,
+        "invalid_or_failed": 0
+      }
+    },
+    {
+      "dataset_id": "scheduled-353d5ac7300e-sub-01",
+      "run_id": "353d5ac7300e-sub-01-no-extraction",
+      "cases_assessed": 0,
+      "eligible": 0,
+      "flagged": 0,
+      "failed_or_incomplete": 0,
+      "duplicates_skipped": 0,
+      "relevance_decisions": {
+        "core_incomplete_recall": 0,
+        "adjacent_known_item_retrieval": 0,
+        "out_of_scope": 20,
+        "invalid_or_failed": 0
+      }
+    },
+    {
+      "dataset_id": "scheduled-353d5ac7300e-sub-02",
+      "run_id": "353d5ac7300e-sub-02-no-extraction",
+      "cases_assessed": 0,
+      "eligible": 0,
+      "flagged": 0,
+      "failed_or_incomplete": 0,
+      "duplicates_skipped": 0,
+      "relevance_decisions": {
+        "core_incomplete_recall": 0,
+        "adjacent_known_item_retrieval": 0,
+        "out_of_scope": 20,
+        "invalid_or_failed": 0
+      }
+    }
+  ],
+  "counts": {
+    "human_reviewed_records": 48,
+    "cases_assessed": 16,
+    "automatically_valid_cases": 7,
+    "eligible_cases": 5,
+    "flagged_cases": 2,
+    "unverifiable_cases": 0,
+    "failed_or_incomplete_cases": 9,
+    "reference_overlap_excluded": 0,
+    "duplicates_skipped": 0,
+    "cases_with_recorded_semantic_approval_elsewhere": 5,
+    "semantically_approved_by_this_layer": 0,
+    "relevance_decisions_by_scope": {
+      "core_incomplete_recall": 14,
+      "adjacent_known_item_retrieval": 13,
+      "out_of_scope": 77,
+      "invalid_or_failed": 1
+    }
+  },
+  "comparison": {
+    "label": "Automatically classified using the human-reviewed standard",
+    "case_count": 5,
+    "core": {
+      "scope_class": "core_incomplete_recall",
+      "case_count": 3,
+      "case_ids": [
+        "google_support-5b2ec98df32b#c01",
+        "reddit-0d477b54fb9b#c01",
+        "reddit-bde62ddef9b5#c01"
+      ],
+      "dimensions": [
+        {
+          "field": "target_asset_type",
+          "label": "Target item",
+          "rows": [
+            {
+              "value": "photo",
+              "count": 2,
+              "cases": [
+                "google_support-5b2ec98df32b#c01",
+                "reddit-0d477b54fb9b#c01"
+              ]
+            },
+            {
+              "value": "video",
+              "count": 1,
+              "cases": [
+                "reddit-bde62ddef9b5#c01"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "remembered_cues",
+          "label": "Remembered cues",
+          "rows": [
+            {
+              "value": "visual_appearance",
+              "count": 1,
+              "cases": [
+                "reddit-0d477b54fb9b#c01"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "query_strategies",
+          "label": "Query strategies",
+          "rows": [
+            {
+              "value": "external_app_or_search",
+              "count": 1,
+              "cases": [
+                "reddit-0d477b54fb9b#c01"
+              ]
+            },
+            {
+              "value": "natural_language_description",
+              "count": 1,
+              "cases": [
+                "reddit-bde62ddef9b5#c01"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "system_responses",
+          "label": "System responses",
+          "rows": []
+        },
+        {
+          "field": "outcome",
+          "label": "Outcomes",
+          "rows": [
+            {
+              "value": "found",
+              "count": 1,
+              "cases": [
+                "reddit-bde62ddef9b5#c01"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "adjacent": {
+      "scope_class": "adjacent_known_item_retrieval",
+      "case_count": 2,
+      "case_ids": [
+        "google_support-2a080da4b930#c01",
+        "reddit-87311c2633df#c01"
+      ],
+      "dimensions": [
+        {
+          "field": "target_asset_type",
+          "label": "Target item",
+          "rows": [
+            {
+              "value": "photo",
+              "count": 2,
+              "cases": [
+                "google_support-2a080da4b930#c01",
+                "reddit-87311c2633df#c01"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "remembered_cues",
+          "label": "Remembered cues",
+          "rows": [
+            {
+              "value": "relationship",
+              "count": 1,
+              "cases": [
+                "google_support-2a080da4b930#c01"
+              ]
+            },
+            {
+              "value": "approximate_time",
+              "count": 1,
+              "cases": [
+                "reddit-87311c2633df#c01"
+              ]
+            }
+          ]
+        },
+        {
+          "field": "query_strategies",
+          "label": "Query strategies",
+          "rows": []
+        },
+        {
+          "field": "system_responses",
+          "label": "System responses",
+          "rows": []
+        },
+        {
+          "field": "outcome",
+          "label": "Outcomes",
+          "rows": []
+        }
+      ]
+    },
+    "reviewed_relevance_equivalent": {
+      "retrieval_problem": 5,
+      "not_retrieval_problem": 0,
+      "unknown": 0
+    },
+    "photo_type_equivalent": {
+      "not mapped": 5
+    },
+    "mapping_note": "Application scope classes collapse onto the reviewed binary flag; the reviewed flag does not expand into core or adjacent. Only target_asset_type = screenshot maps onto the n8n photo_type."
+  },
+  "included": [
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "google_support-2a080da4b930#c01",
+      "doc_id": "google_support-2a080da4b930",
+      "source_url": "https://support.google.com/photos/thread/244617564?hl=en",
+      "source_platform": "google_support",
+      "dataset_id": "development-quality-v6",
+      "run_id": "d7581cf180be",
+      "model_scope_class": "adjacent_known_item_retrieval",
+      "verdict": "eligible",
+      "reasons": [],
+      "checks": {
+        "is_extraction_case": true,
+        "automatically_valid": true,
+        "scope_core_or_adjacent": true,
+        "source_context_present": true,
+        "evidence_present": true,
+        "offsets_valid": true,
+        "quotes_continuous_in_source": true,
+        "no_rejected_model_text": true,
+        "retrieval_trigger_supported": true,
+        "impact_or_severity_supported": true,
+        "summary_supported": true,
+        "no_recorded_finding": true,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "extract/v4",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "df6fc654a6513d93ef59b549c101489b446f303be0c76554ea1c7c39e7560755",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "retrieval_problem",
+        "photo_type_equivalent": "not mapped"
+      },
+      "assigned_values": {
+        "target_asset_type": {
+          "value": "photo",
+          "observation": "stated"
+        },
+        "retrieval_trigger": {
+          "value": "I'm trying to search for one of my family in a Google photos album.",
+          "observation": "stated"
+        },
+        "known_item_status": {
+          "value": "explicit",
+          "observation": "stated"
+        },
+        "remembered_cues": {
+          "value": [
+            "relationship"
+          ],
+          "observation": "stated"
+        },
+        "target_subjects": {
+          "value": [
+            "person"
+          ],
+          "observation": "stated"
+        }
+      },
+      "evidence_excerpts": [
+        {
+          "field_name": "target_subjects",
+          "quote": "I'm trying to search for one of my family in a Google photos album."
+        },
+        {
+          "field_name": "remembered_cues",
+          "quote": "I'm trying to search for one of my family in a Google photos album."
+        },
+        {
+          "field_name": "retrieval_trigger",
+          "quote": "I'm trying to search for one of my family in a Google photos album."
+        },
+        {
+          "field_name": "target_asset_type",
+          "quote": "I'm trying to search for one of my family in a Google photos album."
+        },
+        {
+          "field_name": "known_item_status",
+          "quote": "I'm trying to search for one of my family in a Google photos album."
+        },
+        {
+          "field_name": "problem_summary",
+          "quote": "It seems you can't search for a face within a specific album, which means I have to scroll through hundreds of photos to find the one I want."
+        }
+      ],
+      "excerpt": "I'm trying to search for one of my family in a Google photos album. It is not a shared album. It seems you can't search for a face within a specific album, which means I have to scroll through hundreds of photos to find the one I want. Any tips?",
+      "excerpt_start_char": 0,
+      "evidence_spans": [
+        {
+          "field_name": "target_subjects",
+          "quote": "I'm trying to search for one of my family in a Google photos album.",
+          "excerpt_start_char": 0,
+          "excerpt_end_char": 67,
+          "document_start_char": 0,
+          "document_end_char": 67
+        },
+        {
+          "field_name": "remembered_cues",
+          "quote": "I'm trying to search for one of my family in a Google photos album.",
+          "excerpt_start_char": 0,
+          "excerpt_end_char": 67,
+          "document_start_char": 0,
+          "document_end_char": 67
+        },
+        {
+          "field_name": "retrieval_trigger",
+          "quote": "I'm trying to search for one of my family in a Google photos album.",
+          "excerpt_start_char": 0,
+          "excerpt_end_char": 67,
+          "document_start_char": 0,
+          "document_end_char": 67
+        },
+        {
+          "field_name": "target_asset_type",
+          "quote": "I'm trying to search for one of my family in a Google photos album.",
+          "excerpt_start_char": 0,
+          "excerpt_end_char": 67,
+          "document_start_char": 0,
+          "document_end_char": 67
+        },
+        {
+          "field_name": "known_item_status",
+          "quote": "I'm trying to search for one of my family in a Google photos album.",
+          "excerpt_start_char": 0,
+          "excerpt_end_char": 67,
+          "document_start_char": 0,
+          "document_end_char": 67
+        },
+        {
+          "field_name": "problem_summary",
+          "quote": "It seems you can't search for a face within a specific album, which means I have to scroll through hundreds of photos to find the one I want.",
+          "excerpt_start_char": 94,
+          "excerpt_end_char": 235,
+          "document_start_char": 94,
+          "document_end_char": 235
+        }
+      ],
+      "automatically_valid": true,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": true
+    },
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "google_support-5b2ec98df32b#c01",
+      "doc_id": "google_support-5b2ec98df32b",
+      "source_url": "https://support.google.com/photos/thread/167179917?hl=en",
+      "source_platform": "google_support",
+      "dataset_id": "development-quality-v6",
+      "run_id": "d7581cf180be",
+      "model_scope_class": "core_incomplete_recall",
+      "verdict": "eligible",
+      "reasons": [],
+      "checks": {
+        "is_extraction_case": true,
+        "automatically_valid": true,
+        "scope_core_or_adjacent": true,
+        "source_context_present": true,
+        "evidence_present": true,
+        "offsets_valid": true,
+        "quotes_continuous_in_source": true,
+        "no_rejected_model_text": true,
+        "retrieval_trigger_supported": true,
+        "impact_or_severity_supported": true,
+        "summary_supported": true,
+        "no_recorded_finding": true,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "extract/v4",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "99c2e68ef20d456380ad183243dab871a7c5f2ef3d82a12b5e701a767b4d6cea",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "retrieval_problem",
+        "photo_type_equivalent": "not mapped"
+      },
+      "assigned_values": {
+        "target_asset_type": {
+          "value": "photo",
+          "observation": "stated"
+        },
+        "retrieval_trigger": {
+          "value": "to view them",
+          "observation": "stated"
+        },
+        "known_item_status": {
+          "value": "explicit",
+          "observation": "stated"
+        }
+      },
+      "evidence_excerpts": [
+        {
+          "field_name": "known_item_status",
+          "quote": "My photo memories"
+        },
+        {
+          "field_name": "problem_summary",
+          "quote": "My photo memories come up and I can see randomly but how do I go back to view them?"
+        },
+        {
+          "field_name": "target_asset_type",
+          "quote": "photo"
+        },
+        {
+          "field_name": "retrieval_trigger",
+          "quote": "to view them"
+        }
+      ],
+      "excerpt": "My photo memories come up and I can see randomly but how do I go back to view them?",
+      "excerpt_start_char": 0,
+      "evidence_spans": [
+        {
+          "field_name": "known_item_status",
+          "quote": "My photo memories",
+          "excerpt_start_char": 0,
+          "excerpt_end_char": 17,
+          "document_start_char": 0,
+          "document_end_char": 17
+        },
+        {
+          "field_name": "problem_summary",
+          "quote": "My photo memories come up and I can see randomly but how do I go back to view them?",
+          "excerpt_start_char": 0,
+          "excerpt_end_char": 83,
+          "document_start_char": 0,
+          "document_end_char": 83
+        },
+        {
+          "field_name": "target_asset_type",
+          "quote": "photo",
+          "excerpt_start_char": 3,
+          "excerpt_end_char": 8,
+          "document_start_char": 3,
+          "document_end_char": 8
+        },
+        {
+          "field_name": "retrieval_trigger",
+          "quote": "to view them",
+          "excerpt_start_char": 70,
+          "excerpt_end_char": 82,
+          "document_start_char": 70,
+          "document_end_char": 82
+        }
+      ],
+      "automatically_valid": true,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": true
+    },
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "reddit-0d477b54fb9b#c01",
+      "doc_id": "reddit-0d477b54fb9b",
+      "source_url": "https://www.reddit.com/r/googlephotos/comments/xl693t/is_there_a_way_to_search_google_photos_using_a/",
+      "source_platform": "reddit",
+      "dataset_id": "development-quality-v6",
+      "run_id": "d7581cf180be",
+      "model_scope_class": "core_incomplete_recall",
+      "verdict": "eligible",
+      "reasons": [],
+      "checks": {
+        "is_extraction_case": true,
+        "automatically_valid": true,
+        "scope_core_or_adjacent": true,
+        "source_context_present": true,
+        "evidence_present": true,
+        "offsets_valid": true,
+        "quotes_continuous_in_source": true,
+        "no_rejected_model_text": true,
+        "retrieval_trigger_supported": true,
+        "impact_or_severity_supported": true,
+        "summary_supported": true,
+        "no_recorded_finding": true,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "extract/v4",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "f89d8595868741d299369b76f8e91d062b1366c26ff46b5d0b31dbd4f8be98c7",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "retrieval_problem",
+        "photo_type_equivalent": "not mapped"
+      },
+      "assigned_values": {
+        "target_asset_type": {
+          "value": "photo",
+          "observation": "stated"
+        },
+        "retrieval_trigger": {
+          "value": "find an older photo",
+          "observation": "stated"
+        },
+        "known_item_status": {
+          "value": "explicit",
+          "observation": "stated"
+        },
+        "remembered_cues": {
+          "value": [
+            "visual_appearance"
+          ],
+          "observation": "stated"
+        },
+        "forgotten_information": {
+          "value": [
+            "exact_time"
+          ],
+          "observation": "stated"
+        },
+        "query_strategies": {
+          "value": [
+            "external_app_or_search"
+          ],
+          "observation": "stated"
+        }
+      },
+      "evidence_excerpts": [
+        {
+          "field_name": "remembered_cues",
+          "quote": "I have a recent photo that has something very distinct in it."
+        },
+        {
+          "field_name": "forgotten_information",
+          "quote": "I don't remember when I took the photo."
+        },
+        {
+          "field_name": "query_strategies",
+          "quote": "search Google photos"
+        },
+        {
+          "field_name": "target_asset_type",
+          "quote": "I have a recent photo that has something very distinct in it."
+        },
+        {
+          "field_name": "known_item_status",
+          "quote": "I have a recent photo that has something very distinct in it."
+        },
+        {
+          "field_name": "retrieval_trigger",
+          "quote": "find an older photo"
+        },
+        {
+          "field_name": "problem_summary",
+          "quote": "I am Trying to find an older photo I have of that same item but I have so many photos I can't find it and I don't remember when I took the photo."
+        }
+      ],
+      "excerpt": "I have a recent photo that has something very distinct in it. I am Trying to find an older photo I have of that same item but I have so many photos I can't find it and I don't remember when I took the photo. I was wondering if I could search Google photos on my phone to try to find a match to the current photo. Hope that makes sense. Thanks in advance!",
+      "excerpt_start_char": 0,
+      "evidence_spans": [
+        {
+          "field_name": "remembered_cues",
+          "quote": "I have a recent photo that has something very distinct in it.",
+          "excerpt_start_char": 0,
+          "excerpt_end_char": 61,
+          "document_start_char": 0,
+          "document_end_char": 61
+        },
+        {
+          "field_name": "forgotten_information",
+          "quote": "I don't remember when I took the photo.",
+          "excerpt_start_char": 168,
+          "excerpt_end_char": 207,
+          "document_start_char": 168,
+          "document_end_char": 207
+        },
+        {
+          "field_name": "query_strategies",
+          "quote": "search Google photos",
+          "excerpt_start_char": 235,
+          "excerpt_end_char": 255,
+          "document_start_char": 235,
+          "document_end_char": 255
+        },
+        {
+          "field_name": "target_asset_type",
+          "quote": "I have a recent photo that has something very distinct in it.",
+          "excerpt_start_char": 0,
+          "excerpt_end_char": 61,
+          "document_start_char": 0,
+          "document_end_char": 61
+        },
+        {
+          "field_name": "known_item_status",
+          "quote": "I have a recent photo that has something very distinct in it.",
+          "excerpt_start_char": 0,
+          "excerpt_end_char": 61,
+          "document_start_char": 0,
+          "document_end_char": 61
+        },
+        {
+          "field_name": "retrieval_trigger",
+          "quote": "find an older photo",
+          "excerpt_start_char": 77,
+          "excerpt_end_char": 96,
+          "document_start_char": 77,
+          "document_end_char": 96
+        },
+        {
+          "field_name": "problem_summary",
+          "quote": "I am Trying to find an older photo I have of that same item but I have so many photos I can't find it and I don't remember when I took the photo.",
+          "excerpt_start_char": 62,
+          "excerpt_end_char": 207,
+          "document_start_char": 62,
+          "document_end_char": 207
+        }
+      ],
+      "automatically_valid": true,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": true
+    },
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "reddit-87311c2633df#c01",
+      "doc_id": "reddit-87311c2633df",
+      "source_url": "https://www.reddit.com/r/googlephotos/comments/1vcu3cs/comment/p2kn53g/",
+      "source_platform": "reddit",
+      "dataset_id": "development-quality-v6",
+      "run_id": "d7581cf180be",
+      "model_scope_class": "adjacent_known_item_retrieval",
+      "verdict": "eligible",
+      "reasons": [],
+      "checks": {
+        "is_extraction_case": true,
+        "automatically_valid": true,
+        "scope_core_or_adjacent": true,
+        "source_context_present": true,
+        "evidence_present": true,
+        "offsets_valid": true,
+        "quotes_continuous_in_source": true,
+        "no_rejected_model_text": true,
+        "retrieval_trigger_supported": true,
+        "impact_or_severity_supported": true,
+        "summary_supported": true,
+        "no_recorded_finding": true,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "extract/v4",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "735cfc3b185c17d657e9888b696246abddd9470a95a7190610efe8bbc9c5a904",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "retrieval_problem",
+        "photo_type_equivalent": "not mapped"
+      },
+      "assigned_values": {
+        "target_asset_type": {
+          "value": "photo",
+          "observation": "stated"
+        },
+        "retrieval_trigger": {
+          "value": "group the poodles together",
+          "observation": "stated"
+        },
+        "known_item_status": {
+          "value": "explicit",
+          "observation": "stated"
+        },
+        "remembered_cues": {
+          "value": [
+            "approximate_time"
+          ],
+          "observation": "stated"
+        },
+        "target_subjects": {
+          "value": [
+            "pet_or_animal"
+          ],
+          "observation": "stated"
+        }
+      },
+      "evidence_excerpts": [
+        {
+          "field_name": "target_subjects",
+          "quote": "dog pictures"
+        },
+        {
+          "field_name": "remembered_cues",
+          "quote": "days/weeks/months apart"
+        },
+        {
+          "field_name": "retrieval_trigger",
+          "quote": "I want to group all 75 of the poodles together"
+        },
+        {
+          "field_name": "target_asset_type",
+          "quote": "album with 500 dog pictures"
+        },
+        {
+          "field_name": "known_item_status",
+          "quote": "I want to group all 75 of the poodles"
+        },
+        {
+          "field_name": "problem_summary",
+          "quote": "I want to group all 75 of the poodles together, but the poodle pics were taken days/weeks/months apart and are scattered all over the album"
+        }
+      ],
+      "excerpt": "I don't think I'm explaining or describing what I want correctly. Let me try again:\nSay I have an album with 500 dog pictures in it. Google places those pictures in dated order of when they were taken. I want to group all 75 of the poodles together, but the poodle pics were taken days/weeks/months apart and are scattered all over the album, in dated order of when they were taken. How can I easily and quickly find all the poodles within that album and not have to page down over and over thru 500 p",
+      "excerpt_start_char": 0,
+      "evidence_spans": [
+        {
+          "field_name": "target_subjects",
+          "quote": "dog pictures",
+          "excerpt_start_char": 113,
+          "excerpt_end_char": 125,
+          "document_start_char": 113,
+          "document_end_char": 125
+        },
+        {
+          "field_name": "remembered_cues",
+          "quote": "days/weeks/months apart",
+          "excerpt_start_char": 281,
+          "excerpt_end_char": 304,
+          "document_start_char": 281,
+          "document_end_char": 304
+        },
+        {
+          "field_name": "retrieval_trigger",
+          "quote": "I want to group all 75 of the poodles together",
+          "excerpt_start_char": 202,
+          "excerpt_end_char": 248,
+          "document_start_char": 202,
+          "document_end_char": 248
+        },
+        {
+          "field_name": "target_asset_type",
+          "quote": "album with 500 dog pictures",
+          "excerpt_start_char": 98,
+          "excerpt_end_char": 125,
+          "document_start_char": 98,
+          "document_end_char": 125
+        },
+        {
+          "field_name": "known_item_status",
+          "quote": "I want to group all 75 of the poodles",
+          "excerpt_start_char": 202,
+          "excerpt_end_char": 239,
+          "document_start_char": 202,
+          "document_end_char": 239
+        },
+        {
+          "field_name": "problem_summary",
+          "quote": "I want to group all 75 of the poodles together, but the poodle pics were taken days/weeks/months apart and are scattered all over the album",
+          "excerpt_start_char": 202,
+          "excerpt_end_char": 341,
+          "document_start_char": 202,
+          "document_end_char": 341
+        }
+      ],
+      "automatically_valid": true,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": true
+    },
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "reddit-bde62ddef9b5#c01",
+      "doc_id": "reddit-bde62ddef9b5",
+      "source_url": "https://www.reddit.com/r/Parents/comments/1qr2y7i/comment/o2nyagr/",
+      "source_platform": "reddit",
+      "dataset_id": "development-quality-v6",
+      "run_id": "d7581cf180be",
+      "model_scope_class": "core_incomplete_recall",
+      "verdict": "eligible",
+      "reasons": [],
+      "checks": {
+        "is_extraction_case": true,
+        "automatically_valid": true,
+        "scope_core_or_adjacent": true,
+        "source_context_present": true,
+        "evidence_present": true,
+        "offsets_valid": true,
+        "quotes_continuous_in_source": true,
+        "no_rejected_model_text": true,
+        "retrieval_trigger_supported": true,
+        "impact_or_severity_supported": true,
+        "summary_supported": true,
+        "no_recorded_finding": true,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "extract/v4",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "8b5047ddd9ec1a0b33d417462ef3bea8a24bfcf45ab721db9a546b6b997a72e5",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "retrieval_problem",
+        "photo_type_equivalent": "not mapped"
+      },
+      "assigned_values": {
+        "target_asset_type": {
+          "value": "video",
+          "observation": "stated"
+        },
+        "exact_query": {
+          "value": "Show me videos of Suzie sleeping",
+          "observation": "stated"
+        },
+        "outcome": {
+          "value": "found",
+          "observation": "stated"
+        },
+        "known_item_status": {
+          "value": "explicit",
+          "observation": "stated"
+        },
+        "forgotten_information": {
+          "value": [
+            "exact_time"
+          ],
+          "observation": "stated"
+        },
+        "query_strategies": {
+          "value": [
+            "natural_language_description"
+          ],
+          "observation": "stated"
+        },
+        "target_subjects": {
+          "value": [
+            "person"
+          ],
+          "observation": "stated"
+        }
+      },
+      "evidence_excerpts": [
+        {
+          "field_name": "target_subjects",
+          "quote": "Suzie"
+        },
+        {
+          "field_name": "forgotten_information",
+          "quote": "I can't remember when it was"
+        },
+        {
+          "field_name": "query_strategies",
+          "quote": "\"Show me videos of Suzie sleeping\""
+        },
+        {
+          "field_name": "known_item_status",
+          "quote": "I took a video of it once"
+        },
+        {
+          "field_name": "exact_query",
+          "quote": "\"Show me videos of Suzie sleeping\""
+        },
+        {
+          "field_name": "problem_summary",
+          "quote": "I can type in \"Show me videos of Suzie sleeping\" and up it pops."
+        },
+        {
+          "field_name": "target_asset_type",
+          "quote": "video of it"
+        },
+        {
+          "field_name": "outcome",
+          "quote": "and up it pops."
+        }
+      ],
+      "excerpt": "hotos on Google Photos. Their search feature allows me to type in situations I'm looking for. For example my 3rd used to listen to the weirdest white noise and I took a video of it once, but I can't remember when it was. I can type in \"Show me videos of Suzie sleeping\" and up it pops.",
+      "excerpt_start_char": 17,
+      "evidence_spans": [
+        {
+          "field_name": "target_subjects",
+          "quote": "Suzie",
+          "excerpt_start_char": 254,
+          "excerpt_end_char": 259,
+          "document_start_char": 271,
+          "document_end_char": 276
+        },
+        {
+          "field_name": "forgotten_information",
+          "quote": "I can't remember when it was",
+          "excerpt_start_char": 191,
+          "excerpt_end_char": 219,
+          "document_start_char": 208,
+          "document_end_char": 236
+        },
+        {
+          "field_name": "query_strategies",
+          "quote": "\"Show me videos of Suzie sleeping\"",
+          "excerpt_start_char": 235,
+          "excerpt_end_char": 269,
+          "document_start_char": 252,
+          "document_end_char": 286
+        },
+        {
+          "field_name": "known_item_status",
+          "quote": "I took a video of it once",
+          "excerpt_start_char": 160,
+          "excerpt_end_char": 185,
+          "document_start_char": 177,
+          "document_end_char": 202
+        },
+        {
+          "field_name": "exact_query",
+          "quote": "\"Show me videos of Suzie sleeping\"",
+          "excerpt_start_char": 235,
+          "excerpt_end_char": 269,
+          "document_start_char": 252,
+          "document_end_char": 286
+        },
+        {
+          "field_name": "problem_summary",
+          "quote": "I can type in \"Show me videos of Suzie sleeping\" and up it pops.",
+          "excerpt_start_char": 221,
+          "excerpt_end_char": 285,
+          "document_start_char": 238,
+          "document_end_char": 302
+        },
+        {
+          "field_name": "target_asset_type",
+          "quote": "video of it",
+          "excerpt_start_char": 169,
+          "excerpt_end_char": 180,
+          "document_start_char": 186,
+          "document_end_char": 197
+        },
+        {
+          "field_name": "outcome",
+          "quote": "and up it pops.",
+          "excerpt_start_char": 270,
+          "excerpt_end_char": 285,
+          "document_start_char": 287,
+          "document_end_char": 302
+        }
+      ],
+      "automatically_valid": true,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": true
+    }
+  ],
+  "excluded": [
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "",
+      "doc_id": "google_support-4f34e2312ca6",
+      "source_url": "https://support.google.com/photos/thread/413671839?hl=en",
+      "source_platform": "google_support",
+      "dataset_id": "development-quality-v6",
+      "run_id": "d7581cf180be",
+      "model_scope_class": "out_of_scope",
+      "verdict": "failed_or_incomplete",
+      "reasons": [
+        "not an extraction case (failed)",
+        "did not pass the automatic evidence gate",
+        "model scope class is out_of_scope, not core or adjacent",
+        "no evidence span"
+      ],
+      "checks": {
+        "is_extraction_case": false,
+        "automatically_valid": false,
+        "scope_core_or_adjacent": false,
+        "source_context_present": true,
+        "evidence_present": false,
+        "offsets_valid": false,
+        "quotes_continuous_in_source": false,
+        "no_rejected_model_text": true,
+        "retrieval_trigger_supported": true,
+        "impact_or_severity_supported": true,
+        "summary_supported": true,
+        "no_recorded_finding": true,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "unknown",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "35db525993c15093473a9f89106fbc7fc045f3f47e2c9f93c1fcd4fc68d2c6dd",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "not_retrieval_problem",
+        "photo_type_equivalent": "not stated"
+      },
+      "assigned_values": {},
+      "evidence_excerpts": [],
+      "excerpt": "I went to Google Photos to look back at old photos and videos, but suddenly they all disappeared. I'm absolutely sure I didn't delete them, and no one has accessed my account. However, one thing that puzzles me is that I recently bought a tablet and connected it to the account where the photos and videos disappeared. It seems like it was linked to Google Photos. So I disconnected the tablet because I wanted to back up photos only to my phone. After that, when I checked my acc",
+      "excerpt_start_char": 0,
+      "evidence_spans": [],
+      "automatically_valid": false,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": false
+    },
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "",
+      "doc_id": "google_support-8c6ab430fbee",
+      "source_url": "https://support.google.com/photos/thread/178895995?hl=en",
+      "source_platform": "google_support",
+      "dataset_id": "development-quality-v6",
+      "run_id": "d7581cf180be",
+      "model_scope_class": "adjacent_known_item_retrieval",
+      "verdict": "failed_or_incomplete",
+      "reasons": [
+        "not an extraction case (failed)",
+        "did not pass the automatic evidence gate",
+        "no evidence span"
+      ],
+      "checks": {
+        "is_extraction_case": false,
+        "automatically_valid": false,
+        "scope_core_or_adjacent": true,
+        "source_context_present": true,
+        "evidence_present": false,
+        "offsets_valid": false,
+        "quotes_continuous_in_source": false,
+        "no_rejected_model_text": true,
+        "retrieval_trigger_supported": true,
+        "impact_or_severity_supported": true,
+        "summary_supported": true,
+        "no_recorded_finding": true,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "unknown",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "78a758e47840835dd9d6bb5745d515e617d8e268b480cfb2a0d1aeeca2e2eef3",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "retrieval_problem",
+        "photo_type_equivalent": "not stated"
+      },
+      "assigned_values": {},
+      "evidence_excerpts": [],
+      "excerpt": "I backed up new photos for my google account and when they finished backing up i opened the google photos app and 90% of my old photos were not there and I can't find them in the trash section or anywhere in the google account\n\nI tried many thing and still can't find them, i need help because these photos are so important to me and they disappeared suddenly.",
+      "excerpt_start_char": 0,
+      "evidence_spans": [],
+      "automatically_valid": false,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": false
+    },
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "",
+      "doc_id": "play_store-fb8c41525287",
+      "source_url": "https://play.google.com/store/apps/details?id=com.google.android.apps.photos&hl=en_IN",
+      "source_platform": "play_store",
+      "dataset_id": "development-quality-v6",
+      "run_id": "d7581cf180be",
+      "model_scope_class": "out_of_scope",
+      "verdict": "failed_or_incomplete",
+      "reasons": [
+        "not an extraction case (failed)",
+        "did not pass the automatic evidence gate",
+        "model scope class is out_of_scope, not core or adjacent",
+        "no evidence span"
+      ],
+      "checks": {
+        "is_extraction_case": false,
+        "automatically_valid": false,
+        "scope_core_or_adjacent": false,
+        "source_context_present": true,
+        "evidence_present": false,
+        "offsets_valid": false,
+        "quotes_continuous_in_source": false,
+        "no_rejected_model_text": true,
+        "retrieval_trigger_supported": true,
+        "impact_or_severity_supported": true,
+        "summary_supported": true,
+        "no_recorded_finding": true,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "unknown",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "1454aff1cf2ef4d2dee9a0fc278c5e5b424d22f6c35e9fb29392b809d782afe6",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "not_retrieval_problem",
+        "photo_type_equivalent": "not stated"
+      },
+      "assigned_values": {},
+      "evidence_excerpts": [],
+      "excerpt": "suddenly there are issues with photos disappearing after editing. if you manage to find them and reopen them, edit/share/ask buttons on the bottom no longer function.",
+      "excerpt_start_char": 0,
+      "evidence_spans": [],
+      "automatically_valid": false,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": false
+    },
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "reddit-c2c00b25a88b#ub4eac297",
+      "doc_id": "reddit-c2c00b25a88b",
+      "source_url": "https://www.reddit.com/r/googlephotos/comments/1px47il/comment/nwjfax6/",
+      "source_platform": "reddit",
+      "dataset_id": "development-quality-v6",
+      "run_id": "d7581cf180be",
+      "model_scope_class": "adjacent_known_item_retrieval",
+      "verdict": "failed_or_incomplete",
+      "reasons": [
+        "not an extraction case (failed)",
+        "did not pass the automatic evidence gate",
+        "1 invented, altered or spliced quote(s) attached",
+        "retrieval_trigger is stated without its own supporting quote or has a recorded objection",
+        "problem_summary lacks sufficient supporting evidence"
+      ],
+      "checks": {
+        "is_extraction_case": false,
+        "automatically_valid": false,
+        "scope_core_or_adjacent": true,
+        "source_context_present": true,
+        "evidence_present": true,
+        "offsets_valid": true,
+        "quotes_continuous_in_source": true,
+        "no_rejected_model_text": false,
+        "retrieval_trigger_supported": false,
+        "impact_or_severity_supported": true,
+        "summary_supported": false,
+        "no_recorded_finding": true,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "unknown",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "6f6010340e69addd436cecfd28f4263d862a5152adb14b2fc0e549f570d7a715",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "retrieval_problem",
+        "photo_type_equivalent": "not mapped"
+      },
+      "assigned_values": {
+        "target_asset_type": {
+          "value": "photo",
+          "observation": "stated"
+        },
+        "retrieval_trigger": {
+          "value": "to show a friend some pictures over the weekend",
+          "observation": "stated"
+        },
+        "outcome": {
+          "value": "not_found",
+          "observation": "stated"
+        },
+        "known_item_status": {
+          "value": "explicit",
+          "observation": "stated"
+        },
+        "remembered_cues": {
+          "value": [
+            "object_or_subject"
+          ],
+          "observation": "stated"
+        },
+        "system_responses": {
+          "value": [
+            "no_results"
+          ],
+          "observation": "stated"
+        },
+        "workarounds": {
+          "value": [
+            "manual_scrolling"
+          ],
+          "observation": "stated"
+        },
+        "target_subjects": {
+          "value": [
+            "pet_or_animal"
+          ],
+          "observation": "stated"
+        }
+      },
+      "evidence_excerpts": [
+        {
+          "field_name": "target_subjects",
+          "quote": "my cats"
+        },
+        {
+          "field_name": "remembered_cues",
+          "quote": "pictures of my cats"
+        },
+        {
+          "field_name": "system_responses",
+          "quote": "got no results"
+        },
+        {
+          "field_name": "workarounds",
+          "quote": "forced to scroll down & look for the photos one-by-one"
+        }
+      ],
+      "excerpt": "You know, I was so shocked to not be able to find pictures of my cats, I was trying to show a friend some pictures over the weekend but got no results. I remember being able to find such straightforward pictures with ease. I also tried using the Gallery app but it also has no search function so I was now forced to scroll down & look for the photos one-by-one. For the \"most smartest\" smartphone, this is so unnecessarily frustrating.",
+      "excerpt_start_char": 0,
+      "evidence_spans": [
+        {
+          "field_name": "target_subjects",
+          "quote": "my cats",
+          "excerpt_start_char": 62,
+          "excerpt_end_char": 69,
+          "document_start_char": 62,
+          "document_end_char": 69
+        },
+        {
+          "field_name": "remembered_cues",
+          "quote": "pictures of my cats",
+          "excerpt_start_char": 50,
+          "excerpt_end_char": 69,
+          "document_start_char": 50,
+          "document_end_char": 69
+        },
+        {
+          "field_name": "system_responses",
+          "quote": "got no results",
+          "excerpt_start_char": 136,
+          "excerpt_end_char": 150,
+          "document_start_char": 136,
+          "document_end_char": 150
+        },
+        {
+          "field_name": "workarounds",
+          "quote": "forced to scroll down & look for the photos one-by-one",
+          "excerpt_start_char": 306,
+          "excerpt_end_char": 360,
+          "document_start_char": 306,
+          "document_end_char": 360
+        }
+      ],
+      "automatically_valid": false,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": false
+    },
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "",
+      "doc_id": "youtube-17fd27447275",
+      "source_url": "https://www.youtube.com/watch?v=TlYoYKBC7O0&lc=UgwEPLUPB_DJQ-NwLr94AaABAg",
+      "source_platform": "youtube",
+      "dataset_id": "development-quality-v6",
+      "run_id": "d7581cf180be",
+      "model_scope_class": "out_of_scope",
+      "verdict": "failed_or_incomplete",
+      "reasons": [
+        "not an extraction case (failed)",
+        "did not pass the automatic evidence gate",
+        "model scope class is out_of_scope, not core or adjacent",
+        "no evidence span"
+      ],
+      "checks": {
+        "is_extraction_case": false,
+        "automatically_valid": false,
+        "scope_core_or_adjacent": false,
+        "source_context_present": true,
+        "evidence_present": false,
+        "offsets_valid": false,
+        "quotes_continuous_in_source": false,
+        "no_rejected_model_text": true,
+        "retrieval_trigger_supported": true,
+        "impact_or_severity_supported": true,
+        "summary_supported": true,
+        "no_recorded_finding": true,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "unknown",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "ddfb1138b485ebe233540b37a5cf06a76f7e23462f9520d3f237fc10926756d6",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "not_retrieval_problem",
+        "photo_type_equivalent": "not stated"
+      },
+      "assigned_values": {},
+      "evidence_excerpts": [],
+      "excerpt": "Lost my oldest photos",
+      "excerpt_start_char": 0,
+      "evidence_spans": [],
+      "automatically_valid": false,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": false
+    },
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "google_support-d7f386f347b7#c01",
+      "doc_id": "google_support-d7f386f347b7",
+      "source_url": "https://support.google.com/photos/thread/101084512/hi-i-need-to-find-a-photo-that-was-taken-betweenjanuary-and-april-2019?hl=en",
+      "source_platform": "google_support",
+      "dataset_id": "development-pilot",
+      "run_id": "024f9b18b60f",
+      "model_scope_class": "core_incomplete_recall",
+      "verdict": "flagged",
+      "reasons": [
+        "retrieval_trigger is stated without its own supporting quote or has a recorded objection",
+        "problem_summary lacks sufficient supporting evidence",
+        "recorded finding on retrieval_trigger: retrieval_trigger",
+        "recorded finding on problem_summary: incomplete_summary"
+      ],
+      "checks": {
+        "is_extraction_case": true,
+        "automatically_valid": true,
+        "scope_core_or_adjacent": true,
+        "source_context_present": true,
+        "evidence_present": true,
+        "offsets_valid": true,
+        "quotes_continuous_in_source": true,
+        "no_rejected_model_text": true,
+        "retrieval_trigger_supported": false,
+        "impact_or_severity_supported": true,
+        "summary_supported": false,
+        "no_recorded_finding": false,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "extract/v2",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "26cdadbefc9a2d831b730a82a4bcf0cc944380385b0d4697637baa2f5d98c2fb",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "retrieval_problem",
+        "photo_type_equivalent": "not mapped"
+      },
+      "assigned_values": {
+        "target_asset_type": {
+          "value": "photo",
+          "observation": "stated"
+        },
+        "retrieval_trigger": {
+          "value": "search backup",
+          "observation": "stated"
+        },
+        "outcome": {
+          "value": "not_found",
+          "observation": "stated"
+        },
+        "known_item_status": {
+          "value": "explicit",
+          "observation": "stated"
+        },
+        "remembered_cues": {
+          "value": [
+            "approximate_time"
+          ],
+          "observation": "stated"
+        },
+        "target_subjects": {
+          "value": [
+            "document_or_paperwork"
+          ],
+          "observation": "stated"
+        }
+      },
+      "evidence_excerpts": [
+        {
+          "field_name": "target_subjects",
+          "quote": "transcript of exam results"
+        },
+        {
+          "field_name": "remembered_cues",
+          "quote": "January and April 2019"
+        }
+      ],
+      "excerpt": "A photo of a transcript of exam results that was a work between January and April 2019. I have searched for it all over my back up albut can't seem to find it. Kindly assist",
+      "excerpt_start_char": 0,
+      "evidence_spans": [
+        {
+          "field_name": "target_subjects",
+          "quote": "transcript of exam results",
+          "excerpt_start_char": 13,
+          "excerpt_end_char": 39,
+          "document_start_char": 13,
+          "document_end_char": 39
+        },
+        {
+          "field_name": "remembered_cues",
+          "quote": "January and April 2019",
+          "excerpt_start_char": 64,
+          "excerpt_end_char": 86,
+          "document_start_char": 64,
+          "document_end_char": 86
+        }
+      ],
+      "automatically_valid": true,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": false
+    },
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "google_support-e1e5277da7e8#c01",
+      "doc_id": "google_support-e1e5277da7e8",
+      "source_url": "https://support.google.com/photos/thread/273154473/can%E2%80%99t-find-an-old-photo-in-google-photos-even-though-it-showed-me-the-exact-photo-days-ago?hl=en",
+      "source_platform": "google_support",
+      "dataset_id": "development-pilot",
+      "run_id": "024f9b18b60f",
+      "model_scope_class": "core_incomplete_recall",
+      "verdict": "flagged",
+      "reasons": [
+        "retrieval_trigger is stated without its own supporting quote or has a recorded objection",
+        "impact or severity is stated without a quote that states it",
+        "problem_summary lacks sufficient supporting evidence",
+        "recorded finding on retrieval_trigger: retrieval_trigger",
+        "recorded finding on impact_signals: unsupported_impact",
+        "recorded finding on problem_summary: incomplete_summary"
+      ],
+      "checks": {
+        "is_extraction_case": true,
+        "automatically_valid": true,
+        "scope_core_or_adjacent": true,
+        "source_context_present": true,
+        "evidence_present": true,
+        "offsets_valid": true,
+        "quotes_continuous_in_source": true,
+        "no_rejected_model_text": true,
+        "retrieval_trigger_supported": false,
+        "impact_or_severity_supported": false,
+        "summary_supported": false,
+        "no_recorded_finding": false,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "extract/v2",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "b29bdf026aee3999961d6da2b2384ab66c3191fd74f62aa9aa89fc5494fe4e48",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "retrieval_problem",
+        "photo_type_equivalent": "not mapped"
+      },
+      "assigned_values": {
+        "target_asset_type": {
+          "value": "photo",
+          "observation": "stated"
+        },
+        "retrieval_trigger": {
+          "value": "car search option",
+          "observation": "stated"
+        },
+        "outcome": {
+          "value": "not_found",
+          "observation": "stated"
+        },
+        "known_item_status": {
+          "value": "explicit",
+          "observation": "stated"
+        },
+        "remembered_cues": {
+          "value": [
+            "object_or_subject",
+            "approximate_time"
+          ],
+          "observation": "stated"
+        },
+        "system_responses": {
+          "value": [
+            "partial_results"
+          ],
+          "observation": "stated"
+        },
+        "impact_signals": {
+          "value": [
+            "time_loss"
+          ],
+          "observation": "stated"
+        },
+        "target_subjects": {
+          "value": [
+            "vehicle"
+          ],
+          "observation": "stated"
+        }
+      },
+      "evidence_excerpts": [
+        {
+          "field_name": "target_subjects",
+          "quote": "old Camaro"
+        },
+        {
+          "field_name": "remembered_cues",
+          "quote": "old Camaro"
+        },
+        {
+          "field_name": "remembered_cues",
+          "quote": "2000s"
+        },
+        {
+          "field_name": "system_responses",
+          "quote": "while it pulled up every other car I’ve ever owned, the white Camaro is missing"
+        },
+        {
+          "field_name": "impact_signals",
+          "quote": "while it pulled up every other car I’ve ever owned, the white Camaro is missing"
+        }
+      ],
+      "excerpt": "I’m looking for a photo of my old Camaro from the 2000s. I don’t use Google Photos much but I got into it the other day and it showed me a photo of my car without me even searching for it!\n\nI have no idea how or why that happened. But   today I went back to find it using the car search option and while it pulled up every other car I’ve ever owned, the white Camaro is missing. Please help.",
+      "excerpt_start_char": 0,
+      "evidence_spans": [
+        {
+          "field_name": "target_subjects",
+          "quote": "old Camaro",
+          "excerpt_start_char": 30,
+          "excerpt_end_char": 40,
+          "document_start_char": 30,
+          "document_end_char": 40
+        },
+        {
+          "field_name": "remembered_cues",
+          "quote": "old Camaro",
+          "excerpt_start_char": 30,
+          "excerpt_end_char": 40,
+          "document_start_char": 30,
+          "document_end_char": 40
+        },
+        {
+          "field_name": "remembered_cues",
+          "quote": "2000s",
+          "excerpt_start_char": 50,
+          "excerpt_end_char": 55,
+          "document_start_char": 50,
+          "document_end_char": 55
+        },
+        {
+          "field_name": "system_responses",
+          "quote": "while it pulled up every other car I’ve ever owned, the white Camaro is missing",
+          "excerpt_start_char": 298,
+          "excerpt_end_char": 377,
+          "document_start_char": 298,
+          "document_end_char": 377
+        },
+        {
+          "field_name": "impact_signals",
+          "quote": "while it pulled up every other car I’ve ever owned, the white Camaro is missing",
+          "excerpt_start_char": 298,
+          "excerpt_end_char": 377,
+          "document_start_char": 298,
+          "document_end_char": 377
+        }
+      ],
+      "automatically_valid": true,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": false
+    },
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "",
+      "doc_id": "google_support-2a080da4b930",
+      "source_url": "https://support.google.com/photos/thread/244617564?hl=en",
+      "source_platform": "google_support",
+      "dataset_id": "development-pilot",
+      "run_id": "024f9b18b60f",
+      "model_scope_class": "adjacent_known_item_retrieval",
+      "verdict": "failed_or_incomplete",
+      "reasons": [
+        "not an extraction case (empty_response)",
+        "did not pass the automatic evidence gate",
+        "no evidence span",
+        "recorded finding on cases: empty_omission"
+      ],
+      "checks": {
+        "is_extraction_case": false,
+        "automatically_valid": false,
+        "scope_core_or_adjacent": true,
+        "source_context_present": true,
+        "evidence_present": false,
+        "offsets_valid": false,
+        "quotes_continuous_in_source": false,
+        "no_rejected_model_text": true,
+        "retrieval_trigger_supported": true,
+        "impact_or_severity_supported": true,
+        "summary_supported": true,
+        "no_recorded_finding": false,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "unknown",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "aa6b81800ed7e92b5f518c6fea2232a9b0e4d05d74c5cbd8bbc3727c856167a0",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "retrieval_problem",
+        "photo_type_equivalent": "not stated"
+      },
+      "assigned_values": {},
+      "evidence_excerpts": [],
+      "excerpt": "I'm trying to search for one of my family in a Google photos album. It is not a shared album. It seems you can't search for a face within a specific album, which means I have to scroll through hundreds of photos to find the one I want. Any tips?",
+      "excerpt_start_char": 0,
+      "evidence_spans": [],
+      "automatically_valid": false,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": false
+    },
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "reddit-23be97c93709#u3bff3392",
+      "doc_id": "reddit-23be97c93709",
+      "source_url": "https://www.reddit.com/r/googlephotos/comments/11mc9tf/any_way_to_easily_find_edited_photos/",
+      "source_platform": "reddit",
+      "dataset_id": "development-pilot",
+      "run_id": "024f9b18b60f",
+      "model_scope_class": "adjacent_known_item_retrieval",
+      "verdict": "failed_or_incomplete",
+      "reasons": [
+        "not an extraction case (failed)",
+        "did not pass the automatic evidence gate",
+        "problem_summary lacks sufficient supporting evidence",
+        "recorded finding on problem_summary: spliced_quote"
+      ],
+      "checks": {
+        "is_extraction_case": false,
+        "automatically_valid": false,
+        "scope_core_or_adjacent": true,
+        "source_context_present": true,
+        "evidence_present": true,
+        "offsets_valid": true,
+        "quotes_continuous_in_source": true,
+        "no_rejected_model_text": true,
+        "retrieval_trigger_supported": true,
+        "impact_or_severity_supported": true,
+        "summary_supported": false,
+        "no_recorded_finding": false,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "unknown",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "97db5ff9addff6b073caaedf5499fab5380f136b804ce2c4d4616589f8de8a71",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "retrieval_problem",
+        "photo_type_equivalent": "not stated"
+      },
+      "assigned_values": {
+        "exact_query": {
+          "value": "edited",
+          "observation": "stated"
+        },
+        "outcome": {
+          "value": "not_found",
+          "observation": "stated"
+        },
+        "query_strategies": {
+          "value": [
+            "single_keyword"
+          ],
+          "observation": "stated"
+        }
+      },
+      "evidence_excerpts": [
+        {
+          "field_name": "query_strategies",
+          "quote": "edited"
+        }
+      ],
+      "excerpt": " up without putting pictures in any folder and so all my Snapseed edited photos and others are mixed in with thousands of other pictures. I've tried searching \"edited\" and things like that to no avail.\n\nThanks",
+      "excerpt_start_char": 194,
+      "evidence_spans": [
+        {
+          "field_name": "query_strategies",
+          "quote": "edited",
+          "excerpt_start_char": 160,
+          "excerpt_end_char": 166,
+          "document_start_char": 354,
+          "document_end_char": 360
+        }
+      ],
+      "automatically_valid": false,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": false
+    },
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "",
+      "doc_id": "reddit-c49086caf891",
+      "source_url": "https://www.reddit.com/r/googlephotos/comments/1px47il/comment/nw8bctw/",
+      "source_platform": "reddit",
+      "dataset_id": "development-pilot",
+      "run_id": "024f9b18b60f",
+      "model_scope_class": "adjacent_known_item_retrieval",
+      "verdict": "failed_or_incomplete",
+      "reasons": [
+        "not an extraction case (failed)",
+        "did not pass the automatic evidence gate",
+        "no evidence span",
+        "recorded finding on provider: unresolved_provider"
+      ],
+      "checks": {
+        "is_extraction_case": false,
+        "automatically_valid": false,
+        "scope_core_or_adjacent": true,
+        "source_context_present": true,
+        "evidence_present": false,
+        "offsets_valid": false,
+        "quotes_continuous_in_source": false,
+        "no_rejected_model_text": true,
+        "retrieval_trigger_supported": true,
+        "impact_or_severity_supported": true,
+        "summary_supported": true,
+        "no_recorded_finding": false,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "unknown",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "9ac6faaeaf946ccd1d3ce23cdb0471f5ed9b84ab4d8978817b621a4c0f1189ca",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "retrieval_problem",
+        "photo_type_equivalent": "not stated"
+      },
+      "assigned_values": {},
+      "evidence_excerpts": [],
+      "excerpt": "Google Photos search has been changed from Assistant to AI so now I can't find things that I used to be able to. I have a dog. I have hundreds of pictures of him. Search for \"dog\" or \"puppy\" before and it would bring back nearly all of them. Today? It brings back about 40 photos. I make BBQ quite often. Search for BBQ now and it barely returns anything. Google Photos Search is now totally freaking useless. If I want to find a photo of something and show it to someone, I have ",
+      "excerpt_start_char": 0,
+      "evidence_spans": [],
+      "automatically_valid": false,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": false
+    },
+    {
+      "label": "Automatically classified using the human-reviewed standard",
+      "case_id": "",
+      "doc_id": "youtube-8c01bd1e27bd",
+      "source_url": "https://www.youtube.com/watch?v=H_i5069Bll4&lc=UgwIhgS_GuKSxHgTxEN4AaABAg",
+      "source_platform": "youtube",
+      "dataset_id": "youtube-discussion-2026-10-03",
+      "run_id": "ae60feaa840d",
+      "model_scope_class": "adjacent_known_item_retrieval",
+      "verdict": "failed_or_incomplete",
+      "reasons": [
+        "not an extraction case (failed)",
+        "did not pass the automatic evidence gate",
+        "no evidence span",
+        "recorded finding on scope_class: known_item_overclaim"
+      ],
+      "checks": {
+        "is_extraction_case": false,
+        "automatically_valid": false,
+        "scope_core_or_adjacent": true,
+        "source_context_present": true,
+        "evidence_present": false,
+        "offsets_valid": false,
+        "quotes_continuous_in_source": false,
+        "no_rejected_model_text": true,
+        "retrieval_trigger_supported": true,
+        "impact_or_severity_supported": true,
+        "summary_supported": true,
+        "no_recorded_finding": false,
+        "source_link_present": true,
+        "not_a_reviewed_reference_record": true
+      },
+      "versions": {
+        "reference_version": "n8n-reviewed-reference/01",
+        "relevance_prompt": "unknown",
+        "extraction_prompt": "unknown",
+        "schema_version": "1.0.0",
+        "model": "unknown",
+        "provider": "unknown"
+      },
+      "assessment_identity": "908b96c652688ddebc1695591f689ae688247629e195b5425ba9a56c437c6796",
+      "mapped_to_reference": {
+        "reviewed_relevance_equivalent": "retrieval_problem",
+        "photo_type_equivalent": "not stated"
+      },
+      "assigned_values": {},
+      "evidence_excerpts": [],
+      "excerpt": "When I location search google photos it gives me results only of 2024, earlier it would give me location searches for all years. Can you please give me a work around",
+      "excerpt_start_char": 0,
+      "evidence_spans": [],
+      "automatically_valid": false,
+      "semantically_approved": false,
+      "human_reviewed": false,
+      "recorded_semantic_approval_elsewhere": false
+    }
+  ],
+  "semantically_approved_by_this_layer": 0,
+  "snapshot_version": "f266fffd119f24fc",
+  "sources_read": [
+    "data/exports/submission/demo-2026-10-04-03",
+    "data/interim/reference-standard/prepared"
+  ],
+  "human_approved_cases": 0
+}

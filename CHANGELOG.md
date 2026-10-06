@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-06 - Package public snapshots for Streamlit Cloud
+
+Cloud lacked the gitignored local scheduled and automated comparison snapshots.
+Added a separate tracked deployment bundle, an offline privacy-checked packaging
+script, and local-first/Cloud-fallback selection. The UI labels deployment copies
+as saved results. Existing atomic publication, versions, caches and Refresh
+buttons are reused. Curated packages now include both snapshots. Scheduler tasks,
+budgets, model calls, n8n, Sheets and frozen data are unchanged.
+
 ## 2026-10-05 - Install pydantic for the Streamlit Cloud app
 
 Community Cloud installs `requirements.txt` and was missing `pydantic`, so

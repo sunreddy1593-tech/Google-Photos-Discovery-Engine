@@ -28,7 +28,7 @@ def prepare(root: Path, output: Path, package: Path) -> dict:
            'src/core/versions.py','src/core/ids.py','src/export/__init__.py',
            'src/export/load.py','src/export/compare.py','src/export/present.py',
            'src/export/privacy.py','src/export/reference.py','src/export/scheduled_status.py',
-           'src/export/reviewed_reference.py','src/export/reference_standard.py']
+           'src/export/reviewed_reference.py','src/export/reference_standard.py','src/export/cloud_snapshots.py']
     files += [p.relative_to(root).as_posix() for p in (root/'src/models').glob('*.py')]
     if (root/'.streamlit/config.toml').is_file(): files.append('.streamlit/config.toml')
     for name in files:
@@ -42,9 +42,13 @@ def prepare(root: Path, output: Path, package: Path) -> dict:
     reviewed=root/'data/exports/reference/n8n-reviewed-reference-01'
     if reviewed.is_dir():
         shutil.copytree(reviewed,package/'data/exports/reference/n8n-reviewed-reference-01')
-    standard=root/'data/exports/public/reference-standard-snapshot'
-    if (standard/'CURRENT.json').is_file():
-        shutil.copytree(standard,package/'data/exports/public/reference-standard-snapshot')
+    from src.export.cloud_snapshots import prepare_cloud_snapshots
+    if all((root/'data/exports/public'/kind/'CURRENT.json').is_file()
+           for kind in ('scheduled-snapshot', 'reference-standard-snapshot')):
+        prepare_cloud_snapshots(root, package/'data/exports/public/cloud-snapshots')
+    elif (root/'data/exports/public/cloud-snapshots').is_dir():
+        shutil.copytree(root/'data/exports/public/cloud-snapshots',
+                        package/'data/exports/public/cloud-snapshots')
     folder=package/'data/exports/submission/reviewed-development-reference'
     folder.mkdir()
     description='Ten reviewed development documents and six human-approved reference cases. Model predictions are not included; separate quality aggregates retain actual measured coverage.'

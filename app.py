@@ -30,6 +30,7 @@ from src.export.reviewed_reference import (
     reviewed_reference_comparison,
 )
 from src.export.scheduled_status import load_snapshot, read_snapshot_version
+from src.export.cloud_snapshots import CLOUD_NOTE, is_cloud_snapshot, snapshot_root
 
 LOCAL_DEMO = Path(__file__).parent / "data/exports/submission/demo-2026-10-04-03"
 DEFAULT_EXPORT = LOCAL_DEMO if (LOCAL_DEMO / "index.json").is_file() else Path(__file__).parent / "data/exports/submission"
@@ -188,7 +189,7 @@ def _scheduled_root() -> Path:
     selected = st.session_state.get("scheduled_snapshot_root")
     if isinstance(selected, str) and selected.strip():
         return Path(selected)
-    return Path(__file__).resolve().parent / "data" / "exports" / "public" / "scheduled-snapshot"
+    return snapshot_root(Path(__file__).resolve().parent, "scheduled-snapshot")
 
 
 def _scheduled_refresh_seconds() -> int | None:
@@ -210,6 +211,9 @@ def _paint_scheduled_status() -> None:
     snapshot = _load_scheduled_cached(str(root), version)
     full = st.session_state.get("section") == "Scheduled runs"
     with st.container(border=True):
+        if snapshot.get("ok") and is_cloud_snapshot(root):
+            st.caption(CLOUD_NOTE)
+            st.caption(f"Snapshot version: {version}")
         if not full:
             if not snapshot.get("ok"):
                 st.caption(snapshot.get("message") or "No scheduled processing snapshot has been published.")
@@ -854,7 +858,7 @@ def _standard_snapshot_root() -> Path:
     selected = st.session_state.get("reference_standard_snapshot_root")
     if isinstance(selected, str) and selected.strip():
         return Path(selected)
-    return Path(__file__).resolve().parent / "data" / "exports" / "public" / "reference-standard-snapshot"
+    return snapshot_root(Path(__file__).resolve().parent, "reference-standard-snapshot")
 
 
 @st.cache_data(show_spinner=False)
@@ -875,6 +879,8 @@ def _paint_reference_standard() -> None:
     version = read_snapshot_version(root)
     snapshot = _load_standard_cached(str(root), version, REFERENCE_VERSION)
     st.subheader("Reference standard")
+    if snapshot.get("ok") and is_cloud_snapshot(root):
+        st.caption(CLOUD_NOTE)
     st.caption(
         "Two separate views. The first is the owner's reviewed n8n reference. The second is "
         "automatic classification assessed against that reference. Neither view measures accuracy."

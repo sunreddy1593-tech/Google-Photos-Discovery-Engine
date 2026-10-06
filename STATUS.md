@@ -1,5 +1,15 @@
 # Status
 
+Streamlit Cloud snapshot fix, 2026-10-06: added privacy-scanned deployment copies
+of the current scheduled and automated-comparison snapshots under
+`data/exports/public/cloud-snapshots/`. The app prefers local snapshots and
+falls back to these tracked copies on Cloud, with a saved-deployment notice.
+Refresh retains snapshot-aware caching. Later local runs require repackaging
+and deployment; the scheduler does not run on Streamlit Cloud. See
+`docs/cloud-snapshots.md`. No integration, scheduler or private-data changes.
+Validation: focused suites 316 passed, 5 skipped; full suite 1310 passed,
+5 skipped; `git diff --check` clean.
+
 Streamlit Cloud, 2026-10-05: the live app failed at import with
 `ModuleNotFoundError: No module named 'pydantic'`. Community Cloud installs
 `requirements.txt`, which did not list pydantic. `pydantic>=2.8,<3` is now in
