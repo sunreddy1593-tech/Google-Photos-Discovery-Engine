@@ -1009,7 +1009,7 @@ def _automated_view(snapshot: dict, reference: dict) -> None:
         st.info("No automatically classified case is eligible for the comparison in this snapshot.")
     else:
         st.caption(comparison_payload.get("mapping_note") or "")
-        for bucket_key, title in ((CORE, "Core incomplete recall"), (ADJACENT, "Adjacent known-item retrieval")):
+        for bucket_key, title in (("core", "Core incomplete recall"), ("adjacent", "Adjacent known-item retrieval")):
             bucket = comparison_payload.get(bucket_key) or {}
             with st.expander(f"{title}: {bucket.get('case_count', 0)} case(s)", expanded=bool(bucket.get("case_count"))):
                 if not bucket.get("case_count"):

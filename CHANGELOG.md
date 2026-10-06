@@ -8,6 +8,8 @@ script, and local-first/Cloud-fallback selection. The UI labels deployment copie
 as saved results. Existing atomic publication, versions, caches and Refresh
 buttons are reused. Curated packages now include both snapshots. Scheduler tasks,
 budgets, model calls, n8n, Sheets and frozen data are unchanged.
+Live verification also found and fixed automated bucket rendering: the page now
+reads the snapshot's `core` and `adjacent` keys instead of scope-enum strings.
 
 ## 2026-10-05 - Install pydantic for the Streamlit Cloud app
 

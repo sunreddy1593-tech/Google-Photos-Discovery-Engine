@@ -7,8 +7,11 @@ falls back to these tracked copies on Cloud, with a saved-deployment notice.
 Refresh retains snapshot-aware caching. Later local runs require repackaging
 and deployment; the scheduler does not run on Streamlit Cloud. See
 `docs/cloud-snapshots.md`. No integration, scheduler or private-data changes.
-Validation: focused suites 316 passed, 5 skipped; full suite 1310 passed,
+Validation: focused suites 316 passed, 5 skipped; full suite 1311 passed,
 5 skipped; `git diff --check` clean.
+Cloud verification showed both snapshots and a working Refresh button. Fixed
+an additional comparison rendering mismatch: buckets now read `core`/`adjacent`
+from the snapshot (3/2 cases), with a focused UI regression test.
 
 Streamlit Cloud, 2026-10-05: the live app failed at import with
 `ModuleNotFoundError: No module named 'pydantic'`. Community Cloud installs

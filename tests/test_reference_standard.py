@@ -659,6 +659,30 @@ def _launch_standard(tmp_path: Path, export_dir: Path, reference: Path, snapshot
 
 
 @pytest.mark.synthetic
+def test_automated_view_displays_named_comparison_buckets(tmp_path: Path) -> None:
+    reference = _reference(tmp_path)
+    prepared = _prepared_export(tmp_path)
+    root = tmp_path / "snapshot"
+    payload = {
+        "snapshot_version": "bucket-regression",
+        "reference_version": REFERENCE_VERSION,
+        "counts": {"eligible_cases": 2},
+        "comparison": {
+            "case_count": 2,
+            "core": {"case_count": 1, "dimensions": []},
+            "adjacent": {"case_count": 1, "dimensions": []},
+        },
+        "included": [], "excluded": [],
+    }
+    publish_standard_snapshot(root, payload)
+    app = _launch_standard(tmp_path, prepared, reference, root)
+    assert not app.exception
+    labels = [expander.label for expander in app.expander]
+    assert "Core incomplete recall: 1 case(s)" in labels
+    assert "Adjacent known-item retrieval: 1 case(s)" in labels
+
+
+@pytest.mark.synthetic
 def test_app_shows_both_views_with_labels_counts_and_empty_state(tmp_path: Path) -> None:
     reference = _reference(tmp_path)
     prepared = _prepared_export(tmp_path)
