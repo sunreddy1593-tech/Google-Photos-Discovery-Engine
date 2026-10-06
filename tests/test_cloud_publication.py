@@ -169,9 +169,8 @@ def test_git_errors_do_not_expose_credentials(tmp_path, monkeypatch):
     assert str(exc.value) == "fetch"
 
 
-def test_launcher_keeps_research_exit_code():
+def test_launcher_uses_shared_queue():
     root = Path(__file__).resolve().parents[1]
     command = (root / "scripts/run_scheduled_discovery.cmd").read_text()
-    assert command.index("main.py") < command.index("publish_cloud_snapshots.py")
-    assert 'if not "%DISCOVERY_RUN_EXIT%"=="0" exit /b %DISCOVERY_RUN_EXIT%' in command
-    assert command.rstrip().endswith("exit /b %DISCOVERY_RUN_EXIT%")
+    assert "run_queued_discovery.py" in command
+    assert command.rstrip().endswith("exit /b %ERRORLEVEL%")

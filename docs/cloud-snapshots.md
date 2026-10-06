@@ -20,9 +20,30 @@ not proof that the scheduler is running on Cloud.
 
 Automatic publication is enabled in `config/cloud_publication.json` for this
 repository's existing GitHub `origin` and `main` branch. The already registered
-`scripts/run_scheduled_discovery.cmd` runs the publication script after the
-research command returns successfully, including partial batches. No Windows
-task registrations or collection/model budgets were changed.
+`scripts/run_scheduled_discovery.cmd` runs `scripts/run_queued_discovery.py`,
+which runs publication after the research command returns successfully,
+including partial batches. Collection/model budgets are unchanged.
+
+The three existing Windows tasks retain their 08:00, 14:00 and 20:00 IST
+triggers and interactive user. Catch-up (`StartWhenAvailable`) is enabled,
+network availability is required, and multiple instances use `Queue`.
+Windows can start missed work when the computer is awake, the owner has signed
+in and a network is available; catch-up normally has a Windows scheduling delay
+(the documented default is ten minutes). This is Windows catch-up, not a promise
+to replay every historical occurrence after several days offline.
+
+A shared Windows named mutex serializes all three tasks through both research
+and publication, including simultaneous catch-up starts. Waiting does not
+collect data or call models. Windows releases ownership if a worker exits or
+is terminated. Current-day request reservations, limits and duplicate skipping
+still apply. No workflow or integration is invoked by the queue itself. A
+publication failure is attempted again at a later successful scheduled run,
+without repeating the completed research command inside the same invocation.
+Original task XML and settings verification are saved locally under the ignored
+`data/interim/task-settings-backup/` directory when these settings are applied.
+
+Microsoft describes the catch-up setting and delay at
+https://learn.microsoft.com/en-us/windows/win32/taskschd/tasksettings-startwhenavailable.
 
 The publisher fetches the latest remote branch into a temporary sparse Git
 checkout that contains only the public snapshot directory. It validates and

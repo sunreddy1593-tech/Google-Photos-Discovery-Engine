@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-06 - Catch up missed scheduled runs and publication
+
+Enable catch-up and network availability on the three existing Windows tasks,
+retaining daily times and interactive logon. Queue instances and use a shared
+Windows mutex to serialize research and publication across all three tasks,
+so simultaneous catch-up jobs wait instead of hitting the pipeline overlap
+guard. Preserve the research exit code on publication failure. Original task
+settings are backed up locally. Windows scheduling delays and coalescing limit
+catch-up; this does not promise every historical slot or unattended logged-out
+execution. Collection/model limits, n8n and integrations are unchanged.
+
 ## 2026-10-06 - Publish snapshots automatically after scheduled batches
 
 The existing Windows command now publishes the current public scheduled and

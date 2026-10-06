@@ -1,5 +1,19 @@
 # Status
 
+Scheduled catch-up, 2026-10-06: the existing 08:00, 14:00 and 20:00 Windows
+tasks now enable StartWhenAvailable, require a network and queue overlapping
+instances. The shared Windows mutex in `scripts/run_queued_discovery.py`
+serializes research and publication across the three tasks. A missed task
+can start after the computer is awake and Sunayana signs in, subject to the
+Windows catch-up delay; every historical missed occurrence is not guaranteed.
+Times, interactive logon, request budgets and collection/model stages remain
+unchanged. Original task XML is backed up locally before settings changes.
+Verification: all three installed tasks report catch-up/network enabled and
+Queue; triggers, principals, actions and other settings match their saved XML.
+Focused tests: 29 passed with mocked research/publication and an isolated
+Windows mutex test. Full suite: 1329 passed, 5 skipped; diff check clean.
+No live research run was manually triggered. See `docs/cloud-snapshots.md`.
+
 Automatic Cloud snapshot publication, 2026-10-06: the existing scheduled command
 now runs `scripts/publish_cloud_snapshots.py` after successful/partial research
 runs. Enabled for the existing GitHub remote/main in `config/cloud_publication.json`.
@@ -16,8 +30,8 @@ Streamlit Cloud snapshot fix, 2026-10-06: added privacy-scanned deployment copie
 of the current scheduled and automated-comparison snapshots under
 `data/exports/public/cloud-snapshots/`. The app prefers local snapshots and
 falls back to these tracked copies on Cloud, with a saved-deployment notice.
-Refresh retains snapshot-aware caching. Later local runs require repackaging
-and deployment; the scheduler does not run on Streamlit Cloud. See
+Refresh retains snapshot-aware caching. Automatic publication added later
+packages and pushes subsequent local results; the scheduler does not run on Streamlit Cloud. See
 `docs/cloud-snapshots.md`. No integration, scheduler or private-data changes.
 Validation: focused suites 316 passed, 5 skipped; full suite 1311 passed,
 5 skipped; `git diff --check` clean.
@@ -71,7 +85,8 @@ which changes to the project directory and runs
 on `main.py schedule`. Local times are 08:00, 14:00 and 20:00; the machine
 timezone is India Standard Time, so those times are Asia/Kolkata. Next runs
 are 05-10-2026 08:00:00, 14:00:00 and 20:00:00. Logon mode is interactive only.
-A missed slot does not start later. Battery start and stop restrictions are
+At initial registration, catch-up was disabled; the 2026-10-06 update above
+enables it. Battery start and stop restrictions are
 off. The first registration split the path at the space in `Google Photos`;
 that registration was replaced before any task ran. The verified command is
 the full `.cmd` path, with working directory
