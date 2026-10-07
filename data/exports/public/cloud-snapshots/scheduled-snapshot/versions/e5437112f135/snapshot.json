@@ -1,0 +1,106 @@
+{
+  "snapshot_version": "e5437112f135",
+  "status": "partial",
+  "dry_run": false,
+  "last_run_at": "2026-10-07T08:35:31.256542+05:30",
+  "next_run_at": "2026-10-07T14:00:00+05:30",
+  "timezone": "Asia/Kolkata",
+  "schedule": [
+    "08:00",
+    "14:00",
+    "20:00"
+  ],
+  "sources": [
+    {
+      "source": "youtube",
+      "status": "collected",
+      "requests": 20,
+      "documents_written": 0,
+      "documents_already_present": 306,
+      "reason": "Official commentThreads.list and comments.list for configured video URLs."
+    },
+    {
+      "source": "reddit",
+      "status": "unavailable",
+      "requests": 0,
+      "documents_written": 0,
+      "documents_already_present": 0,
+      "reason": "Self-service Reddit API keys are not issued. This project does not request access."
+    },
+    {
+      "source": "google_support",
+      "status": "unavailable",
+      "requests": 0,
+      "documents_written": 0,
+      "documents_already_present": 0,
+      "reason": "No documented API. Automated collection is not enabled."
+    },
+    {
+      "source": "play_store",
+      "status": "unavailable",
+      "requests": 0,
+      "documents_written": 0,
+      "documents_already_present": 0,
+      "reason": "Play reviews require publisher ownership. Manual import only."
+    },
+    {
+      "source": "app_store",
+      "status": "unavailable",
+      "requests": 0,
+      "documents_written": 0,
+      "documents_already_present": 0,
+      "reason": "App Store reviews require ownership of the app. Manual import only."
+    }
+  ],
+  "excluded_sources": [
+    {
+      "source": "n8n",
+      "status": "excluded",
+      "reason": "n8n workflows, webhooks, and spreadsheets are outside this scheduler and were not called."
+    }
+  ],
+  "new_documents": 0,
+  "duplicates": 306,
+  "target_documents": 50,
+  "shortfall": 50,
+  "partial": true,
+  "sub_batches": [],
+  "in_scope": 0,
+  "adjacent": 0,
+  "out_of_scope": 0,
+  "extracted_cases": 0,
+  "automatically_valid_cases": 0,
+  "human_approved_cases": 0,
+  "stage_failures": [],
+  "incomplete_work": [],
+  "missing_inputs": [],
+  "collection_requests_used": 20,
+  "model_attempts_used": 0,
+  "collection_request_limit_per_run": 20,
+  "model_attempt_limit_per_run": 100,
+  "collection_request_limit_per_day": 60,
+  "model_attempt_limit_per_day": 300,
+  "estimated_cost_usd": 0,
+  "usage_known": true,
+  "pins": {
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "relevance_prompt": "relevance/v5",
+    "extraction_prompt": "extract/v2",
+    "schema_version": "1.0.0",
+    "temperature": 0.0,
+    "max_tokens": 4096,
+    "gateway_attempts": 1,
+    "sdk_max_retries": 0,
+    "configured_max_retries": 3,
+    "reference_standard_version": "n8n-reviewed-reference/01"
+  },
+  "review_checks": [
+    "retrieval_trigger must be the stated reason the item was needed, not the search method",
+    "impact and severity need a quote that states that impact or severity",
+    "problem_summary evidence must support every factual clause",
+    "quotes must be one continuous span; invented or spliced text is invalid"
+  ],
+  "unreviewed_cases": [],
+  "message": "Partial batch: 0 new documents, shortfall 50. Limits were not increased."
+}
